@@ -2,7 +2,7 @@
 from setuptools import setup
 
 
-PLUGIN_ENTRY_POINT = 'ovos_guiplayer=ovos_plugin_guiplayer'
+PLUGIN_ENTRY_POINT = 'ovos_guiplayer=ovos_plugin_guiplayer:OVOSGuiPlayerService'
 
 setup(
     name='ovos_plugin_guiplayer',

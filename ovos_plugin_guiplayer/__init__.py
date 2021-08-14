@@ -111,21 +111,21 @@ class OVOSGuiPlayerService(AudioBackend):
 
     def next(self):
         """ Skip to next track in playlist. """
-        # Todo
-        pass
+        self.bus.emit(Message("ovos.common_play.next"))
 
     def previous(self):
         """ Skip to previous track in playlist. """
-        # Todo
-        pass
+        self.bus.emit(Message("ovos.common_play.previous"))
 
     def lower_volume(self):
-        if not self._paused:
-            self.pause()  # poor-man's ducking
+        if self.config.get("duck", False):
+            if not self._paused:
+                self.pause()  # poor-man's ducking
 
     def restore_volume(self):
-        if not self._paused:
-            self.resume()  # poor-man's unducking
+        if self.config.get("duck", False):
+            if not self._paused:
+                self.resume()  # poor-man's unducking
 
     def sync_meta_from_player(self, message):
         """ Gets metadata from QMediaPlayer. """
