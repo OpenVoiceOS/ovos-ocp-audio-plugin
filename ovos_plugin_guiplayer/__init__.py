@@ -16,11 +16,14 @@ class OVOSGuiPlayerService(AudioBackend):
         self.name = name
         self._is_playing = False
         self._paused = False
+        self.supports_mime_hints = True
         self.tracks = []
         self.index = 0
         self.track_lock = Lock()
         self.track_meta_from_player = None
         self.track_meta_from_cps = None
+        self.web_skillid = None
+        self.web_player = False
 
         self.bus.on('GuiPlayerServicePlay', self._play)
         self.bus.on(
@@ -48,9 +51,31 @@ class OVOSGuiPlayerService(AudioBackend):
             track = track_data[0]
             mime = track_data[1]
             mime = mime.split('/')
+            try:
+                if track_data[2]:
+                    self.web_skillid = track_data[2]
+                else:
+                    self.web_skillid = None
+
+                if "web" in mime[0] and "url" in mime[1]:
+                    self.web_player = True
+                else:
+                    self.web_player = False
+
+                if "type" in mime[0] and "video" in mime[1]:
+                    mime = ["video", "type"]
+
+                if "type" in mime[0] and "audio" in mime[1]:
+                    mime = ["audio", "type"]
+
+            except:
+                self.web_skillid = None
+                self.web_player = False
         else:  # Assume string
             track = track_data
             mime = self.find_mime(track)
+            self.web_player = False
+
         return track, mime
 
     def _play(self, message):
@@ -70,6 +95,10 @@ class OVOSGuiPlayerService(AudioBackend):
             if 'video' in mime[0]:
                 LOG.debug("Sending Video Type")
                 self.bus.emit(Message("playback.display.video.type"))
+            elif self.web_player:
+                LOG.debug("Sending Web Video Type")
+                self.bus.emit(Message("playback.display.web.video.type",
+                                      {"url": track, "skill_id": self.web_skillid}))
             else:
                 LOG.debug("Sending Audio Type")
                 self.bus.emit(Message("playback.display.audio.type"))
@@ -84,12 +113,19 @@ class OVOSGuiPlayerService(AudioBackend):
                 self.bus.emit(Message("playback.display.audio.type"))
 
         time.sleep(0.5)
-        self.bus.emit(
-            Message(
-                "gui.player.media.service.play", {
-                    "track": track, "mime": mime, "repeat": repeat}))
-        LOG.debug('Player Emitted gui.player.media.service.play')
-        self.send_meta_to_player()
+        if self.web_player:
+            self.bus.emit(Message("gui.web.media.service.play",
+                                  {"url": track, "mime": mime, "repeat": repeat}))
+            LOG.debug('Player Emitted gui.web.media.service.play')
+
+        else:
+            self.bus.emit(
+                Message(
+                    "gui.player.media.service.play", {
+                        "track": track, "mime": mime, "repeat": repeat}))
+
+            LOG.debug('Player Emitted gui.player.media.service.play')
+            self.send_meta_to_player()
 
     def play(self, repeat=False):
         """ Play media playback. """
@@ -193,5 +229,3 @@ def load_service(base_config, bus):
                 backends[b].get('active', True)]
     instances = [OVOSGuiPlayerService(s[1], bus, s[0]) for s in services]
     return instances
-
-
