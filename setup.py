@@ -2,17 +2,17 @@
 from setuptools import setup
 
 
-PLUGIN_ENTRY_POINT = 'ovos_guiplayer=ovos_plugin_guiplayer'
+PLUGIN_ENTRY_POINT = 'ovos_common_play=ovos_plugin_common_play'
 
 setup(
-    name='ovos_plugin_guiplayer',
+    name='ovos_plugin_common_play',
     version='0.0.1a1',
-    description='guiplayer plugin for ovos',
-    url='https://github.com/OpenVoiceOS/ovos-guiplayer-plugin',
+    description='OVOS common play audio service adapter plugin',
+    url='https://github.com/OpenVoiceOS/ovos-common-play-plugin',
     author='JarbasAi',
     author_email='jarbasai@mailfence.com',
     license='Apache-2.0',
-    packages=['ovos_plugin_guiplayer'],
+    packages=['ovos_plugin_common_play'],
     install_requires=["ovos-plugin-manager>=0.0.1a3"],
     zip_safe=True,
     classifiers=[
