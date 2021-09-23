@@ -1,14 +1,20 @@
+from os.path import basename
+
 from mycroft_bus_client import Message
 from ovos_plugin_manager.templates.audio import AudioBackend
-from ovos_workshop.frameworks.playback.status import MediaState
+from ovos_utils.log import LOG
+from ovos_workshop.frameworks.playback.status import *
+from ovos_workshop.frameworks.playback.utils import extract_metadata
 
 
 class OVOSCommonPlayAdapterService(AudioBackend):
     """ This plugin makes regular mycroft skills that use the audio service
     go trough the OVOS common play framework, this plugin simply delegates
     the task by emitting bus messages expected by Ovos Common Play API"""
+
     def __init__(self, config, bus=None, name='ovos.common_play'):
-        super(OVOSCommonPlayAdapterService, self).__init__(config=config, bus=bus)
+        super(OVOSCommonPlayAdapterService, self).__init__(config=config,
+                                                           bus=bus)
         self.name = name
         self.tracks = []
         self._track_info = {}
@@ -26,16 +32,36 @@ class OVOSCommonPlayAdapterService(AudioBackend):
         self.bus.emit(Message('ovos.common_play.playlist.clear'))
 
     def add_list(self, tracks):
-        self.tracks = [{"uri": t, "title": "", "artist": "", "image": ""}
-                       for t in tracks]
+        self.tracks = []
+        for t in tracks:
+            try:
+                # only works for local files
+                # audio only (?)
+                meta = extract_metadata(t)
+            except Exception as e:
+                LOG.exception(e)
+                # TODO let's try to dig for message and see if theres
+                #  anything there, maybe set title / artist to skill_id ?
+                meta = {"uri": t,
+                        "title": basename(t),
+                        "artist": "ovos.common_play.plugin",
+                        "album": "",
+                        "image": "",
+                        "playback": PlaybackType.AUDIO,  # TODO mime type check
+                        "status": TrackState.DISAMBIGUATION
+                        }
+            meta["skill_id"] = "ovos.common_play.plugin"
+            self.tracks.append(meta)
+
         self.bus.emit(Message('ovos.common_play.playlist.queue',
-                              {"tracks": tracks}))
+                              {"tracks": self.tracks}))
         self.bus.emit(Message('ovos.common_play.media.state',
                               {'state': MediaState.LOADING_MEDIA}))
 
     def play(self, repeat=False):
         """ Play media playback. """
         if len(self.tracks):
+            self._track_info = self.tracks[0]
             self.bus.emit(Message('ovos.common_play.play',
                                   {'repeat': repeat,
                                    "media": self.tracks[0],
@@ -87,5 +113,6 @@ def load_service(base_config, bus):
     services = [(b, backends[b]) for b in backends
                 if backends[b]['type'] == 'ovos_common_play' and
                 backends[b].get('active', True)]
-    instances = [OVOSCommonPlayAdapterService(s[1], bus, s[0]) for s in services]
+    instances = [OVOSCommonPlayAdapterService(s[1], bus, s[0]) for s in
+                 services]
     return instances
