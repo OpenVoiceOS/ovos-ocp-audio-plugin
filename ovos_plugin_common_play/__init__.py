@@ -3,18 +3,18 @@ from os.path import basename
 from mycroft_bus_client import Message
 from ovos_plugin_manager.templates.audio import AudioBackend
 from ovos_utils.log import LOG
-from ovos_workshop.frameworks.playback.status import *
-from ovos_workshop.frameworks.playback.utils import extract_metadata
+from ovos_plugin_common_play.ocp.status import *
+from ovos_plugin_common_play.ocp.utils import extract_metadata
 
 
-class OVOSCommonPlayAdapterService(AudioBackend):
+class OCPAudioBackend(AudioBackend):
     """ This plugin makes regular mycroft skills that use the audio service
     go trough the OVOS common play framework, this plugin simply delegates
     the task by emitting bus messages expected by Ovos Common Play API"""
 
     def __init__(self, config, bus=None, name='ovos.common_play'):
-        super(OVOSCommonPlayAdapterService, self).__init__(config=config,
-                                                           bus=bus)
+        super(OCPAudioBackend, self).__init__(config=config,
+                                              bus=bus)
         self.name = name
         self.tracks = []
         self._track_info = {}
@@ -113,6 +113,6 @@ def load_service(base_config, bus):
     services = [(b, backends[b]) for b in backends
                 if backends[b]['type'] == 'ovos_common_play' and
                 backends[b].get('active', True)]
-    instances = [OVOSCommonPlayAdapterService(s[1], bus, s[0]) for s in
+    instances = [OCPAudioBackend(s[1], bus, s[0]) for s in
                  services]
     return instances
