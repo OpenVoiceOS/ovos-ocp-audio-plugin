@@ -127,7 +127,7 @@ class OCPMediaPlayerGUI(GUIInterface):
         self["length"] = message.data["length"]
         self["position"] = message.data["position"]
 
-    # media _player -> gui
+    # media player -> gui
     def handle_end_of_playback(self, message=None):
         self.clear()
         # show media results, release screen after 60 seconds

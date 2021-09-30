@@ -20,7 +20,7 @@ class OCPAudioBackend(AudioBackend):
         self.name = name
         self.tracks = []
         self._track_info = {}
-        self.bus.on("gui._player.media.service.set.meta",
+        self.bus.on("gui.player.media.service.set.meta",
                     self.handle_receive_meta)
         self.create_ocp(config)
 
@@ -141,7 +141,7 @@ class OCPAudioBackend(AudioBackend):
         return self._track_info
 
     def shutdown(self):
-        self.bus.remove("gui._player.media.service.set.meta",
+        self.bus.remove("gui.player.media.service.set.meta",
                         self.handle_receive_meta)
         if self.ocp is not None:
             self.ocp.shutdown()

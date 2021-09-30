@@ -1,1 +1,3 @@
 ovos-plugin-manager>=0.0.1a3
+padacioso
+ovos_workshop

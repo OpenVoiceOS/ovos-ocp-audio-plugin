@@ -1,7 +1,7 @@
 class OCPAbstractComponent:
     def __init__(self, player=None):
         """
-        _player: OCPInterface
+        player: OCPInterface
         """
         self._player = None
         if player:

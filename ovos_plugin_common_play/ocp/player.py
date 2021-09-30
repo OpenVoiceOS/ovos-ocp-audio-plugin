@@ -23,7 +23,7 @@ class NowPlaying(MediaEntry):
                                self.handle_track_state_change)
         self._player.add_event("ovos.common_play.playback_time",
                                self.handle_sync_seekbar)
-        self._player.add_event('gui._player.media.service.get.meta',
+        self._player.add_event('gui.player.media.service.get.meta',
                                self.handle_player_metadata_request)
         self._player.add_event('mycroft.audio.service.track_info_reply',
                                self.handle_sync_trackinfo)
@@ -31,20 +31,20 @@ class NowPlaying(MediaEntry):
     def shutdown(self):
         self._player.remove_event("ovos.common_play.track.state")
         self._player.remove_event("ovos.common_play.playback_time")
-        self._player.remove_event('gui._player.media.service.get.meta')
+        self._player.remove_event('gui.player.media.service.get.meta')
         self._player.remove_event('mycroft.audio.service.track_info_reply')
 
     def update(self, entry, skipkeys=None):
         super(NowPlaying, self).update(entry, skipkeys)
-        # sync with gui media _player on track change
-        self.bus.emit(Message("gui._player.media.service.set.meta",
+        # sync with gui media player on track change
+        self.bus.emit(Message("gui.player.media.service.set.meta",
                               {"title": self.title,
                                "image": self.image,
                                "artist": self.artist}))
 
     # events from gui_player/audio_service
     def handle_player_metadata_request(self, message):
-        self.bus.emit(message.reply("gui._player.media.service.set.meta",
+        self.bus.emit(message.reply("gui.player.media.service.set.meta",
                                     {"title": self.title,
                                      "image": self.image,
                                      "artist": self.artist}))
@@ -119,21 +119,21 @@ class OCPMediaPlayer(OVOSAbstractApplication):
                        self.handle_unduck_request)
 
         # mycroft-gui media service
-        self.add_event('gui._player.media.service.sync.status',
+        self.add_event('gui.player.media.service.sync.status',
                        self.handle_player_state_update)
-        self.add_event("gui._player.media.service.get.next",
+        self.add_event("gui.player.media.service.get.next",
                        self.handle_next_request)
-        self.add_event("gui._player.media.service.get.previous",
+        self.add_event("gui.player.media.service.get.previous",
                        self.handle_prev_request)
-        self.add_event("gui._player.media.service.get.repeat",
+        self.add_event("gui.player.media.service.get.repeat",
                        self.handle_repeat_toggle_request)
-        self.add_event("gui._player.media.service.get.shuffle",
+        self.add_event("gui.player.media.service.get.shuffle",
                        self.handle_shuffle_toggle_request)
-        self.add_event('gui._player.media.service.current.media.status',
+        self.add_event('gui.player.media.service.current.media.status',
                        self.handle_player_media_update)
 
         # ovos common play bus api
-        self.add_event('ovos.common_play._player.state',
+        self.add_event('ovos.common_play.player.state',
                        self.handle_player_state_update)
         self.add_event('ovos.common_play.media.state',
                        self.handle_player_media_update)
@@ -194,7 +194,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
             self.gui["status"] = "Paused"
         if state == PlayerState.STOPPED:
             self.gui["status"] = "Stopped"
-        self.bus.emit(Message("ovos.common_play._player.state",
+        self.bus.emit(Message("ovos.common_play.player.state",
                               {"state": self.state}))
 
     def set_now_playing(self, track):
@@ -255,7 +255,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
                     "state": TrackState.PLAYING_AUDIOSERVICE}))
             elif is_gui_running():
                 # handle audio natively in mycroft-gui
-                self.bus.emit(Message("gui._player.media.service.play", {
+                self.bus.emit(Message("gui.player.media.service.play", {
                     "track": self.now_playing.uri,
                     "mime": self.now_playing.mimetype,
                     "repeat": False}))
@@ -278,7 +278,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         elif self.active_backend == PlaybackType.VIDEO:
             LOG.debug("Requesting playback: PlaybackType.VIDEO")
             # handle video natively in mycroft-gui
-            self.bus.emit(Message("gui._player.media.service.play", {
+            self.bus.emit(Message("gui.player.media.service.play", {
                 "track": self.now_playing.uri,
                 "mime": self.now_playing.mimetype,
                 "repeat": False}))
@@ -339,7 +339,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         if self.active_backend in [PlaybackType.AUDIO,
                                    PlaybackType.VIDEO,
                                    PlaybackType.UNDEFINED]:
-            self.bus.emit(Message("gui._player.media.service.pause"))
+            self.bus.emit(Message("gui.player.media.service.pause"))
         if self.active_backend in [PlaybackType.SKILL,
                                    PlaybackType.UNDEFINED]:
             self.bus.emit(Message(f'ovos.common_play'
@@ -360,7 +360,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         if self.active_backend in [PlaybackType.AUDIO,
                                    PlaybackType.VIDEO,
                                    PlaybackType.UNDEFINED]:
-            self.bus.emit(Message('gui._player.media.service.resume'))
+            self.bus.emit(Message('gui.player.media.service.resume'))
         self.set_player_state(PlayerState.PLAYING)
 
     def seek(self, position):
@@ -381,7 +381,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         if self.active_backend in [PlaybackType.AUDIO,
                                    PlaybackType.VIDEO,
                                    PlaybackType.UNDEFINED]:
-            self.bus.emit(Message("gui._player.media.service.stop"))
+            self.bus.emit(Message("gui.player.media.service.stop"))
         self.set_player_state(PlayerState.STOPPED)
 
     def reset(self):
@@ -397,9 +397,9 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         self.media.shutdown()
         self.remove_event('recognizer_loop:record_begin')
         self.remove_event('recognizer_loop:record_end')
-        self.remove_event('gui._player.media.service.sync.status')
-        self.remove_event("gui._player.media.service.get.next")
-        self.remove_event("gui._player.media.service.get.previous")
+        self.remove_event('gui.player.media.service.sync.status')
+        self.remove_event("gui.player.media.service.get.next")
+        self.remove_event("gui.player.media.service.get.previous")
 
     # player -> common play
     def handle_player_state_update(self, message):
@@ -415,7 +415,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         if state == PlayerState.PAUSED:
             self.state = PlayerState.PAUSED
         if state == PlayerState.STOPPED:
-            # TODO remove once we have a new event from gui _player for end of
+            # TODO remove once we have a new event from gui player for end of
             #  media
             if self.state == PlayerState.PLAYING:
                 self.set_media_state(MediaState.END_OF_MEDIA)
@@ -461,7 +461,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         self.resume()
 
     def handle_seek_request(self, message):
-        # usually sent by audio service _player GUI
+        # usually sent by audio service player GUI
         position = message.data.get("seekValue", "")
         if position:
             self.gui["position"] = position

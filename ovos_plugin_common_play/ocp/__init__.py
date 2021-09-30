@@ -3,12 +3,9 @@ from os.path import join, dirname, isfile
 
 from adapt.intent import IntentBuilder
 from ovos_plugin_common_play.ocp.gui import OCPMediaPlayerGUI
-from ovos_plugin_common_play.ocp.interface import *
 from ovos_plugin_common_play.ocp.player import OCPMediaPlayer
 from ovos_plugin_common_play.ocp.settings import OCPSettings
 from ovos_plugin_common_play.ocp.status import *
-from ovos_plugin_common_play.ocp.status import MediaType, PlaybackType, \
-    PlayerState
 from ovos_utils.gui import can_use_gui
 from ovos_utils.log import LOG
 from ovos_utils.messagebus import Message

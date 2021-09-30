@@ -17,8 +17,8 @@ class TrackState(IntEnum):
 
     PLAYING_SKILL = 20  # Skill is handling playback internally
     PLAYING_AUDIOSERVICE = 21  # Skill forwarded playback to audio service
-    PLAYING_VIDEO = 22  # Skill forwarded playback to gui _player
-    PLAYING_AUDIO = 23  # Skill forwarded audio playback to gui _player
+    PLAYING_VIDEO = 22  # Skill forwarded playback to gui player
+    PLAYING_AUDIO = 23  # Skill forwarded audio playback to gui player
     QUEUED_SKILL = 30  # Waiting playback to be handled inside skill
     QUEUED_AUDIOSERVICE = 31  # Waiting playback in audio service
     QUEUED_VIDEO = 32  # Waiting playback in gui
@@ -31,19 +31,19 @@ class MediaState(IntEnum):
     UNKNOWN = 0
     # There is no current media. PlayerState == STOPPED
     NO_MEDIA = 1
-    # The current media is being loaded. The _player may be in any state.
+    # The current media is being loaded. The player may be in any state.
     LOADING_MEDIA = 2
-    # The current media has been loaded. PlayerState == STOPPED
+    # The current media has been loaded. PlayerState== STOPPED
     LOADED_MEDIA = 3
     # Playback of the current media has stalled due to
     # insufficient buffering or some other temporary interruption.
     # PlayerState != STOPPED
     STALLED_MEDIA = 4
-    # The _player is buffering data but has enough data buffered
+    # The player is buffering data but has enough data buffered
     # for playback to continue for the immediate future.
     # PlayerState != STOPPED
     BUFFERING_MEDIA = 5
-    # The _player has fully buffered the current media. PlayerState != STOPPED
+    # The player has fully buffered the current media. PlayerState != STOPPED
     BUFFERED_MEDIA = 6
     # Playback has reached the end of the current media. PlayerState == STOPPED
     END_OF_MEDIA = 7
