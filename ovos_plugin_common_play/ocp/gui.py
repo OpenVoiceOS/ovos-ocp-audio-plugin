@@ -1,50 +1,51 @@
+from os.path import join
+
+from ovos_plugin_common_play.ocp.status import *
 from ovos_utils.gui import GUIInterface
-from ovos_workshop.ocp.status import *
 from ovos_utils.log import LOG
-from ovos_workshop.ocp.base import OCPAbstractComponent
 
 
-class OCPMediaPlayerGUI(GUIInterface, OCPAbstractComponent):
-    def __init__(self, player):
-        OCPAbstractComponent.__init__(self, player)
+class OCPMediaPlayerGUI(GUIInterface):
+    def __init__(self):
         # the skill_id is chosen so the namespace matches the regular bus api
         # ie, the gui event "XXX" is sent in the bus as "ovos.common_play.XXX"
-        GUIInterface.__init__(self, "ovos.common_play", bus=self._player.bus)
-        self.register_playback_handlers()
+        super(OCPMediaPlayerGUI, self).__init__(skill_id="ovos.common_play")
 
-    def register_playback_handlers(self):
-        self.bus.on("ovos.common_play.playback_time",
-                    self.handle_sync_seekbar)
-        self.bus.on('ovos.common_play.playlist.play',
-                    self.handle_play_from_playlist)
-        self.bus.on('ovos.common_play.search.play',
-                    self.handle_play_from_search)
-        self.bus.on('ovos.common_play.collection.play',
-                    self.handle_play_from_collection)
+    def bind(self, player):
+        self.player = player
+        super().set_bus(self.bus)
+        self.player.add_event("ovos.common_play.playback_time",
+                              self.handle_sync_seekbar)
+        self.player.add_event('ovos.common_play.playlist.play',
+                              self.handle_play_from_playlist)
+        self.player.add_event('ovos.common_play.search.play',
+                              self.handle_play_from_search)
+        self.player.add_event('ovos.common_play.collection.play',
+                              self.handle_play_from_collection)
 
     @property
     def search_spinner_page(self):
-        return "BusyPage.qml"
+        return join(self.player.res_dir, "ui", "BusyPage.qml")
 
     @property
     def audio_player_page(self):
-        return "OVOSAudioPlayer.qml"
+        return join(self.player.res_dir, "ui", "OVOSAudioPlayer.qml")
 
     @property
     def audio_service_page(self):
-        return "AudioPlayer.qml"
+        return join(self.player.res_dir, "ui", "AudioPlayer.qml")
 
     @property
     def video_player_page(self):
-        return "OVOSVideoPlayer.qml"
+        return join(self.player.res_dir, "ui", "OVOSVideoPlayer.qml")
 
     @property
     def search_page(self):
-        return "Disambiguation.qml"
+        return join(self.player.res_dir, "ui", "Disambiguation.qml")
 
     @property
     def playlist_page(self):
-        return "Playlist.qml"
+        return join(self.player.res_dir, "ui", "Playlist.qml")
 
     def shutdown(self):
         self.bus.remove("ovos.common_play.playback_time",
@@ -53,22 +54,22 @@ class OCPMediaPlayerGUI(GUIInterface, OCPAbstractComponent):
 
     # OCPMediaPlayer interface
     def update_current_track(self):
-        self["media"] = self._player.now_playing.info
-        self["title"] = self._player.now_playing.title
-        self["image"] = self._player.now_playing.image
-        self["artist"] = self._player.now_playing.artist
-        self["bg_image"] = self._player.now_playing.bg_image
-        self["duration"] = self._player.now_playing.length
-        self["position"] = self._player.now_playing.position
+        self["media"] = self.player.now_playing.info
+        self["title"] = self.player.now_playing.title
+        self["image"] = self.player.now_playing.image
+        self["artist"] = self.player.now_playing.artist
+        self["bg_image"] = self.player.now_playing.bg_image
+        self["duration"] = self.player.now_playing.length
+        self["position"] = self.player.now_playing.position
 
     def update_search_results(self):
         self["searchModel"] = {
-            "data": [e.info for e in self._player.disambiguation]
+            "data": [e.info for e in self.player.disambiguation]
         }
 
     def update_playlist(self):
         self["playlistModel"] = {
-            "data": [e.info for e in self._player.tracks]
+            "data": [e.info for e in self.player.tracks]
         }
 
     def show_playback_error(self):
@@ -83,14 +84,14 @@ class OCPMediaPlayerGUI(GUIInterface, OCPAbstractComponent):
 
     def show_player(self):
         to_remove = [self.search_spinner_page]
-        if self._player.active_backend == PlaybackType.VIDEO:
-            page = self.video_player_page
-            to_remove += [self.audio_service_page, self.audio_player_page]
-        elif self._player.active_backend == PlaybackType.AUDIO_SERVICE or \
-                self._player.settings.force_audioservice:
+        if self.player.active_backend == PlaybackType.AUDIO_SERVICE or \
+                self.player.settings.force_audioservice:
             page = self.audio_service_page
             to_remove += [self.video_player_page, self.audio_player_page]
-        elif self._player.active_backend == PlaybackType.AUDIO:
+        elif self.player.active_backend == PlaybackType.VIDEO:
+            page = self.video_player_page
+            to_remove += [self.audio_service_page, self.audio_player_page]
+        elif self.player.active_backend == PlaybackType.AUDIO:
             page = self.audio_player_page
             to_remove += [self.video_player_page, self.audio_service_page]
         else:  # skill / undefined
@@ -106,19 +107,19 @@ class OCPMediaPlayerGUI(GUIInterface, OCPAbstractComponent):
     def handle_play_from_playlist(self, message):
         LOG.info("Playback requested from playlist results")
         media = message.data["playlistData"]
-        self._player.play_media(media)
+        self.player.play_media(media)
 
     def handle_play_from_search(self, message):
         LOG.info("Playback requested from search results")
         media = message.data["playlistData"]
-        self._player.play_media(media)
+        self.player.play_media(media)
 
     def handle_play_from_collection(self, message):
         playlist = message.data["playlistData"]
         collection = message.data["collection"]
         media = playlist[0]
-        self._player.play_media(media, playlist=playlist,
-                                disambiguation=collection)
+        self.player.play_media(media, playlist=playlist,
+                               disambiguation=collection)
 
     # audio service -> gui
     def handle_sync_seekbar(self, message):
@@ -126,9 +127,8 @@ class OCPMediaPlayerGUI(GUIInterface, OCPAbstractComponent):
         self["length"] = message.data["length"]
         self["position"] = message.data["position"]
 
-    # media player -> gui
+    # media _player -> gui
     def handle_end_of_playback(self, message=None):
-        search_qml = "Disambiguation.qml"
         self.clear()
         # show media results, release screen after 60 seconds
-        self.show_page(search_qml, override_idle=60)
+        self.show_page(self.search_page, override_idle=60)

@@ -1,19 +1,19 @@
 import random
 import time
 
+from ovos_plugin_common_play.ocp.base import OCPAbstractComponent
+from ovos_plugin_common_play.ocp.mycroft_cps import \
+    MycroftCommonPlayInterface
+from ovos_plugin_common_play.ocp.playlists import Playlist
+from ovos_plugin_common_play.ocp.settings import OCPSettings
+from ovos_plugin_common_play.ocp.status import *
 from ovos_utils.gui import is_gui_connected, is_gui_running
 from ovos_utils.log import LOG
 from ovos_utils.messagebus import Message
-from ovos_workshop.ocp.mycroft_cps import \
-    MycroftCommonPlayInterface
-from ovos_workshop.ocp.playlists import Playlist
-from ovos_workshop.ocp.settings import OCPSettings
-from ovos_workshop.ocp.status import *
-from ovos_workshop.ocp.base import OCPAbstractComponent
 
 
 class OCPSearch(OCPAbstractComponent):
-    def __init__(self, player):
+    def __init__(self, player=None):
         super(OCPSearch, self).__init__(player)
         self.search_playlist = Playlist()
         self.active_skills = []
@@ -21,37 +21,27 @@ class OCPSearch(OCPAbstractComponent):
         self.query_timeouts = {}
         self.searching = False
         self.search_start = 0
-        self.old_cps = MycroftCommonPlayInterface(self.bus) if \
-            self.settings.backwards_compatibility else None
-        self.register_bus_handlers()
+        self.old_cps = None
+        if player:
+            self.bind(player)
 
-    def register_bus_handlers(self):
-        self.bus.on("ovos.common_play.skill.search_start",
-                    self.handle_skill_search_start)
-        self.bus.on("ovos.common_play.skill.search_end",
-                    self.handle_skill_search_end)
-        self.bus.on("ovos.common_play.query.response",
-                    self.handle_skill_response)
+    def bind(self, player):
+        self._player = player
+        self.old_cps = MycroftCommonPlayInterface() if \
+            self.settings.backwards_compatibility else None
+        if self.old_cps:
+            self.old_cps.bind(player)
+        self.add_event("ovos.common_play.skill.search_start",
+                       self.handle_skill_search_start)
+        self.add_event("ovos.common_play.skill.search_end",
+                       self.handle_skill_search_end)
+        self.add_event("ovos.common_play.query.response",
+                       self.handle_skill_response)
 
     def shutdown(self):
-        self.bus.remove("ovos.common_play.skill.search_start",
-                        self.handle_skill_search_start)
-        self.bus.remove("ovos.common_play.skill.search_end",
-                        self.handle_skill_search_end)
-        self.bus.remove("ovos.common_play.query.response",
-                        self.handle_skill_response)
-
-    @property
-    def settings(self):
-        return self._player.settings
-
-    @property
-    def gui(self):
-        return self._player.gui
-
-    @property
-    def bus(self):
-        return self._player.bus
+        self.remove_event("ovos.common_play.skill.search_start")
+        self.remove_event("ovos.common_play.skill.search_end")
+        self.remove_event("ovos.common_play.query.response")
 
     def handle_skill_search_start(self, message):
         skill_id = message.data["skill_id"]

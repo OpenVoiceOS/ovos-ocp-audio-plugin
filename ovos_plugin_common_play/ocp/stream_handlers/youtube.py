@@ -45,14 +45,16 @@ def get_youtube_audio_stream(url):
 
     meta["uri"] = uri
     # try to extract_streams artist from title
-    delims= ["-", ":", "|"]
+    delims = ["-", ":", "|"]
     for d in delims:
         if d in meta["title"]:
             removes = ["(Official Video)", "(Official Music Video)",
-                       "(Lyrics)", "(Official)", "(Album Stream)", "(Legendado)"]
+                       "(Lyrics)", "(Official)", "(Album Stream)",
+                       "(Legendado)"]
             removes += [s.replace("(", "").replace(")", "") for s in removes] + \
                        [s.replace("[", "").replace("]", "") for s in removes]
-            removes += [s.upper() for s in removes] + [s.lower() for s in removes]
+            removes += [s.upper() for s in removes] + [s.lower() for s in
+                                                       removes]
             removes += ["(HQ)", "()", "[]", "- HQ -"]
             for k in removes:
                 meta["title"] = meta["title"].replace(k, "")
@@ -76,8 +78,8 @@ def get_youtube_video_stream(url):
 
     meta = {
         "url": url,
-        #"audio_stream": stream.getbestaudio().url,
-        #"stream": stream.getbest().url,
+        # "audio_stream": stream.getbestaudio().url,
+        # "stream": stream.getbest().url,
         "title": stream.title,
         "author": stream.author,
         "image": stream.getbestthumb().split("?")[0],
@@ -116,8 +118,8 @@ def get_youtube_metadata(url):
     stream = pafy.new(url)
     return {
         "url": url,
-        #"audio_stream": stream.getbestaudio().url,
-        #"stream": stream.getbest().url,
+        # "audio_stream": stream.getbestaudio().url,
+        # "stream": stream.getbest().url,
         "title": stream.title,
         "author": stream.author,
         "image": stream.getbestthumb().split("?")[0],
@@ -153,7 +155,8 @@ def get_title_from_url(url):
 
 
 if __name__ == "__main__":
-    print(get_youtube_live_from_channel("https://www.youtube.com/channel/UCQfwfsi5VrQ8yKZ-UWmAEFg"))
+    print(get_youtube_live_from_channel(
+        "https://www.youtube.com/channel/UCQfwfsi5VrQ8yKZ-UWmAEFg"))
     print(get_youtube_live_from_channel(
         "https://www.youtube.com/channel/UCknLrEdhRCp1aegoMqRaCZg"))
     print(get_youtube_live_from_channel(

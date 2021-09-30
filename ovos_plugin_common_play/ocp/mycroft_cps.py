@@ -1,20 +1,27 @@
 import random
 import time
 
-from ovos_utils.messagebus import Message, wait_for_reply, get_mycroft_bus
-from ovos_workshop.ocp.status import *
+from ovos_plugin_common_play.ocp.base import OCPAbstractComponent
+from ovos_plugin_common_play.ocp.status import *
+from ovos_utils.messagebus import Message, wait_for_reply
 
 
-class MycroftCommonPlayInterface:
+class MycroftCommonPlayInterface(OCPAbstractComponent):
     """ interface for mycroft common play """
 
-    def __init__(self, bus=None):
-        self.bus = bus or get_mycroft_bus()
-        self.bus.on("play:query.response", self.handle_cps_response)
+    def __init__(self, player=None):
+        super().__init__(player)
         self.query_replies = {}
         self.query_extensions = {}
         self.waiting = False
         self.start_ts = 0
+        if player:
+            self.bind(player)
+
+    def bind(self, player):
+        self._player = player
+        self.add_event("play:query.response",
+                       self.handle_cps_response)
 
     @property
     def cps_status(self):

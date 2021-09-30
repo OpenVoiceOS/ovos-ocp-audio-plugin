@@ -17,8 +17,8 @@ class TrackState(IntEnum):
 
     PLAYING_SKILL = 20  # Skill is handling playback internally
     PLAYING_AUDIOSERVICE = 21  # Skill forwarded playback to audio service
-    PLAYING_VIDEO = 22  # Skill forwarded playback to gui player
-    PLAYING_AUDIO = 23  # Skill forwarded audio playback to gui player
+    PLAYING_VIDEO = 22  # Skill forwarded playback to gui _player
+    PLAYING_AUDIO = 23  # Skill forwarded audio playback to gui _player
     QUEUED_SKILL = 30  # Waiting playback to be handled inside skill
     QUEUED_AUDIOSERVICE = 31  # Waiting playback in audio service
     QUEUED_VIDEO = 32  # Waiting playback in gui
@@ -31,7 +31,7 @@ class MediaState(IntEnum):
     UNKNOWN = 0
     # There is no current media. PlayerState == STOPPED
     NO_MEDIA = 1
-    # The current media is being loaded. The player may be in any state.
+    # The current media is being loaded. The _player may be in any state.
     LOADING_MEDIA = 2
     # The current media has been loaded. PlayerState == STOPPED
     LOADED_MEDIA = 3
@@ -39,11 +39,11 @@ class MediaState(IntEnum):
     # insufficient buffering or some other temporary interruption.
     # PlayerState != STOPPED
     STALLED_MEDIA = 4
-    # The player is buffering data but has enough data buffered
+    # The _player is buffering data but has enough data buffered
     # for playback to continue for the immediate future.
     # PlayerState != STOPPED
     BUFFERING_MEDIA = 5
-    # The player has fully buffered the current media. PlayerState != STOPPED
+    # The _player has fully buffered the current media. PlayerState != STOPPED
     BUFFERED_MEDIA = 6
     # Playback has reached the end of the current media. PlayerState == STOPPED
     END_OF_MEDIA = 7
@@ -70,15 +70,15 @@ class PlaybackType(IntEnum):
 
 class PlaybackMode(IntEnum):
     AUTO = 0  # play each entry as considered appropriate,
-               # ie, make it happen the best way possible
+    # ie, make it happen the best way possible
     AUDIO_ONLY = 10  # only consider audio entries
     VIDEO_ONLY = 20  # only consider video entries
     FORCE_AUDIO = 30  # cast video to audio unconditionally
-                      # (audio can still play in mycroft-gui)
+    # (audio can still play in mycroft-gui)
     FORCE_AUDIOSERVICE = 40  # cast everything to audio service backend,
-                            # mycroft-gui will not be used
+    # mycroft-gui will not be used
     EVENTS_ONLY = 50  # only emit ocp events, do not display or play anything.
-                      # allows integration with external interfaces
+    # allows integration with external interfaces
 
 
 class MediaType(IntEnum):

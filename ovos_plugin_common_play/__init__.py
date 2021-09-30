@@ -1,16 +1,18 @@
 from os.path import basename
 
 from mycroft_bus_client import Message
-from ovos_plugin_manager.templates.audio import AudioBackend
-from ovos_utils.log import LOG
+from ovos_plugin_common_play.ocp import OCP, OCPSettings
 from ovos_plugin_common_play.ocp.status import *
 from ovos_plugin_common_play.ocp.utils import extract_metadata
+from ovos_plugin_manager.templates.audio import AudioBackend
+from ovos_utils.log import LOG
 
 
 class OCPAudioBackend(AudioBackend):
     """ This plugin makes regular mycroft skills that use the audio service
     go trough the OVOS common play framework, this plugin simply delegates
-    the task by emitting bus messages expected by Ovos Common Play API"""
+    the task by emitting bus messages expected by Ovos Common Play API. If
+    configured it will also launch OCP itself """
 
     def __init__(self, config, bus=None, name='ovos.common_play'):
         super(OCPAudioBackend, self).__init__(config=config,
@@ -18,8 +20,45 @@ class OCPAudioBackend(AudioBackend):
         self.name = name
         self.tracks = []
         self._track_info = {}
-        self.bus.on("gui.player.media.service.set.meta",
+        self.bus.on("gui._player.media.service.set.meta",
                     self.handle_receive_meta)
+        self.create_ocp(config)
+
+    def create_ocp(self, config):
+        mode = config.get("mode", "auto")
+
+        config["force_audioservice"] = False
+        config["backwards_compatibility"] = True
+        config["media_fallback"] = True
+        config["auto_play"] = True
+        config["max_timeout"] = 15
+        config["min_timeout"] = 8
+        config["min_score"] = 30
+
+        ocp_settings = OCPSettings()
+        ocp_settings.update(config)
+
+        if mode == "external":
+            # flag for external OCP, eg, system service daemon
+            # send only bus messages and dont create ocp object
+            self.ocp = None
+        elif mode == "auto":
+            # if OCP is already running connect to it, else launch it
+            if not self.bus.wait_for_response(Message("ovos.common_play.ping"),
+                                              "ovos.common_play.pong"):
+                try:
+                    self.ocp = OCP(bus=self.bus, settings=ocp_settings)
+                except Exception as e:
+                    # otherwise stack trace is swallowed by plugin loader
+                    LOG.exception(e)
+                    raise
+        else:
+            try:
+                self.ocp = OCP(bus=self.bus, settings=ocp_settings)
+            except Exception as e:
+                # otherwise stack trace is swallowed by plugin loader
+                LOG.exception(e)
+                raise
 
     def handle_receive_meta(self, message):
         self._track_info = message.data
@@ -48,15 +87,13 @@ class OCPAudioBackend(AudioBackend):
                         "album": "",
                         "image": "",
                         "playback": PlaybackType.AUDIO,  # TODO mime type check
-                        "status": TrackState.DISAMBIGUATION
+                        "status": TrackState.QUEUED_AUDIO
                         }
             meta["skill_id"] = "ovos.common_play.plugin"
             self.tracks.append(meta)
 
         self.bus.emit(Message('ovos.common_play.playlist.queue',
                               {"tracks": self.tracks}))
-        self.bus.emit(Message('ovos.common_play.media.state',
-                              {'state': MediaState.LOADING_MEDIA}))
 
     def play(self, repeat=False):
         """ Play media playback. """
@@ -104,8 +141,10 @@ class OCPAudioBackend(AudioBackend):
         return self._track_info
 
     def shutdown(self):
-        self.bus.remove("gui.player.media.service.set.meta",
+        self.bus.remove("gui._player.media.service.set.meta",
                         self.handle_receive_meta)
+        if self.ocp is not None:
+            self.ocp.shutdown()
 
 
 def load_service(base_config, bus):
