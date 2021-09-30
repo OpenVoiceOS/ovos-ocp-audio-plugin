@@ -6,14 +6,19 @@ PLUGIN_ENTRY_POINT = 'ovos_common_play=ovos_plugin_common_play'
 
 setup(
     name='ovos_plugin_common_play',
-    version='0.0.1a1',
+    version='0.0.1a2',
     description='OVOS common play audio service adapter plugin',
     url='https://github.com/OpenVoiceOS/ovos-common-play-plugin',
     author='JarbasAi',
     author_email='jarbasai@mailfence.com',
     license='Apache-2.0',
     packages=['ovos_plugin_common_play'],
-    install_requires=["ovos-plugin-manager>=0.0.1a3"],
+    install_requires=["ovos-plugin-manager>=0.0.1a3",
+                      "audio-metadata",
+                      "ovos_plugin_vlc>=0.0.1a3",
+                      "padacioso",
+                      "youtube-dl",
+                      "ovos_workshop>=0.0.5a1"],
     zip_safe=True,
     classifiers=[
         'Development Status :: 3 - Alpha',
