@@ -50,10 +50,10 @@ class OCPSettings(PrivateSettings):
         return self.get("allow_extensions", True)
 
     @property
-    def media_fallback(self):
-        """ media_fallback (bool): if no results, perform a second query
+    def search_fallback(self):
+        """ search_fallback (bool): if no results, perform a second query
                                    with MediaType.GENERIC"""
-        return self.get("media_fallback", True)
+        return self.get("search_fallback", True)
 
     @property
     def force_audioservice(self):

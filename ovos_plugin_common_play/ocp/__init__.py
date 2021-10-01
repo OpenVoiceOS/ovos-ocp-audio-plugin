@@ -1,4 +1,3 @@
-import random
 from os.path import join, dirname, isfile
 
 from adapt.intent import IntentBuilder
@@ -104,10 +103,19 @@ class OCP(OVOSAbstractApplication):
 
     def replace_mycroft_cps(self, message=None):
         mycroft_cps_ids = [
+            # disable mycroft cps, ocp replaces it and intents conflict
             "skill-playback-control.mycroftai",  # the convention
-            "mycroft-playback-control.mycroftai",  # msm install (mycroft
-            # skills override the repo name ???? )
-            "skill-playback-control"  # simple git clone
+            "mycroft-playback-control.mycroftai",  # msm install
+            # (mycroft skills override the repo name ???? )
+            "mycroft-playback-control",
+            "skill-playback-control",  # simple git clone
+
+            # when ocp was a skill it lived in several places
+            "skill-better-playback-control",
+            "skill-better-playback-control.jarbasskills",
+            "skill-better-playback-control.openvoiceos",
+            "skill-ovos-common-play",
+            "skill-ovos-common-play.openvoiceos",
         ]
 
         # disable any loaded mycroft cps skill
@@ -213,7 +221,7 @@ class OCP(OVOSAbstractApplication):
                               data={"phrase": phrase,
                                     "media_type": media_type})
         else:
-            best = self._select_best(results)
+            best = self.player.media.select_best(results)
             self.player.play_media(best, results)
             self.enclosure.mouth_reset()  # TODO display music icon in mk1
             self.set_context("Playing")
@@ -277,39 +285,6 @@ class OCP(OVOSAbstractApplication):
             results = [r for r in results
                        if r["playback"] == PlaybackType.AUDIO]
         return results
-
-    def _select_best(self, results):
-        # Look at any replies that arrived before the timeout
-        # Find response(s) with the highest confidence
-        best = None
-        ties = []
-        for handler in results:
-            if not best or handler['match_confidence'] > best[
-                'match_confidence']:
-                best = handler
-                ties = [best]
-            elif handler['match_confidence'] == best['match_confidence']:
-                ties.append(handler)
-
-        if ties:
-            # select randomly
-            selected = random.choice(ties)
-
-            if self.settings.video_only:
-                # select only from VIDEO results if preference is set
-                # WARNING this can effectively make it so that the same
-                # skill is always selected
-                gui_results = [r for r in ties if r["playback"] ==
-                               PlaybackType.VIDEO]
-                if len(gui_results):
-                    selected = random.choice(gui_results)
-
-            # TODO: Ask user to pick between ties or do it automagically
-        else:
-            selected = best
-        LOG.debug(
-            f"OVOSCommonPlay selected: {selected['skill_id']} - {selected['match_confidence']}")
-        return selected
 
     def _should_resume(self, phrase):
         if self.player.state == PlayerState.PAUSED:

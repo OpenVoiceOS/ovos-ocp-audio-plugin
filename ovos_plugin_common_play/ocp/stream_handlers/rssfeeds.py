@@ -1,8 +1,6 @@
-import feedparser
-
-
 def get_rss_first_stream(feed_url):
     try:
+        import feedparser
         # extract_streams RSS or XML feed
         data = feedparser.parse(feed_url.strip())
         # After the intro, find and start the news uri

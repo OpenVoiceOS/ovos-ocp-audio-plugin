@@ -1,5 +1,6 @@
 import tempfile
 from os.path import basename
+
 try:
     import audio_metadata
 except ImportError:  # common conflicts with attrs version.... replace ASAP
@@ -42,4 +43,3 @@ def extract_metadata(uri):
         except:
             pass
     return meta
-

@@ -2,7 +2,8 @@ from ovos_plugin_common_play.ocp.status import *
 from ovos_plugin_common_play.ocp.stream_handlers import is_youtube, \
     get_youtube_audio_stream, get_youtube_video_stream, \
     get_deezer_audio_stream, get_rss_first_stream, \
-    get_youtube_live_from_channel, find_mime, get_soundcloud_audio_stream
+    get_youtube_live_from_channel, find_mime, get_soundcloud_audio_stream, \
+    get_bandcamp_audio_stream
 from ovos_utils.json_helper import merge_dict
 from ovos_utils.log import LOG
 
@@ -89,6 +90,12 @@ class MediaEntry:
             meta = get_rss_first_stream(uri)
             if not meta:
                 LOG.error("RSS feed stream extraction failed!!!")
+
+        if uri.startswith("bandcamp//"):
+            uri = uri.replace("bandcamp//", "")
+            meta = get_bandcamp_audio_stream(uri)
+            if not meta:
+                LOG.error("bandcamp stream extraction failed!!!")
 
         if uri.startswith("soundcloud//"):
             uri = uri.replace("soundcloud//", "")

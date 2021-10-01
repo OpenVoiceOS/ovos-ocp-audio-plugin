@@ -7,6 +7,7 @@ from ovos_plugin_common_play.ocp.mycroft_cps import \
 from ovos_plugin_common_play.ocp.playlists import Playlist
 from ovos_plugin_common_play.ocp.settings import OCPSettings
 from ovos_plugin_common_play.ocp.status import *
+from ovos_plugin_common_play.ocp.stream_handlers import available_extractors
 from ovos_utils.gui import is_gui_connected, is_gui_running
 from ovos_utils.log import LOG
 from ovos_utils.messagebus import Message
@@ -60,7 +61,7 @@ class OCPSearch(OCPAbstractComponent):
             if timeout and self.settings.allow_extensions and \
                     search_phrase in self.query_timeouts:
                 self.query_timeouts[search_phrase] += timeout
-            # else -> expired media
+            # else -> expired search
 
         elif search_phrase in self.query_replies:
             # Collect replies until the timeout
@@ -72,7 +73,17 @@ class OCPSearch(OCPAbstractComponent):
                     "enough!")
 
             has_gui = is_gui_running() or is_gui_connected(self.bus)
-            for idx, res in enumerate(message.data.get("results", [])):
+            results = message.data.get("results", [])
+            for idx, res in enumerate(results):
+                # filter uris we can play, usually files and http streams, but some
+                # skills might return results that depend on additional packages,
+                # eg. soundcloud, rss, youtube, deezer....
+                if not any(res["uri"].startswith(e) for e in
+                           available_extractors()):
+                    results[idx] = None  # can't play this search result!
+                    LOG.error(f"stream handler not available for {res}")
+                    continue
+
                 # filter video results if GUI not connected
                 if not has_gui:
                     # force allowed stream types to be played audio only
@@ -82,17 +93,19 @@ class OCPSearch(OCPAbstractComponent):
                             "unable to use GUI, forcing result to play audio only")
                         res["playback"] = PlaybackType.AUDIO
                         res["match_confidence"] -= 10
-                        message.data["results"][idx] = res
+                        results[idx] = res
 
                 if res not in self.search_playlist:
                     self.search_playlist.add_entry(res)
-                    # update media UI
+                    # update search UI
                     if self.searching and res["match_confidence"] >= 30:
                         self.gui["footer_text"] = \
                             f"skill - {skill_id}\n" \
                             f"match - {res['title']}\n" \
                             f"confidence - {res['match_confidence']} "
 
+            # remove filtered results
+            message.data["results"] = [r for r in results if r is not None]
             self.query_replies[search_phrase].append(message.data)
 
             # abort searching if we gathered enough results
@@ -107,29 +120,30 @@ class OCPSearch(OCPAbstractComponent):
                                               "selecting best result\n" \
                                               " "
 
-        elif self.searching:
-            for res in message.data.get("results", []):
-                if res.get("match_confidence",
-                           0) >= self.settings.early_stop_thresh:
-                    # got a really good match, dont media further
-                    LOG.info("Receiving very high confidence match, stopping "
-                             "media early")
-                    self.gui["footer_text"] = \
-                        f"High confidence match!\n " \
-                        f"skill - {skill_id}\n" \
-                        f"match - {res['title']}\n" \
-                        f"confidence - {res['match_confidence']} "
-                    # allow other skills to "just miss"
-                    if self.settings.early_stop_grace_period:
-                        LOG.debug(
-                            f"  - grace period: {self.settings.early_stop_grace_period} seconds")
-                        time.sleep(self.settings.early_stop_grace_period)
-                    self.searching = False
-                    return
+            elif self.searching:
+                for res in message.data.get("results", []):
+                    if res.get("match_confidence",
+                               0) >= self.settings.early_stop_thresh:
+                        # got a really good match, dont search further
+                        LOG.info(
+                            "Receiving very high confidence match, stopping "
+                            "search early")
+                        self.gui["footer_text"] = \
+                            f"High confidence match!\n " \
+                            f"skill - {skill_id}\n" \
+                            f"match - {res['title']}\n" \
+                            f"confidence - {res['match_confidence']} "
+                        # allow other skills to "just miss"
+                        if self.settings.early_stop_grace_period:
+                            LOG.debug(
+                                f"  - grace period: {self.settings.early_stop_grace_period} seconds")
+                            time.sleep(self.settings.early_stop_grace_period)
+                        self.searching = False
+                        return
 
     def handle_skill_search_end(self, message):
         skill_id = message.data["skill_id"]
-        LOG.debug(f"{message.data['skill_id']} finished media")
+        LOG.debug(f"{message.data['skill_id']} finished search")
         if skill_id in self.active_skills:
             self.active_skills.remove(skill_id)
 
@@ -137,14 +151,13 @@ class OCPSearch(OCPAbstractComponent):
         time.sleep(0.5)
         # TODO this sleep is hacky, but avoids a race condition in
         # case some skill just decides to respond before the others even
-        # acknowledge media is starting, this gives more than enough time
+        # acknowledge search is starting, this gives more than enough time
         # for self.active_seaching to be populated, a better approach should
         # be employed but this works fine for now
         if not self.active_skills and self.searching:
-            LOG.info("Received media responses from all skills!")
-            self.gui[
-                "footer_text"] = "Received media responses from all skills!\n" \
-                                 "selecting best result"
+            LOG.info("Received search responses from all skills!")
+            self.gui["footer_text"] = "Received search responses from all " \
+                                      "skills!\nselecting best result"
             self.searching = False
         self.gui.update_search_results()
 
@@ -166,7 +179,7 @@ class OCPSearch(OCPAbstractComponent):
             self.old_cps.send_query(phrase, media_type)
 
         # if there is no match type defined, lets increase timeout a bit
-        # since all skills need to media
+        # since all skills need to search
         if media_type == MediaType.GENERIC:
             bonus = 3  # timeout bonus
         else:
@@ -189,8 +202,8 @@ class OCPSearch(OCPAbstractComponent):
         if self.query_replies.get(phrase):
             return [s for s in self.query_replies[phrase] if s.get("results")]
 
-        # fallback to generic media type
-        if self.settings.media_fallback and media_type != MediaType.GENERIC:
+        # fallback to generic search type
+        if self.settings.search_fallback and media_type != MediaType.GENERIC:
             # TODO dont query skills that found results for non-generic
             #  query again
             LOG.debug(
@@ -211,13 +224,13 @@ class OCPSearch(OCPAbstractComponent):
         # Find response(s) with the highest confidence
         best = None
         ties = []
-        for handler in results:
-            if not best or handler['match_confidence'] > best[
-                'match_confidence']:
-                best = handler
+
+        for res in results:
+            if not best or res['match_confidence'] > best['match_confidence']:
+                best = res
                 ties = [best]
-            elif handler['match_confidence'] == best['match_confidence']:
-                ties.append(handler)
+            elif res['match_confidence'] == best['match_confidence']:
+                ties.append(res)
 
         if ties:
             # select randomly

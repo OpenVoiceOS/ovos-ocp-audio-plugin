@@ -1,11 +1,6 @@
 import requests
 from ovos_utils.log import LOG
 
-try:
-    import pafy
-except ImportError:
-    pafy = None
-
 
 def get_youtube_live_from_channel(url):
     try:
@@ -19,6 +14,10 @@ def get_youtube_live_from_channel(url):
 
 
 def get_youtube_audio_stream(url):
+    try:
+        import pafy
+    except ImportError:
+        pafy = None
     if pafy is None:
         LOG.error("can not extract audio stream, pafy is not available")
         LOG.info("pip install youtube-dl")
@@ -68,6 +67,10 @@ def get_youtube_audio_stream(url):
 
 
 def get_youtube_video_stream(url):
+    try:
+        import pafy
+    except ImportError:
+        pafy = None
     if pafy is None:
         LOG.error("can not extract stream, pafy is not available")
         LOG.info("pip install youtube-dl")
@@ -110,6 +113,10 @@ def is_youtube(url):
 
 
 def get_youtube_metadata(url):
+    try:
+        import pafy
+    except ImportError:
+        pafy = None
     if pafy is None:
         LOG.error("can not extract audio stream, pafy is not available")
         LOG.info("pip install youtube-dl")

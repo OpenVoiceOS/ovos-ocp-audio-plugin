@@ -29,7 +29,7 @@ class OCPAudioBackend(AudioBackend):
 
         config["force_audioservice"] = False
         config["backwards_compatibility"] = True
-        config["media_fallback"] = True
+        config["search_fallback"] = True
         config["auto_play"] = True
         config["max_timeout"] = 15
         config["min_timeout"] = 8

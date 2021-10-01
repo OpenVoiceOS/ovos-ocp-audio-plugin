@@ -488,7 +488,6 @@ class OCPMediaPlayer(OVOSAbstractApplication):
 
     def handle_playlist_queue_request(self, message):
         for track in message.data["tracks"]:
-            print(track)
             self.playlist.add_entry(track)
 
     def handle_playlist_clear_request(self, message):

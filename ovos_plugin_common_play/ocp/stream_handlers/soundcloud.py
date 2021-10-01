@@ -1,7 +1,5 @@
-import youtube_dl
-
-
 def get_soundcloud_audio_stream(url, prefered_ext=None):
+    import youtube_dl
     ydl_opts = {"quiet": True, "verbose": False}
     kmaps = {"duration": "duration",
              "thumbnail": "image",
