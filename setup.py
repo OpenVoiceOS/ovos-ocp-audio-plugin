@@ -14,11 +14,10 @@ setup(
     license='Apache-2.0',
     packages=['ovos_plugin_common_play'],
     install_requires=["ovos-plugin-manager>=0.0.1a3",
-                      "audio-metadata",
                       "ovos_plugin_vlc>=0.0.1a3",
                       "padacioso",
                       "youtube-dl",
-                      "ovos_workshop>=0.0.5a1"],
+                      "ovos_workshop>=0.0.5a2"],
     zip_safe=True,
     classifiers=[
         'Development Status :: 3 - Alpha',
