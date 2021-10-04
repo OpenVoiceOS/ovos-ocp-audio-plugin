@@ -19,6 +19,8 @@ class TrackState(IntEnum):
     PLAYING_AUDIOSERVICE = 21  # Skill forwarded playback to audio service
     PLAYING_VIDEO = 22  # Skill forwarded playback to gui player
     PLAYING_AUDIO = 23  # Skill forwarded audio playback to gui player
+    PLAYING_MPRIS = 24  # External media player is handling playback
+
     QUEUED_SKILL = 30  # Waiting playback to be handled inside skill
     QUEUED_AUDIOSERVICE = 31  # Waiting playback in audio service
     QUEUED_VIDEO = 32  # Waiting playback in gui
@@ -64,6 +66,7 @@ class PlaybackType(IntEnum):
     VIDEO = 1  # Video results
     AUDIO = 2  # Results should be played audio only
     AUDIO_SERVICE = 3  # Results should be played without using the GUI
+    MPRIS = 4  # External MPRIS compliant player
     UNDEFINED = 100  # data not available,
     # hopefully status will be updated soon..
 

@@ -2,3 +2,4 @@ ovos-plugin-manager>=0.0.1a3
 padacioso
 ovos_workshop>=0.0.5a1
 ovos_plugin_vlc>=0.0.1a3
+dbus-next

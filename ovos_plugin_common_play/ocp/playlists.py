@@ -6,6 +6,7 @@ from ovos_plugin_common_play.ocp.stream_handlers import is_youtube, \
     get_bandcamp_audio_stream
 from ovos_utils.json_helper import merge_dict
 from ovos_utils.log import LOG
+from ovos_utils.messagebus import Message
 
 
 # TODO subclass from dict (?)
@@ -217,3 +218,80 @@ class Playlist(list):
     def prev_track(self):
         self.position -= 1
         self.position = max(0, self.position)
+
+
+class NowPlaying(MediaEntry):
+    @property
+    def bus(self):
+        return self._player.bus
+
+    def bind(self, player):
+        # needs to start with _ to avoid json serialization errors
+        self._player = player
+        self._player.add_event("ovos.common_play.track.state",
+                               self.handle_track_state_change)
+        self._player.add_event("ovos.common_play.playback_time",
+                               self.handle_sync_seekbar)
+        self._player.add_event('gui.player.media.service.get.meta',
+                               self.handle_player_metadata_request)
+        self._player.add_event('mycroft.audio.service.track_info_reply',
+                               self.handle_sync_trackinfo)
+
+    def shutdown(self):
+        self._player.remove_event("ovos.common_play.track.state")
+        self._player.remove_event("ovos.common_play.playback_time")
+        self._player.remove_event('gui.player.media.service.get.meta')
+        self._player.remove_event('mycroft.audio.service.track_info_reply')
+
+    def update(self, entry, skipkeys=None):
+        super(NowPlaying, self).update(entry, skipkeys)
+        # sync with gui media player on track change
+        self.bus.emit(Message("gui.player.media.service.set.meta",
+                              {"title": self.title,
+                               "image": self.image,
+                               "artist": self.artist}))
+
+    # events from gui_player/audio_service
+    def handle_player_metadata_request(self, message):
+        self.bus.emit(message.reply("gui.player.media.service.set.meta",
+                                    {"title": self.title,
+                                     "image": self.image,
+                                     "artist": self.artist}))
+
+    def handle_track_state_change(self, message):
+        status = message.data["state"]
+        self.status = status
+        for k in TrackState:
+            if k == status:
+                LOG.info(f"TrackState changed: {repr(k)}")
+
+        if status == TrackState.PLAYING_SKILL:
+            # skill is handling playback internally
+            pass
+        elif status == TrackState.PLAYING_AUDIOSERVICE:
+            # audio service is handling playback
+            pass
+        elif status == TrackState.PLAYING_VIDEO:
+            # ovos common play is handling playback in GUI
+            pass
+        elif status == TrackState.PLAYING_AUDIO:
+            # ovos common play is handling playback in GUI
+            pass
+
+        elif status == TrackState.DISAMBIGUATION:
+            # alternative results # TODO its this 1 track or a list ?
+            pass
+        elif status in [TrackState.QUEUED_SKILL,
+                        TrackState.QUEUED_VIDEO,
+                        TrackState.QUEUED_AUDIOSERVICE]:
+            # audio service is handling playback and this is in playlist
+            pass
+
+    def handle_sync_seekbar(self, message):
+        """ event sent by ovos audio backend plugins """
+        self.length = message.data["length"]
+        self.position = message.data["position"]
+
+    def handle_sync_trackinfo(self, message):
+        self.update(message.data)
+

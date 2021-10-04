@@ -94,14 +94,30 @@ class OCPMediaPlayerGUI(GUIInterface):
         elif self.player.active_backend == PlaybackType.AUDIO:
             page = self.audio_player_page
             to_remove += [self.video_player_page, self.audio_service_page]
-        else:  # skill / undefined
+        else:  # skill / mpris / undefined
             # TODO ?
             page = self.audio_service_page
             to_remove += [self.video_player_page, self.audio_player_page]
 
+        if self.player.active_backend in [PlaybackType.MPRIS]:
+            # external player, no search or playlists
+            pages = [page]
+            to_remove += [self.search_page, self.playlist_page]
+        else:
+            pages = [page]
+            if len(self.player.disambiguation):
+                pages.append(self.search_page)
+            else:
+                to_remove.append(self.search_page)
+
+            if len(self.player.tracks):
+                pages.append(self.playlist_page)
+            else:
+                to_remove.append(self.playlist_page)
+
         self.remove_pages([p for p in to_remove if p in self.pages])
-        self.show_pages([page, self.search_page, self.playlist_page],
-                        index=0, override_idle=True, override_animations=True)
+        self.show_pages(pages, index=0, override_idle=True,
+                        override_animations=True)
 
     # gui <-> playlists
     def handle_play_from_playlist(self, message):
