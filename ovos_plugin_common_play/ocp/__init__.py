@@ -206,9 +206,7 @@ class OCP(OVOSAbstractApplication):
                 return
 
         self.player.reset()
-
-        self.speak_dialog("just.one.moment")
-
+        #self.speak_dialog("just.one.moment")
         self.enclosure.mouth_think()
 
         # classify the query media type
