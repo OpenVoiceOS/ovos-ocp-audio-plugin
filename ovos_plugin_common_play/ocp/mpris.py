@@ -27,6 +27,7 @@ class MprisPlayerCtl(Thread):
         self.main_player = None
         self.players = {}
         self.player_meta = {}
+        self._player_fails = {}
 
         self._ocp_player = None
 
@@ -67,6 +68,12 @@ class MprisPlayerCtl(Thread):
 
     async def handle_new_player(self, data):
         LOG.info(f"Found MPRIS Player: {data['name']}")
+
+    async def handle_lost_player(self, name):
+        LOG.info(f"Lost MPRIS Player: {name}")
+        self._player_fails.pop(name)
+        self.player_meta.pop(name)
+        self.players.pop(name)
 
     async def handle_player_status(self, data):
         # LOG.debug(f'Player Info: {data}')
@@ -290,8 +297,14 @@ class MprisPlayerCtl(Thread):
             except AttributeError:
                 pass  # not all players expose this
             await self.update_player_meta(name, meta)
-        except Exception as e:  # chromium
-            LOG.error(f"failed to query player {name}")
+            self._player_fails[name] = 0
+        except Exception as e:  # chromium / player closed
+            if name not in self._player_fails:
+                self._player_fails[name] = 0
+            self._player_fails[name] += 1
+            if self._player_fails[name] > 3:
+                LOG.debug(f"failed to query player {name}")
+                await self.handle_lost_player(name)
 
     async def event_loop(self):
         self.shutdown_event.clear()
@@ -330,7 +343,7 @@ class MprisPlayerCtl(Thread):
             # sync player meta, not all players send all events properly...
             # eg, firefox videos do not send events if they autoplay, only if
             # you click the play button
-            for player in self.players:
+            for player in list(self.players.keys()):
                 await self.query_player(player)
             sleep(1)  # TODO configurable time between checks
 
