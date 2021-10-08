@@ -33,7 +33,7 @@ class OCPMediaPlayerGUI(GUIInterface):
 
     @property
     def audio_service_page(self):
-        return join(self.player.res_dir, "ui", "AudioPlayer.qml")
+        return join(self.player.res_dir, "ui", "OVOSSyncPlayer.qml")
 
     @property
     def video_player_page(self):
