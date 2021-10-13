@@ -25,6 +25,15 @@ Mycroft.Delegate {
     property var thumbnail: sessionData.image
     property var title: sessionData.title
     property var author: sessionData.artist
+
+    property var loopStatus: sessionData.loopStatus
+    property var canResume: sessionData.canResume
+    property var canNext: sessionData.canNext
+    property var canPrev: sessionData.canPrev
+    property var canRepeat: sessionData.canRepeat
+    property var canShuffle: sessionData.canShuffle
+    property var shuffleStatus: sessionData.shuffleStatus
+
     property var playerMeta
     property var cpsMeta
 
@@ -32,8 +41,6 @@ Mycroft.Delegate {
     property bool horizontalMode: width > height ? 1 : 0
 
     //Player Button Control Actions
-    property var nextAction: "ovos.common_play.next"
-    property var previousAction: "ovos.common_play.previous"
     property var currentState: audioService.playbackState
 
     //Mediaplayer Related Properties To Be Set By Probe MediaPlayer
@@ -144,14 +151,13 @@ Mycroft.Delegate {
         }
 
         onMediaStatusChanged: {
+            triggerGuiEvent("media.state", {"state": status})
             if (status == MediaPlayer.EndOfMedia) {
                 pause()
             }
         }
 
         onMetaUpdated: {
-            console.log("Got Meta Update Signal Here")
-
             root.playerMeta = audioService.getPlayerMeta()
 
             if(root.playerMeta.hasOwnProperty("Title")) {
@@ -163,7 +169,6 @@ Mycroft.Delegate {
             } else if(root.playerMeta.hasOwnProperty("ContributingArtist")) {
                 root.author = root.playerMeta.ContributingArtist
             }
-
             console.log("From QML Meta Updated Loading Metainfo")
             console.log("Author: " + root.author + " Title: " + root.title)
         }
@@ -458,9 +463,8 @@ Mycroft.Delegate {
                     contentItem: Kirigami.Icon {
                         anchors.fill: parent
                         anchors.margins: Mycroft.Units.gridUnit
-
-                        source: Qt.resolvedUrl("images/media-playlist-repeat.svg")
-                        color: "white"
+                        source: root.loopStatus === "RepeatTrack" ? Qt.resolvedUrl("images/media-playlist-repeat-track.svg") : Qt.resolvedUrl("images/media-playlist-repeat.svg")
+                        color: root.loopStatus === "None" ? "grey" : "white"
                     }
 
                     background: Rectangle {
@@ -485,7 +489,7 @@ Mycroft.Delegate {
                         anchors.margins: Mycroft.Units.gridUnit
 
                         source: Qt.resolvedUrl("images/media-skip-backward.svg")
-                        color: "white"
+                        color: root.canPrev === true ? "white" : "grey"
                     }
 
                     background: Rectangle {
@@ -509,7 +513,7 @@ Mycroft.Delegate {
                         anchors.fill: parent
                         anchors.margins: Mycroft.Units.gridUnit
                         source: root.currentState === MediaPlayer.PlayingState ? Qt.resolvedUrl("images/media-playback-pause.svg") : Qt.resolvedUrl("images/media-playback-start.svg")
-                        color: "white"
+                        color: root.canResume === true ? "white" : "grey"
                     }
 
                     background: Rectangle {
@@ -533,7 +537,7 @@ Mycroft.Delegate {
                         anchors.fill: parent
                         anchors.margins: Mycroft.Units.gridUnit
                         source: Qt.resolvedUrl("images/media-skip-forward.svg")
-                        color: "white"
+                        color: root.canNext === true ? "white" : "grey"
                     }
 
                     background: Rectangle {
@@ -557,7 +561,7 @@ Mycroft.Delegate {
                         anchors.fill: parent
                         anchors.margins: Mycroft.Units.gridUnit
                         source: Qt.resolvedUrl("images/media-playlist-shuffle.svg")
-                        color: "white"
+                        color: root.shuffleStatus === false ? "grey" : "white"
                     }
 
                     background: Rectangle {

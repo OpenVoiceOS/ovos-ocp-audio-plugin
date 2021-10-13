@@ -1,7 +1,10 @@
-
 # OCP - OVOS Common Play
 
-in mycroft.conf
+![](./ovos_plugin_common_play/ocp/res/ui/images/ocp.png) 
+
+## Configuration
+
+mycroft.conf
 
 ```json
 {

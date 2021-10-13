@@ -6,7 +6,7 @@ from dbus_next.aio import MessageBus as DbusMessageBus
 from dbus_next.message import Message as DbusMessage, \
     MessageType as DbusMessageType
 from ovos_plugin_common_play.ocp.status import TrackState, PlaybackType, \
-    PlayerState
+    PlayerState, LoopState
 from ovos_utils.log import LOG
 
 
@@ -40,20 +40,13 @@ class MprisPlayerCtl(Thread):
             return
         if self._ocp_player and self.player_meta.get(self.main_player):
             data = self.player_meta[self.main_player]
-            if self._ocp_player.active_skill != self.main_player:
-                # reset ocp, it will display metadata of current track
-                self._ocp_player.reset()
 
-                # show GUI if player changed
+            # reset ocp, it will display metadata of current track
+            if self._ocp_player.active_skill != self.main_player:
+                self._ocp_player.reset()
                 self._ocp_player.gui.show_player()
 
-            # update ocp metadata
-            data["skill_id"] = data["external_player"]
-            data["bg_image"] = data.get("image")
-            data["playback"] = PlaybackType.MPRIS
-            data["status"] = TrackState.PLAYING_MPRIS
-
-            self._ocp_player.set_now_playing(data)
+            # player state
             state = data.get("state") or "Playing"
             if state == "Paused":
                 self._ocp_player.set_player_state(PlayerState.PAUSED)
@@ -61,13 +54,29 @@ class MprisPlayerCtl(Thread):
                 self._ocp_player.set_player_state(PlayerState.PLAYING)
             else:
                 self._ocp_player.set_player_state(PlayerState.STOPPED)
-            self._ocp_player.repeat = data.get("repeat") or \
-                                      self._ocp_player.repeat
+            self._ocp_player.loop_state = data.get("loop_state") or \
+                                          self._ocp_player.loop_state
             self._ocp_player.shuffle = data.get("shuffle") or \
                                        self._ocp_player.shuffle
 
+            # update ocp metadata
+            data["skill_id"] = data["external_player"]
+            data["bg_image"] = data.get("image")
+            data["playback"] = PlaybackType.MPRIS
+            data["status"] = TrackState.PLAYING_MPRIS
+            self._ocp_player.set_now_playing(data)
+
     async def handle_new_player(self, data):
         LOG.info(f"Found MPRIS Player: {data['name']}")
+
+    async def handle_player_shuffle(self, shuffle):
+        LOG.info(f"MPRIS Player Shuffle: {shuffle}")
+
+    async def handle_player_loop_state(self, state):
+        LOG.info(f"MPRIS Player Repeat: {state}")
+
+    async def handle_player_state(self, state):
+        LOG.info(f"MPRIS Player State: {state}")
 
     async def handle_lost_player(self, name):
         LOG.info(f"Lost MPRIS Player: {name}")
@@ -75,8 +84,7 @@ class MprisPlayerCtl(Thread):
         self.player_meta.pop(name)
         self.players.pop(name)
 
-    async def handle_player_status(self, data):
-        # LOG.debug(f'Player Info: {data}')
+    async def handle_sync_player(self, data):
         if data.get("state") == 'Playing':
             await self._set_main_player(data["external_player"])
         elif data["external_player"] == self.main_player:
@@ -228,21 +236,27 @@ class MprisPlayerCtl(Thread):
             for changed, variant in changed_properties.items():
                 player_name = properties.bus_name
                 if changed == "PlaybackStatus":
+                    await self.handle_player_state(variant.value)
                     state = self.player_meta[player_name].get("state")
                     if state != variant.value or not state:
                         self.player_meta[player_name]["state"] = variant.value
-                        await self.handle_player_status(
+                        await self.handle_sync_player(
                             {"state":  variant.value,
                              "external_player": player_name})
                 elif changed == "Metadata":
                     await self.update_player_meta(player_name, variant.value)
                 elif changed == "Shuffle":
                     self.player_meta[player_name]["shuffle"] = variant.value
+                    await self.handle_player_shuffle(variant.value)
                 elif changed == "LoopStatus":
-                    if variant.value == "Playlist" or variant.value == "Track":
-                        self.player_meta[player_name]["repeat"] = True
+                    if variant.value == "Track":
+                        state = LoopState.REPEAT_TRACK
+                    elif variant.value == "Playlist":
+                        state = LoopState.REPEAT
                     else:
-                        self.player_meta[player_name]["repeat"] = False
+                        state = LoopState.NONE
+                    self.player_meta[player_name]["loop_state"] = state
+                    await self.handle_player_loop_state(state)
                 # else:
                 #    LOG.debug(f'{changed} - {variant.value}')
 
@@ -253,7 +267,7 @@ class MprisPlayerCtl(Thread):
 
         # these are injected when player is queried
         ocp_data["state"] = meta.get("state")
-        ocp_data["repeat"] = meta.get("repeat")
+        ocp_data["loop_state"] = meta.get("loop_state")
 
         for k, v in meta.items():
             if k == "xesam:title":
@@ -268,7 +282,7 @@ class MprisPlayerCtl(Thread):
                 ocp_data["length"] = v.value
 
         self.player_meta[name] = ocp_data
-        await self.handle_player_status(ocp_data)
+        await self.handle_sync_player(ocp_data)
 
     async def query_player(self, name):
         if name not in self.players:
@@ -287,13 +301,13 @@ class MprisPlayerCtl(Thread):
                 loop_status = await player.get_loop_status()
                 if loop_status == "None":
                     # The playback will stop when there are no more tracks to play
-                    meta["repeat"] = False
+                    meta["loop_state"] = LoopState.NONE
                 elif loop_status == "Track":
                     # The current track will start again from the begining once it has finished playing
-                    meta["repeat"] = True
+                    meta["loop_state"] = LoopState.REPEAT_TRACK
                 elif loop_status == "Playlist":
                     # The playback loops through a list of tracks
-                    meta["repeat"] = True
+                    meta["loop_state"] = LoopState.REPEAT
             except AttributeError:
                 pass  # not all players expose this
             await self.update_player_meta(name, meta)

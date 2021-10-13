@@ -78,8 +78,18 @@ class OCPSearch(OCPAbstractComponent):
                 # filter uris we can play, usually files and http streams, but some
                 # skills might return results that depend on additional packages,
                 # eg. soundcloud, rss, youtube, deezer....
-                if not any(res["uri"].startswith(e) for e in
-                           available_extractors()):
+                uri = res.get("uri", "")
+                if res.get("playlist") and not uri:
+                    res["playlist"] = [
+                        r for r in res["playlist"]
+                        if r.get("uri") and any(r.get("uri").startswith(e)
+                               for e in available_extractors())]
+                    if not len(res["playlist"]):
+                        results[idx] = None  # can't play this search result!
+                        LOG.error(f"Empty playlist for {res}")
+                        continue
+                elif uri and not any(uri.startswith(e) for e in
+                             available_extractors()):
                     results[idx] = None  # can't play this search result!
                     LOG.error(f"stream handler not available for {res}")
                     continue
@@ -162,6 +172,8 @@ class OCPSearch(OCPAbstractComponent):
         self.gui.update_search_results()
 
     def search(self, phrase, media_type=MediaType.GENERIC):
+        # stop any search still happening
+        self.bus.emit(Message("ovos.common_play.search.stop"))
         self.gui.show_search_spinner()
         self.clear()
         self.query_replies[phrase] = []
@@ -261,7 +273,7 @@ class OCPSearch(OCPAbstractComponent):
         return selected
 
     def clear(self):
-        self.search_playlist = Playlist()
+        self.search_playlist.clear()
         self.gui.update_search_results()
 
     # TODO move to mycroft class

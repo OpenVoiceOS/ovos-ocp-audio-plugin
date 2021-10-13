@@ -10,6 +10,7 @@ from ovos_utils.log import LOG
 from ovos_utils.messagebus import Message
 from ovos_workshop import OVOSAbstractApplication
 from padacioso import IntentContainer
+import time
 
 
 class OCP(OVOSAbstractApplication):
@@ -53,12 +54,16 @@ class OCP(OVOSAbstractApplication):
 
         self.replace_mycroft_cps()
 
+        # bus api shared with play intent
+        self.add_event("ovos.common_play.search", self.handle_play)
+
     def handle_ping(self, message):
         self.bus.emit(message.reply("ovos.common_play.pong"))
 
     def register_ocp_intents(self, message=None):
         self.clear_intents()  # remove old intents
         self.register_intent("play.intent", self.handle_play)
+        self.register_intent("open.intent", self.handle_open)
         self.register_intent(
             IntentBuilder('NextOCP').
                 require('Next').
@@ -168,6 +173,9 @@ class OCP(OVOSAbstractApplication):
         return MediaType.GENERIC
 
     # playback control intents
+    def handle_open(self, message):
+        self.gui.show_home()
+
     def handle_next(self, message):
         self.player.play_next()
 
@@ -203,6 +211,7 @@ class OCP(OVOSAbstractApplication):
             if not phrase:
                 # TODO some dialog ?
                 self.player.stop()
+                self.gui.show_home()
                 return
 
         self.player.reset()
@@ -218,6 +227,7 @@ class OCP(OVOSAbstractApplication):
             self.speak_dialog("cant.play",
                               data={"phrase": phrase,
                                     "media_type": media_type})
+            self.gui.show_home()
         else:
             best = self.player.media.select_best(results)
             self.player.play_media(best, results)

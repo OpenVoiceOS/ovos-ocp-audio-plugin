@@ -23,6 +23,14 @@ Mycroft.Delegate {
     property var author: sessionData.artist
     property var playerState: sessionData.status
 
+    property var loopStatus: sessionData.loopStatus
+    property var canResume: sessionData.canResume
+    property var canNext: sessionData.canNext
+    property var canPrev: sessionData.canPrev
+    property var canRepeat: sessionData.canRepeat
+    property var canShuffle: sessionData.canShuffle
+    property var shuffleStatus: sessionData.shuffleStatus
+
     //Player Support Vertical / Horizontal Layouts
     //property bool horizontalMode: width > height ? 1 : 0
     property bool horizontalMode: false
@@ -162,6 +170,29 @@ Mycroft.Delegate {
                 z: 10
 
                 Button {
+                    id: repeatButton
+                    width: Math.round(parent.width / 5) - Mycroft.Units.gridUnit
+                    height: parent.height
+                    anchors.right: prevButton.left
+                    anchors.margins: Mycroft.Units.gridUnit * 0.5
+
+                    onClicked: {
+                    }
+
+                    contentItem: Kirigami.Icon {
+                        anchors.fill: parent
+                        anchors.margins: Mycroft.Units.gridUnit
+                        source: root.loopStatus === "RepeatTrack" ? Qt.resolvedUrl("images/media-playlist-repeat.svg") : root.loopStatus === "None" ? Qt.resolvedUrl("images/media-playlist-repeat-track.svg") : Qt.resolvedUrl("images/media-playlist-repeat.svg")
+                        color: root.loopStatus === "None" ? "white" : root.loopStatus === "RepeatTrack" ? "white" : "grey"
+                    }
+
+                    background: Rectangle {
+                        radius: 5
+                        color:  Qt.rgba(0.2, 0.2, 0.2, 5)
+                    }
+                }
+
+                Button {
                     id: prevButton
                     width: Math.round(parent.width / 5) - Mycroft.Units.gridUnit
                     height: parent.height
@@ -177,7 +208,7 @@ Mycroft.Delegate {
                         anchors.margins: Mycroft.Units.gridUnit
 
                         source: Qt.resolvedUrl("images/media-skip-backward.svg")
-                        color: "white"
+                        color: root.canPrev === true ? "white" : "grey"
                     }
 
                     background: Rectangle {
@@ -207,7 +238,7 @@ Mycroft.Delegate {
                         anchors.fill: parent
                         anchors.margins: Mycroft.Units.gridUnit
                         source: playerState === "Playing" ? Qt.resolvedUrl("images/media-playback-pause.svg") : Qt.resolvedUrl("images/media-playback-start.svg")
-                        color: "white"
+                        color: root.canResume === true ? "white" : "grey"
                     }
 
                     background: Rectangle {
@@ -231,7 +262,7 @@ Mycroft.Delegate {
                         anchors.fill: parent
                         anchors.margins: Mycroft.Units.gridUnit
                         source: Qt.resolvedUrl("images/media-skip-forward.svg")
-                        color: "white"
+                        color: root.canNext === true ? "white" : "grey"
                     }
 
                     background: Rectangle {
@@ -240,6 +271,29 @@ Mycroft.Delegate {
                     }
                 }
 
+                Button {
+                    id: shuffleButton
+                    width: Math.round(parent.width / 5) - Mycroft.Units.gridUnit
+                    height: parent.height
+                    anchors.left: nextButton.right
+                    anchors.margins: Mycroft.Units.gridUnit * 0.5
+
+                    onClicked: {
+
+                    }
+
+                    contentItem: Kirigami.Icon {
+                        anchors.fill: parent
+                        anchors.margins: Mycroft.Units.gridUnit
+                        source: Qt.resolvedUrl("images/media-playlist-shuffle.svg")
+                        color: root.shuffleStatus === true ? "white" : "grey"
+                    }
+
+                    background: Rectangle {
+                        radius: 5
+                        color:  Qt.rgba(0.2, 0.2, 0.2, 5)
+                    }
+                }
             }
         }
     }

@@ -1,5 +1,7 @@
 from ovos_plugin_common_play.ocp.status import MediaType, PlaybackMode
 from ovos_utils.skills.settings import PrivateSettings
+from ovos_plugin_common_play.ocp.stream_handlers import YoutubeBackend, \
+    BandcampBackend, YdlBackend
 
 
 class OCPSettings(PrivateSettings):
@@ -20,6 +22,19 @@ class OCPSettings(PrivateSettings):
 
     @property
     def playback_mode(self):
+        """class PlaybackMode(IntEnum):
+        AUTO = 0 - play each entry as considered appropriate,
+                   ie, make it happen the best way possible
+        AUDIO_ONLY = 10  - only consider audio_only entries
+        VIDEO_ONLY = 20  - only consider video entries
+        FORCE_AUDIO = 30 - cast video to audio_only unconditionally
+                           (audio_only can still play in mycroft-gui)
+        FORCE_AUDIOSERVICE = 40 - cast everything to audio_only service backend,
+                                  mycroft-gui will not be used
+        EVENTS_ONLY = 50 - only emit ocp events,
+                           do not display or play anything.
+                           allows integration with external interfaces
+        """
         return self.get("playback_mode", PlaybackMode.AUTO)
 
     @property
@@ -57,10 +72,30 @@ class OCPSettings(PrivateSettings):
 
     @property
     def force_audioservice(self):
+        """
+        if True play all media in audio_only service (vlc), DO NOT use mycroft-gui.
+        Some use cases:
+         - headless installs
+         - setups with multiple mycroft-guis connected
+
+         WARNING: videos may be cast to audio_only or filtered
+                  media types that can be safely cast to audio_only only streams
+                  when GUI is not available defined in self.cast2audio
+
+                    MediaType.MUSIC
+                    MediaType.PODCAST
+                    MediaType.AUDIOBOOK
+                    MediaType.RADIO
+                    MediaType.RADIO_THEATRE
+                    MediaType.VISUAL_STORY
+                    MediaType.NEWS
+
+        """
         return self.get("force_audioservice", False)
 
     @property
     def autoplay(self):
+        """when media playback ends "click next" """
         return self.get("autoplay", True)
 
     @property
@@ -88,3 +123,47 @@ class OCPSettings(PrivateSettings):
     @property
     def video_only(self):
         return self.playback_mode == PlaybackMode.VIDEO_ONLY
+
+    @property
+    def merge_search(self):
+        """if True behaves as if the search results are part of the playlist
+        eg:
+          - click next in last track -> play next search result
+          - end of playlist + autoplay -> play next search result
+        """
+        return self.get("merge_search", True)
+
+    @property
+    def youtube_backend(self):
+        """class YoutubeBackend(str, enum.Enum):
+        YDL = "youtube-dl"
+        PYTUBE = "pytube" <- default
+        PAFY = "pafy"
+        """
+        return self.get("youtube_backend") or YoutubeBackend.PYTUBE
+
+    @property
+    def yt_chlive_backend(self):
+        """class YoutubeLiveBackend(str, enum.Enum):
+        PYTUBE = "pytube" <- default
+        YT_SEARCHER = "youtube_searcher"
+        """
+        return self.get("youtube_backend") or YoutubeBackend.PYTUBE
+
+    @property
+    def ydl_backend(self):
+        """class YdlBackend(str, enum.Enum):
+        YDL = "youtube-dl" <- default
+        YDLC = "youtube-dlc"
+        YDLP = "yt-dlp"
+        """
+        return self.get("ydl_backend") or YdlBackend.YDL
+
+    @property
+    def bandcamp_backend(self):
+        """class BandcampBackend(str, enum.Enum):
+        YDL = "youtube-dl"
+        PYBANDCAMP = "pybandcamp"  <- default
+        """
+        return self.get("bandcamp_backend") or BandcampBackend.PYBANDCAMP
+

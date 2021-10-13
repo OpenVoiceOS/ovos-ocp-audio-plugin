@@ -125,6 +125,7 @@ Mycroft.Delegate {
         }
 
         onMediaStatusChanged: {
+            triggerGuiEvent("media.state", {"state": status})
             if (status == MediaPlayer.EndOfMedia) {
                 pause()
             }

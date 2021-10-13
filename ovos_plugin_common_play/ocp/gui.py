@@ -1,4 +1,4 @@
-from os.path import join
+from os.path import join, dirname
 
 from ovos_plugin_common_play.ocp.status import *
 from ovos_utils.gui import GUIInterface
@@ -28,6 +28,10 @@ class OCPMediaPlayerGUI(GUIInterface):
         return join(self.player.res_dir, "ui", "BusyPage.qml")
 
     @property
+    def search_screen_page(self):
+        return join(self.player.res_dir, "ui", "Search.qml")
+
+    @property
     def audio_player_page(self):
         return join(self.player.res_dir, "ui", "OVOSAudioPlayer.qml")
 
@@ -53,12 +57,34 @@ class OCPMediaPlayerGUI(GUIInterface):
         super().shutdown()
 
     # OCPMediaPlayer interface
+    def update_seekbar_capabilities(self):
+        self["canResume"] = True
+        self["canPause"] = True
+        self["canPrev"] = self.player.can_prev
+        self["canNext"] = self.player.can_next
+
+        if self.player.loop_state == LoopState.NONE:
+            self["loopStatus"] = "None"
+        elif self.player.loop_state == LoopState.REPEAT_TRACK:
+            self["loopStatus"] = "RepeatTrack"
+        elif self.player.loop_state == LoopState.REPEAT:
+            self["loopStatus"] = "Repeat"
+
+        if self.player.active_backend == PlaybackType.MPRIS:
+            self["loopStatus"] = "None"
+            self["shuffleStatus"] = False
+        else:
+            self["shuffleStatus"] = self.player.shuffle
+
     def update_current_track(self):
+        self.update_seekbar_capabilities()
         self["media"] = self.player.now_playing.info
         self["title"] = self.player.now_playing.title
-        self["image"] = self.player.now_playing.image
+        self["image"] = self.player.now_playing.image or \
+                        join(dirname(__file__), "res/ui/images/ocp.png")
         self["artist"] = self.player.now_playing.artist
-        self["bg_image"] = self.player.now_playing.bg_image
+        self["bg_image"] = self.player.now_playing.bg_image or \
+                        join(dirname(__file__), "res/ui/images/ocp.png")
         self["duration"] = self.player.now_playing.length
         self["position"] = self.player.now_playing.position
 
@@ -79,11 +105,20 @@ class OCPMediaPlayerGUI(GUIInterface):
     def show_search_spinner(self):
         self.clear()
         self["footer_text"] = "Querying Skills\n\n"
-        self.show_page(self.search_spinner_page,
-                       override_idle=30)
+        self.show_page(self.search_spinner_page, override_idle=30)
+
+    def show_home(self):
+        self.release()
+        self.show_pages([self.search_screen_page],
+                        index=0, override_idle=True,
+                        override_animations=True)
+
+    def release(self):
+        self.remove_pages(self.pages)
+        super().release()
 
     def show_player(self):
-        to_remove = [self.search_spinner_page]
+        to_remove = [self.search_spinner_page, self.search_screen_page]
         if self.player.active_backend == PlaybackType.AUDIO_SERVICE or \
                 self.player.settings.force_audioservice:
             page = self.audio_service_page
@@ -137,14 +172,29 @@ class OCPMediaPlayerGUI(GUIInterface):
         self.player.play_media(media, playlist=playlist,
                                disambiguation=collection)
 
-    # audio service -> gui
+    # audio_only service -> gui
     def handle_sync_seekbar(self, message):
-        """ event sent by ovos audio backend plugins """
+        """ event sent by ovos audio_only backend plugins """
         self["length"] = message.data["length"]
         self["position"] = message.data["position"]
 
     # media player -> gui
     def handle_end_of_playback(self, message=None):
-        self.clear()
-        # show media results, release screen after 60 seconds
-        self.show_page(self.search_page, override_idle=60)
+        show_results = False
+        try:
+            if len(self["searchModel"]["data"]):
+                show_results = True
+        except:
+            pass
+
+        # show search results, release screen after 60 seconds
+        if show_results:
+            self.remove_pages([p for p in self.pages
+                               if p != self.search_page])
+            self.show_page(self.search_page, override_idle=60)
+
+        # show search input page
+        else:
+            self.remove_pages([p for p in self.pages
+                               if p != self.search_screen_page])
+            self.show_page(self.search_screen_page, override_idle=60)

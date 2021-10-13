@@ -60,6 +60,12 @@ class PlayerState(IntEnum):
     PAUSED = 2
 
 
+class LoopState(IntEnum):
+    NONE = 0
+    REPEAT = 1
+    REPEAT_TRACK = 2
+
+
 class PlaybackType(IntEnum):
     SKILL = 0  # skills handle playback whatever way they see fit,
     # eg spotify / mycroft common play

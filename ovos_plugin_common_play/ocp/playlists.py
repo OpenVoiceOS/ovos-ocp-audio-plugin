@@ -1,12 +1,12 @@
 from ovos_plugin_common_play.ocp.status import *
 from ovos_plugin_common_play.ocp.stream_handlers import is_youtube, \
-    get_youtube_audio_stream, get_youtube_video_stream, \
     get_deezer_audio_stream, get_rss_first_stream, \
-    get_youtube_live_from_channel, find_mime, get_soundcloud_audio_stream, \
-    get_bandcamp_audio_stream
+    get_youtube_live_from_channel, find_mime, get_bandcamp_audio_stream, \
+    get_ydl_stream, get_youtube_stream
 from ovos_utils.json_helper import merge_dict
 from ovos_utils.log import LOG
 from ovos_utils.messagebus import Message
+from os.path import join, dirname
 
 
 # TODO subclass from dict (?)
@@ -25,11 +25,11 @@ class MediaEntry:
         self.skill_id = skill_id
         self.status = status
         self.playback = playback
-        self.image = image
+        self.image = image or join(dirname(__file__), "res/ui/images/ocp.png")
         self.position = position
         self.phrase = phrase
         self.length = length  # None -> live stream
-        self.skill_icon = skill_icon  # TODO default icon
+        self.skill_icon = skill_icon or join(dirname(__file__), "res/ui/images/ocp.png")
         self.bg_image = bg_image or "https://source.unsplash.com/weekly?music"
         self.data = kwargs
 
@@ -43,9 +43,9 @@ class MediaEntry:
 
     @staticmethod
     def from_dict(data):
-        if data.get("bg_image", "").startswith("/"):
+        if data.get("bg_image") and data["bg_image"].startswith("/"):
             data["bg_image"] = "file:/" + data["bg_image"]
-        data["skill"] = data.get("skill_id", "ovos.common_play")
+        data["skill"] = data.get("skill_id") or "ovos.common_play"
         data["position"] = data.get("position", 0)
         data["length"] = data.get("length") or \
                          data.get("track_length") or \
@@ -79,60 +79,6 @@ class MediaEntry:
         if self.uri:
             return find_mime(self.uri)
 
-    def extract_stream(self):
-        uri = self.uri
-        if self.playback == PlaybackType.VIDEO:
-            video = True
-        else:
-            video = False
-        meta = {}
-        if uri.startswith("rss//"):
-            uri = uri.replace("rss//", "")
-            meta = get_rss_first_stream(uri)
-            if not meta:
-                LOG.error("RSS feed stream extraction failed!!!")
-
-        if uri.startswith("bandcamp//"):
-            uri = uri.replace("bandcamp//", "")
-            meta = get_bandcamp_audio_stream(uri)
-            if not meta:
-                LOG.error("bandcamp stream extraction failed!!!")
-
-        if uri.startswith("soundcloud//"):
-            uri = uri.replace("soundcloud//", "")
-            meta = get_soundcloud_audio_stream(uri)
-            if not meta:
-                LOG.error("souncloud stream extraction failed!!!")
-
-        elif uri.startswith("deezer//"):
-            uri = uri.replace("deezer//", "")
-            meta = get_deezer_audio_stream(uri)
-            if not meta:
-                LOG.error("deezer stream extraction failed!!!")
-            else:
-                LOG.debug(f"deezer cache: {meta['uri']}")
-
-        elif uri.startswith("youtube.channel.live//"):
-            uri = uri.replace("youtube.channel.live//", "")
-            uri = get_youtube_live_from_channel(uri)
-            if not uri:
-                LOG.error("youtube channel live stream extraction failed!!!")
-            else:
-                uri = "youtube//" + uri
-
-        if uri.startswith("youtube//") or is_youtube(uri):
-            uri = uri.replace("youtube//", "")
-            if not video:
-                meta = get_youtube_audio_stream(uri)
-            if video or not meta:
-                meta = get_youtube_video_stream(uri)
-            if not meta:
-                LOG.error("youtube stream extraction failed!!!")
-        meta = meta or {"uri": uri}
-
-        # update media entry with new data
-        self.update(meta)
-
     def __eq__(self, other):
         if isinstance(other, MediaEntry):
             other = other.as_dict
@@ -149,7 +95,18 @@ class MediaEntry:
 class Playlist(list):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.position = 0
+        self._position = 0
+
+    @property
+    def position(self):
+        return self._position
+
+    def goto_start(self):
+        self._position = 0
+
+    def clear(self) -> None:
+        super(Playlist, self).clear()
+        self._position = 0
 
     @property
     def entries(self):
@@ -162,10 +119,9 @@ class Playlist(list):
         return entries
 
     def sort_by_conf(self):
-        self.sort(
-            key=lambda k: k.match_confidence
-            if isinstance(k, MediaEntry) else k.get("match_confidence", 0),
-            reverse=True)
+        self.sort(key=lambda k: k.match_confidence \
+            if isinstance(k, MediaEntry) else \
+            k.get("match_confidence", 0), reverse=True)
 
     def add_entry(self, entry, index=-1):
         assert isinstance(index, int)
@@ -174,6 +130,10 @@ class Playlist(list):
         assert isinstance(entry, MediaEntry)
         if index == -1:
             index = len(self)
+
+        if index < self.position:
+            self.set_position(self.position + 1)
+
         self.insert(index, entry)
 
     def remove_entry(self, entry):
@@ -190,40 +150,86 @@ class Playlist(list):
         else:
             raise ValueError("entry not in playlist")
 
+    def replace(self, new_list):
+        self.clear()
+        for e in new_list:
+            self.add_entry(e)
+
     def __contains__(self, item):
         if isinstance(item, dict):
             item = MediaEntry.from_dict(item)
         if not isinstance(item, MediaEntry):
             return False
         for e in self.entries:
-            if e == item:
+            if not e.uri and e.data.get("playlist"):
+                if e.title == item.title and not item.uri:
+                    return True
+                # track in playlist
+                for t in e.data["playlist"]:
+                    if t.get("uri") == item.uri:
+                        return True
+            elif e.uri == item.uri:
                 return True
         return False
+
+    def _validate_position(self):
+        if self.position >= len(self) or self.position < 0:
+            LOG.error("Playlist pointer is in an invalid position! Going to "
+                      "start of playlist")
+            self._position = 0
+
+    def set_position(self, idx):
+        self._position = idx
+        self._validate_position()
+
+    @property
+    def is_first_track(self):
+        if len(self) == 0:
+            return True
+        return self.position == 0
+
+    @property
+    def is_last_track(self):
+        if len(self) == 0:
+            return True
+        return self.position == len(self) - 1
+
+    def goto_track(self, track):
+        if isinstance(track, MediaEntry):
+            uri = track.uri
+        else:
+            uri = track.get("uri", "")
+        for idx, t in enumerate(self):
+            if isinstance(t, MediaEntry):
+                uri2 = t.uri
+            else:
+                uri2 = t.get("uri", "")
+            if uri == uri2:
+                self.set_position(idx)
+                LOG.debug(f"New playlist position: {self.position}")
+                return
 
     @property
     def current_track(self):
         if len(self) == 0:
             return None
-        if self.position >= len(self):
-            LOG.error("Playlist pointer is in an invalid position! Going to "
-                      "start of playlist")
-            self.position = 0
+        self._validate_position()
         return self[self.position]
 
     def next_track(self):
-        self.position += 1
-        if self.position >= len(self):
-            self.position = 0
+        self.set_position(self.position + 1)
 
     def prev_track(self):
-        self.position -= 1
-        self.position = max(0, self.position)
+        self.set_position(self.position - 1)
 
 
 class NowPlaying(MediaEntry):
     @property
     def bus(self):
         return self._player.bus
+
+    def as_entry(self):
+        return MediaEntry.from_dict(self.as_dict)
 
     def bind(self, player):
         # needs to start with _ to avoid json serialization errors
@@ -234,14 +240,14 @@ class NowPlaying(MediaEntry):
                                self.handle_sync_seekbar)
         self._player.add_event('gui.player.media.service.get.meta',
                                self.handle_player_metadata_request)
-        self._player.add_event('mycroft.audio.service.track_info_reply',
+        self._player.add_event('mycroft.audio_only.service.track_info_reply',
                                self.handle_sync_trackinfo)
 
     def shutdown(self):
         self._player.remove_event("ovos.common_play.track.state")
         self._player.remove_event("ovos.common_play.playback_time")
         self._player.remove_event('gui.player.media.service.get.meta')
-        self._player.remove_event('mycroft.audio.service.track_info_reply')
+        self._player.remove_event('mycroft.audio_only.service.track_info_reply')
 
     def update(self, entry, skipkeys=None):
         super(NowPlaying, self).update(entry, skipkeys)
@@ -250,6 +256,63 @@ class NowPlaying(MediaEntry):
                               {"title": self.title,
                                "image": self.image,
                                "artist": self.artist}))
+
+    def extract_stream(self):
+        uri = self.uri
+        if self.playback == PlaybackType.VIDEO:
+            video = True
+        else:
+            video = False
+        meta = {}
+        if uri.startswith("rss//"):
+            uri = uri.replace("rss//", "")
+            meta = get_rss_first_stream(uri)
+            if not meta:
+                LOG.error("RSS feed stream extraction failed!!!")
+
+        if uri.startswith("bandcamp//"):
+            uri = uri.replace("bandcamp//", "")
+            meta = get_bandcamp_audio_stream(
+                uri, backend=self._player.settings.bandcamp_backend,
+                ydl_backend=self._player.settings.ydl_backend)
+            if not meta:
+                LOG.error("bandcamp stream extraction failed!!!")
+
+        if uri.startswith("deezer//"):
+            uri = uri.replace("deezer//", "")
+            meta = get_deezer_audio_stream(uri)
+            if not meta:
+                LOG.error("deezer stream extraction failed!!!")
+            else:
+                LOG.debug(f"deezer cache: {meta['uri']}")
+
+        elif uri.startswith("youtube.channel.live//"):
+            uri = uri.replace("youtube.channel.live//", "")
+            uri = get_youtube_live_from_channel(
+                uri, backend=self._player.settings.yt_chlive_backend)["url"]
+            if not uri:
+                LOG.error("youtube channel live stream extraction failed!!!")
+            else:
+                uri = "youtube//" + uri
+
+        if uri.startswith("ydl//"):
+            # supports more than youtube!!!
+            uri = uri.replace("ydl//", "")
+            meta = get_ydl_stream(uri,
+                                  backend=self._player.settings.ydl_backend)
+            if not meta:
+                LOG.error("ydl stream extraction failed!!!")
+        elif uri.startswith("youtube//") or is_youtube(uri):
+            uri = uri.replace("youtube//", "")
+            meta = get_youtube_stream(
+                uri, backend=self._player.settings.youtube_backend,
+                audio_only=not video, ydl_backend=self._player.settings.ydl_backend)
+            if not meta:
+                LOG.error("youtube stream extraction failed!!!")
+        meta = meta or {"uri": uri}
+
+        # update media entry with new data
+        self.update(meta)
 
     # events from gui_player/audio_service
     def handle_player_metadata_request(self, message):

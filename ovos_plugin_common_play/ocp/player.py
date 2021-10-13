@@ -1,5 +1,7 @@
 from os.path import join, dirname
 
+import random
+
 from ovos_plugin_common_play.ocp.gui import OCPMediaPlayerGUI
 from ovos_plugin_common_play.ocp.playlists import Playlist, MediaEntry, NowPlaying
 from ovos_plugin_common_play.ocp.search import OCPSearch
@@ -20,12 +22,13 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         gui = gui or OCPMediaPlayerGUI()
         self.mpris = MprisPlayerCtl()
         self.state = PlayerState.STOPPED
+        self.loop_state = LoopState.NONE
         self.media_state = MediaState.NO_MEDIA
         self.playlist = Playlist()
-        self.repeat = False
         self.shuffle = False
         self.now_playing = NowPlaying()
         self.media = OCPSearch()
+        self.track_history = {}
         super().__init__("ovos_common_play", settings=settings, bus=bus,
                          gui=gui, resources_dir=resources_dir, lang=lang)
 
@@ -55,8 +58,6 @@ class OCPMediaPlayer(OVOSAbstractApplication):
                        self.handle_repeat_toggle_request)
         self.add_event("gui.player.media.service.get.shuffle",
                        self.handle_shuffle_toggle_request)
-        self.add_event('gui.player.media.service.current.media.status',
-                       self.handle_player_media_update)
 
         # ovos common play bus api
         self.add_event('ovos.common_play.player.state',
@@ -102,6 +103,26 @@ class OCPMediaPlayer(OVOSAbstractApplication):
     def disambiguation(self):
         return self.media.search_playlist.entries
 
+    @property
+    def can_prev(self):
+        if self.active_backend != PlaybackType.MPRIS and \
+                self.playlist.is_first_track:
+            return False
+        return True
+
+    @property
+    def can_next(self):
+        if self.loop_state != LoopState.NONE or \
+                self.shuffle or \
+                self.active_backend == PlaybackType.MPRIS:
+            return True
+        elif self.settings.merge_search and \
+                not self.media.search_playlist.is_last_track:
+            return True
+        elif not self.playlist.is_last_track:
+            return True
+        return False
+
     # state
     def set_media_state(self, state):
         if state == self.media_state:
@@ -125,24 +146,43 @@ class OCPMediaPlayer(OVOSAbstractApplication):
 
     def set_now_playing(self, track):
         """ Currently playing media """
-        self.set_media_state(MediaState.LOADING_MEDIA)
+        if (isinstance(track, dict) and track.get("uri")) or \
+                (isinstance(track, MediaEntry) and track.uri):
+            # single track entry (dict)
+            self.now_playing.update(track)
+            # copy now_playing (without event handlers) to playlist
+            entry = self.now_playing.as_entry()
+            if entry not in self.playlist:  # compared by uri
+                self.playlist.add_entry(entry)
+        else:
+            # this is a playlist result (list of dicts)
+            if isinstance(track, MediaEntry):
+                pl = track.data.get("playlist")
+            else:
+                pl = track.get("playlist") or track.get("data", {}).get("playlist")
+            if pl:
+                self.playlist.clear()
+                for entry in pl:
+                    self.playlist.add_entry(entry)
 
-        self.now_playing.update(track)
+            if len(self.playlist):
+                self.now_playing.update(self.playlist[0])
+            else:
+                self.now_playing.update(track)
 
-        if self.now_playing not in self.playlist:
-            self.playlist.add_entry(self.now_playing)
-            self.playlist.position = len(self.playlist) - 1
+        # sync playlist position
+        self.playlist.goto_track(self.now_playing)
 
+        # update gui values
         self.gui.update_current_track()
+        self.gui.update_playlist()
 
     # stream handling
     def validate_stream(self):
-        self.set_media_state(MediaState.LOADING_MEDIA)
         try:
             self.now_playing.extract_stream()
         except Exception as e:
             LOG.exception(e)
-            self.set_media_state(MediaState.INVALID_MEDIA)
             return False
         has_gui = is_gui_running() or is_gui_connected(self.bus)
         if not has_gui or self.settings.force_audioservice:
@@ -161,12 +201,13 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         self.mpris.stop()
         self.pause()  # make it more responsive
         if disambiguation:
-            self.media.search_playlist = Playlist(disambiguation)
+            self.media.search_playlist.replace(disambiguation)
             self.media.search_playlist.sort_by_conf()
+            self.gui.update_search_results()
         if playlist:
-            self.playlist = Playlist(playlist)
-        self.gui.update_search_results()
-        self.gui.update_playlist()
+            self.playlist.replace(playlist)
+        if track in self.playlist:
+            self.playlist.goto_track(track)
         self.set_now_playing(track)
         self.play()
 
@@ -178,6 +219,10 @@ class OCPMediaPlayer(OVOSAbstractApplication):
             self.on_invalid_media()
             return
 
+        if self.now_playing.uri not in self.track_history:
+            self.track_history[self.now_playing.uri] = 0
+        self.track_history[self.now_playing.uri] += 1
+
         if self.active_backend in [PlaybackType.AUDIO,
                                    PlaybackType.AUDIO_SERVICE]:
             LOG.debug("Requesting playback: PlaybackType.AUDIO")
@@ -186,6 +231,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
                 self.audio_service.play(self.now_playing.uri, utterance="vlc")
                 self.bus.emit(Message("ovos.common_play.track.state", {
                     "state": TrackState.PLAYING_AUDIOSERVICE}))
+                self.set_player_state(PlayerState.PLAYING)
             elif is_gui_running():
                 # handle audio natively in mycroft-gui
                 self.bus.emit(Message("gui.player.media.service.play", {
@@ -220,53 +266,57 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         else:
             raise ValueError("invalid playback request")
 
-        self.set_media_state(MediaState.LOADED_MEDIA)
+    def play_shuffle(self):
+        LOG.debug("Shuffle == True")
+        if len(self.playlist) > 1 and not self.playlist.is_last_track:
+            self.playlist.set_position(random.randint(0, len(self.playlist)))
+            self.set_now_playing(self.playlist.current_track)
+        else:
+            self.media.search_playlist.next_track()
+            self.set_now_playing(self.media.search_playlist.current_track)
 
     def play_next(self):
         if self.active_backend in [PlaybackType.MPRIS]:
             self.mpris.play_next()
             return
         self.pause()  # make more responsive
-        self.set_media_state(MediaState.LOADING_MEDIA)
-        n_tracks = len(self.playlist)
-        n_tracks2 = len(self.media.search_playlist)
-        # contains entries, and is not at end of playlist
-        if n_tracks > 1 and self.playlist.position != n_tracks - 1:
+
+        if self.loop_state == LoopState.REPEAT_TRACK:
+            self.play()
+        elif self.shuffle:
+            self.play_shuffle()
+        elif not self.playlist.is_last_track:
             self.playlist.next_track()
             self.set_now_playing(self.playlist.current_track)
             LOG.info(f"Next track index: {self.playlist.position}")
-            self.play()
-        elif n_tracks2 > 1 and \
-                self.media.search_playlist.position != n_tracks2 - 1:
-            self.media.search_playlist.next_track()
-            self.set_now_playing(
-                self.media.search_playlist.current_track)
-            LOG.info(
-                f"Next search index: {self.media.search_playlist.position}")
-            self.play()
+        elif not self.media.search_playlist.is_last_track and \
+                self.settings.merge_search:
+            while self.media.search_playlist.current_track in self.playlist:
+                self.media.search_playlist.next_track()
+            self.set_now_playing(self.media.search_playlist.current_track)
+            LOG.info(f"Next search index: {self.media.search_playlist.position}")
         else:
-            LOG.info("requested next, but there aren't any more tracks")
-            self.gui.handle_end_of_playback()
+            if self.loop_state == LoopState.REPEAT and len(self.playlist):
+                LOG.debug("end of playlist, repeat == True")
+                self.playlist.set_position(0)
+            else:
+                LOG.info("requested next, but there aren't any more tracks")
+                self.gui.handle_end_of_playback()
+                return
+        self.play()
 
     def play_prev(self):
         if self.active_backend in [PlaybackType.MPRIS]:
             self.mpris.play_prev()
             return
         self.pause()  # make more responsive
-        self.set_media_state(MediaState.LOADING_MEDIA)
-        # contains entries, and is not at start of playlist
-        if len(self.playlist) > 1 and self.playlist.position != 0:
+
+        if self.shuffle:
+            self.play_shuffle()
+        elif not self.playlist.is_first_track:
             self.playlist.prev_track()
             self.set_now_playing(self.playlist.current_track)
             LOG.debug(f"Previous track index: {self.playlist.position}")
-            self.play()
-        elif len(self.media.search_playlist) > 1 and \
-                self.media.search_playlist.position != 0:
-            self.media.search_playlist.prev_track()
-            self.set_now_playing(
-                self.media.search_playlist.current_track)
-            LOG.debug(f"Previous search index: "
-                      f"{self.media.search_playlist.position}")
             self.play()
         else:
             LOG.debug("requested previous, but already in 1st track")
@@ -315,6 +365,9 @@ class OCPMediaPlayer(OVOSAbstractApplication):
             self.audio_service.set_track_position(position / 1000)
 
     def stop(self):
+        # stop any search still happening
+        self.bus.emit(Message("ovos.common_play.search.stop"))
+
         LOG.debug("Stopping playback")
         if self.active_backend in [PlaybackType.AUDIO_SERVICE,
                                    PlaybackType.SKILL,
@@ -343,9 +396,11 @@ class OCPMediaPlayer(OVOSAbstractApplication):
 
     def reset(self):
         self.stop()
-        self.playlist = Playlist()
+        self.playlist.clear()
         self.media.clear()
         self.set_media_state(MediaState.NO_MEDIA)
+        self.shuffle = False
+        self.loop_state = LoopState.NONE
 
     def shutdown(self):
         self.stop()
@@ -369,7 +424,6 @@ class OCPMediaPlayer(OVOSAbstractApplication):
                 LOG.info(f"PlayerState changed: {repr(k)}")
         if state == PlayerState.PLAYING:
             self.state = PlayerState.PLAYING
-            self.set_media_state(MediaState.BUFFERING_MEDIA)
         if state == PlayerState.PAUSED:
             self.state = PlayerState.PAUSED
         if state == PlayerState.STOPPED:
@@ -388,7 +442,8 @@ class OCPMediaPlayer(OVOSAbstractApplication):
 
     def handle_playback_ended(self, message):
         LOG.debug("Playback ended")
-        if self.settings.autoplay:
+        if self.settings.autoplay and \
+                self.active_backend != PlaybackType.MPRIS:
             self.play_next()
             return
         self.stop()
@@ -429,15 +484,22 @@ class OCPMediaPlayer(OVOSAbstractApplication):
 
     # playlist control bus api
     def handle_repeat_toggle_request(self, message):
-        self.repeat = not self.repeat
-        LOG.info(f"Repeat: {self.repeat}")
+        if self.loop_state == LoopState.REPEAT_TRACK:
+            self.loop_state = LoopState.NONE
+        elif self.loop_state == LoopState.REPEAT:
+            self.loop_state = LoopState.REPEAT_TRACK
+        elif self.loop_state == LoopState.NONE:
+            self.loop_state = LoopState.REPEAT
+        LOG.info(f"Repeat: {self.loop_state}")
+        self.gui.update_seekbar_capabilities()
 
     def handle_shuffle_toggle_request(self, message):
         self.shuffle = not self.shuffle
         LOG.info(f"Shuffle: {self.shuffle}")
+        self.gui.update_seekbar_capabilities()
 
     def handle_playlist_set_request(self, message):
-        self.playlist = Playlist()
+        self.playlist.clear()
         self.handle_playlist_queue_request(message)
 
     def handle_playlist_queue_request(self, message):
@@ -445,7 +507,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
             self.playlist.add_entry(track)
 
     def handle_playlist_clear_request(self, message):
-        self.playlist = Playlist()
+        self.playlist.clear()
         self.set_media_state(MediaState.NO_MEDIA)
 
     # audio ducking
