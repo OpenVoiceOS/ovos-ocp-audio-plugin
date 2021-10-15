@@ -63,6 +63,7 @@ class OCP(OVOSAbstractApplication):
     def register_ocp_intents(self, message=None):
         self.clear_intents()  # remove old intents
         self.register_intent("play.intent", self.handle_play)
+        self.register_intent("read.intent", self.handle_read)
         self.register_intent("open.intent", self.handle_open)
         self.register_intent(
             IntentBuilder('NextOCP').
@@ -214,14 +215,23 @@ class OCP(OVOSAbstractApplication):
                 self.gui.show_home()
                 return
 
-        self.player.reset()
-        #self.speak_dialog("just.one.moment")
-        self.enclosure.mouth_think()
-
         # classify the query media type
         media_type = self.classify_media(utterance)
+
         # search common play skills
         results = self._search(phrase, utterance, media_type)
+        self._do_play(phrase, results, media_type)
+
+    # "read XXX" - non "play XXX" audio book intent
+    def handle_read(self, message):
+        utterance = message.data["utterance"]
+        phrase = message.data.get("query", "") or utterance
+        # search common play skills
+        results = self._search(phrase, utterance, MediaType.AUDIOBOOK)
+        self._do_play(phrase, results, MediaType.AUDIOBOOK)
+
+    def _do_play(self, phrase, results, media_type=MediaType.GENERIC):
+        self.player.reset()
 
         if not results:
             self.speak_dialog("cant.play",
@@ -243,6 +253,7 @@ class OCP(OVOSAbstractApplication):
 
     # helper methods
     def _search(self, phrase, utterance, media_type):
+        self.enclosure.mouth_think()
         # check if user said "play XXX audio only/no video"
         audio_only = False
         video_only = False

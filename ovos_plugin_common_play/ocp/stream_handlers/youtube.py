@@ -136,7 +136,12 @@ def get_ydl_stream(url, preferred_ext=None, backend=YdlBackend.YDLP,
     with youtube_dl.YoutubeDL(ydl_opts) as ydl:
         meta = ydl.extract_info(url, download=False)
         for k, v in kmaps.items():
-            info[v] = meta[k]
+            if k in meta:
+                info[v] = meta[k]
+
+        if "entries" in meta:
+            meta = meta["entries"][0]
+
         info["uri"] = _select_ydl_format(meta, audio_only=audio_only,
                                          best=best)
         title, artist = _parse_title(info["title"])
@@ -147,6 +152,12 @@ def get_ydl_stream(url, preferred_ext=None, backend=YdlBackend.YDLP,
 
 
 def _select_ydl_format(meta, audio_only=False, preferred_ext=None, best=True):
+    if not meta.get("formats"):
+        # not all extractors return same format dict
+        if meta.get("url"):
+            return meta["url"]
+        raise ValueError
+
     fmts = meta["formats"]
     if audio_only:
         # skip any stream that contains video
