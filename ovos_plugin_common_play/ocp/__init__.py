@@ -8,7 +8,7 @@ from ovos_utils.gui import can_use_gui
 from ovos_utils.log import LOG
 from ovos_utils.messagebus import Message
 from ovos_workshop import OVOSAbstractApplication
-from padacioso import IntentContainer
+from padaos import IntentContainer
 
 
 class OCP(OVOSAbstractApplication):

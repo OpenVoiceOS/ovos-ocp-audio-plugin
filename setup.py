@@ -17,7 +17,7 @@ setup(
               'ovos_plugin_common_play.ocp.stream_handlers'],
     install_requires=["ovos-plugin-manager>=0.0.1a3",
                       "ovos_plugin_vlc>=0.0.1a3",
-                      "padacioso",
+                      "padaos",
                       "youtube-dl",
                       "dbus_next",
                       "ovos_workshop>=0.0.5a2"],
