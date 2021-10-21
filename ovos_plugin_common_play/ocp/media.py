@@ -2,7 +2,7 @@ from ovos_plugin_common_play.ocp.status import *
 from ovos_plugin_common_play.ocp.stream_handlers import is_youtube, \
     get_deezer_audio_stream, get_rss_first_stream, \
     get_youtube_live_from_channel, find_mime, get_bandcamp_audio_stream, \
-    get_ydl_stream, get_youtube_stream
+    get_ydl_stream, get_youtube_stream, get_playlist_stream
 from ovos_utils.json_helper import merge_dict
 from ovos_utils.log import LOG
 from ovos_utils.messagebus import Message
@@ -309,6 +309,11 @@ class NowPlaying(MediaEntry):
                 audio_only=not video, ydl_backend=self._player.settings.ydl_backend)
             if not meta:
                 LOG.error("youtube stream extraction failed!!!")
+
+        # .pls and .m3u are not supported by gui player, parse the file
+        if ".pls" in uri or ".m3u" in uri:
+            meta = get_playlist_stream(uri)
+
         meta = meta or {"uri": uri}
 
         # update media entry with new data

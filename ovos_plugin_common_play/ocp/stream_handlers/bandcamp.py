@@ -24,8 +24,8 @@ def get_bandcamp_audio_stream(url, backend=BandcampBackend.PYBANDCAMP,
 
 
 def get_pybandcamp_stream(url):
-    from py_bandcamp import BandCamper
-    data = BandCamper.get_stream_data(url)
+    from py_bandcamp.utils import get_stream_data
+    data = get_stream_data(url)
     data["uri"] = data.pop("stream")
     return data
 

@@ -3,7 +3,7 @@ from os.path import join, dirname
 import random
 
 from ovos_plugin_common_play.ocp.gui import OCPMediaPlayerGUI
-from ovos_plugin_common_play.ocp.playlists import Playlist, MediaEntry, NowPlaying
+from ovos_plugin_common_play.ocp.media import Playlist, MediaEntry, NowPlaying
 from ovos_plugin_common_play.ocp.search import OCPSearch
 from ovos_plugin_common_play.ocp.settings import OCPSettings
 from ovos_plugin_common_play.ocp.status import *
@@ -188,6 +188,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         if not has_gui or self.settings.force_audioservice:
             # No gui, so lets force playback to use audio only
             self.now_playing.playback = PlaybackType.AUDIO_SERVICE
+
         self.gui["stream"] = self.now_playing.uri
         self.gui.update_current_track()
         return True

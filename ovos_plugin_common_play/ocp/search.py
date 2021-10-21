@@ -4,7 +4,7 @@ import time
 from ovos_plugin_common_play.ocp.base import OCPAbstractComponent
 from ovos_plugin_common_play.ocp.mycroft_cps import \
     MycroftCommonPlayInterface
-from ovos_plugin_common_play.ocp.playlists import Playlist
+from ovos_plugin_common_play.ocp.media import Playlist
 from ovos_plugin_common_play.ocp.settings import OCPSettings
 from ovos_plugin_common_play.ocp.status import *
 from ovos_plugin_common_play.ocp.stream_handlers import available_extractors
