@@ -1,6 +1,5 @@
 from os.path import join, dirname, isfile
 
-from adapt.intent import IntentBuilder
 from ovos_plugin_common_play.ocp.gui import OCPMediaPlayerGUI
 from ovos_plugin_common_play.ocp.player import OCPMediaPlayer
 from ovos_plugin_common_play.ocp.settings import OCPSettings
@@ -10,7 +9,6 @@ from ovos_utils.log import LOG
 from ovos_utils.messagebus import Message
 from ovos_workshop import OVOSAbstractApplication
 from padacioso import IntentContainer
-import time
 
 
 class OCP(OVOSAbstractApplication):
@@ -65,30 +63,10 @@ class OCP(OVOSAbstractApplication):
         self.register_intent("play.intent", self.handle_play)
         self.register_intent("read.intent", self.handle_read)
         self.register_intent("open.intent", self.handle_open)
-        self.register_intent(
-            IntentBuilder('NextOCP').
-                require('Next').
-                require("Playing").
-                optionally("Track"),
-            self.handle_next)
-        self.register_intent(
-            IntentBuilder('PrevOCP').
-                require('Prev').
-                require("Playing").
-                optionally("Track"),
-            self.handle_prev)
-        self.register_intent(
-            IntentBuilder('PauseOCP').
-                require('Pause').
-                require("Playing").
-                optionally("Track"),
-            self.handle_pause)
-        self.register_intent(
-            IntentBuilder('ResumeOCP').
-                one_of('PlayResume', 'Resume').
-                require("Playing").
-                optionally("Track"),
-            self.handle_resume)
+        self.register_intent("next.intent", self.handle_next)
+        self.register_intent("prev.intent", self.handle_prev)
+        self.register_intent("pause.intent", self.handle_pause)
+        self.register_intent("resume.intent", self.handle_resume)
 
     def register_media_intents(self):
         """
