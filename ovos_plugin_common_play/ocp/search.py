@@ -2,9 +2,9 @@ import random
 import time
 
 from ovos_plugin_common_play.ocp.base import OCPAbstractComponent
+from ovos_plugin_common_play.ocp.media import Playlist
 from ovos_plugin_common_play.ocp.mycroft_cps import \
     MycroftCommonPlayInterface
-from ovos_plugin_common_play.ocp.media import Playlist
 from ovos_plugin_common_play.ocp.settings import OCPSettings
 from ovos_plugin_common_play.ocp.status import *
 from ovos_plugin_common_play.ocp.stream_handlers import available_extractors
@@ -83,13 +83,14 @@ class OCPSearch(OCPAbstractComponent):
                     res["playlist"] = [
                         r for r in res["playlist"]
                         if r.get("uri") and any(r.get("uri").startswith(e)
-                               for e in available_extractors())]
+                                                for e in
+                                                available_extractors())]
                     if not len(res["playlist"]):
                         results[idx] = None  # can't play this search result!
                         LOG.error(f"Empty playlist for {res}")
                         continue
                 elif uri and not any(uri.startswith(e) for e in
-                             available_extractors()):
+                                     available_extractors()):
                     results[idx] = None  # can't play this search result!
                     LOG.error(f"stream handler not available for {res}")
                     continue
@@ -183,10 +184,13 @@ class OCPSearch(OCPAbstractComponent):
         self.bus.emit(Message('ovos.common_play.query',
                               {"phrase": phrase,
                                "question_type": media_type}))
+
         # old common play will send the messages expected by the official
         # mycroft stack, but skills are know to over match, dont support
-        # match type, and the VIDEO is different for every skill, it may also
-        # cause issues with status tracking and mess up playlists
+        # match type, and the GUI can be different for every skill, it may also
+        # cause issues with status tracking and mess up playlists. An
+        # imperfect compatibility layer has been implemented at skill and
+        # audioservice level
         if self.old_cps:
             self.old_cps.send_query(phrase, media_type)
 
@@ -203,23 +207,13 @@ class OCPSearch(OCPAbstractComponent):
 
         self.searching = False
 
-        # convert the returned data to the expected new format, playback
-        # type is consider Skill, ovos common play will not handle the playback
-        # life cycle but instead delegate to the skill
-        if self.old_cps:
-            old_style = self.old_cps.get_results(phrase)
-            self.query_replies[phrase] += self._mycroft2ovos(old_style,
-                                                             media_type)
         self.gui.update_search_results()
         if self.query_replies.get(phrase):
             return [s for s in self.query_replies[phrase] if s.get("results")]
 
         # fallback to generic search type
         if self.settings.search_fallback and media_type != MediaType.GENERIC:
-            # TODO dont query skills that found results for non-generic
-            #  query again
-            LOG.debug(
-                "OVOSCommonPlay falling back to MediaType.GENERIC")
+            LOG.debug("OVOSCommonPlay falling back to MediaType.GENERIC")
             return self.search(phrase, media_type=MediaType.GENERIC)
         return []
 
@@ -275,36 +269,3 @@ class OCPSearch(OCPAbstractComponent):
     def clear(self):
         self.search_playlist.clear()
         self.gui.update_search_results()
-
-    # TODO move to mycroft class
-    @staticmethod
-    def _mycroft2ovos(results, media_type=MediaType.GENERIC):
-        new_style = []
-        for res in results:
-            data = res['callback_data']
-            data["skill_id"] = res["skill_id"]
-            data["phrase"] = res["phrase"]
-            data["is_old_style"] = True  # internal flag for playback handling
-            data['match_confidence'] = res["conf"] * 100
-            data["uri"] = data.get("stream") or \
-                          data.get("url") or \
-                          data.get("uri")
-
-            # Essentially a random guess....
-            data["question_type"] = media_type
-            data["playback"] = PlaybackType.SKILL
-            if not data.get("image"):
-                data["image"] = data.get("logo") or \
-                                data.get("picture")
-            if not data.get("bg_image"):
-                data["bg_image"] = data.get("background") or \
-                                   data.get("bg_picture") or \
-                                   data.get("logo") or \
-                                   data.get("picture")
-
-            new_style.append({'phrase': res["phrase"],
-                              "is_old_style": True,
-                              'results': [data],
-                              'searching': False,
-                              'skill_id': res["skill_id"]})
-        return new_style

@@ -50,6 +50,11 @@ class MycroftCommonPlayInterface(OCPAbstractComponent):
             # Collect all replies until the timeout
             self.query_replies[message.data["phrase"]].append(message.data)
 
+            # forward response in OCP format
+            data = self.cps2ocp(message.data)
+            self.bus.emit(message.forward(
+                "ovos.common_play.query.response", data))
+
     def send_query(self, phrase, media_type=MediaType.GENERIC):
         self.query_replies[phrase] = []
         self.query_extensions[phrase] = []
@@ -69,45 +74,23 @@ class MycroftCommonPlayInterface(OCPAbstractComponent):
         while self.waiting and time.time() - start_ts <= timeout:
             time.sleep(0.2)
         self.waiting = False
-        res = self.get_results(phrase)
-        if res:
-            return res
-        if media_type != MediaType.GENERIC:
-            return self.search(phrase, media_type=MediaType.GENERIC,
-                               timeout=timeout)
-        return []
+        return self.get_results(phrase)
 
-    def search_best(self, phrase, media_type=MediaType.GENERIC,
-                    timeout=5):
-        # check responses
-        # Look at any replies that arrived before the timeout
-        # Find response(s) with the highest confidence
-        best = None
-        ties = []
-        for handler in self.search(phrase, media_type, timeout):
-            if not best or handler["conf"] > best["conf"]:
-                best = handler
-                ties = []
-            elif handler["conf"] == best["conf"]:
-                ties.append(handler)
-
-        if best:
-            if ties:
-                # select randomly
-                skills = ties + [best]
-                selected = random.choice(skills)
-                # TODO: Ask user to pick between ties or do it
-                # automagically
-            else:
-                selected = best
-
-            # will_resume = self.track_status == TrackState.PAUSED \
-            #              and not bool(phrase.strip())
-            will_resume = False
-            return {"skill_id": selected["skill_id"],
-                    "phrase": phrase,
-                    "question_type": media_type,
-                    "trigger_stop": not will_resume,
-                    "callback_data": selected.get("callback_data")}
-
-        return {}
+    @staticmethod
+    def cps2ocp(res, media_type=MediaType.GENERIC):
+        data = {
+            "playback": PlaybackType.SKILL,
+            "media_type": media_type,
+            "is_cps": True,
+            "cps_data":  res['callback_data'],
+            "skill_id": res["skill_id"],
+            "phrase": res["phrase"],
+            'match_confidence': res["conf"] * 100,
+            "title": res["phrase"],
+            "artist": res["skill_id"]
+        }
+        return {'phrase': res["phrase"],
+                "is_old_style": True,
+                'results': [data],
+                'searching': False,
+                'skill_id': res["skill_id"]}

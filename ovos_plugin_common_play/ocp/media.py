@@ -16,7 +16,7 @@ class MediaEntry:
                  playback=PlaybackType.UNDEFINED,
                  status=TrackState.DISAMBIGUATION, phrase=None,
                  position=0, length=None, bg_image=None, skill_icon=None,
-                 artist=None,
+                 artist=None, is_cps=False, cps_data=None,
                  **kwargs):
         self.match_confidence = match_confidence
         self.title = title
@@ -31,7 +31,9 @@ class MediaEntry:
         self.length = length  # None -> live stream
         self.skill_icon = skill_icon or join(dirname(__file__), "res/ui/images/ocp.png")
         self.bg_image = bg_image or "https://source.unsplash.com/weekly?music"
+        self.is_cps = is_cps
         self.data = kwargs
+        self.cps_data = cps_data or {}
 
     def update(self, entry, skipkeys=None):
         skipkeys = skipkeys or []
@@ -56,6 +58,8 @@ class MediaEntry:
         data["uri"] = data.get("stream") or data.get("uri") or data.get("url")
         data["title"] = data.get("title") or data["uri"]
         data["artist"] = data.get("artist") or data.get("author")
+        data["is_cps"] = data.get("is_old_style") or data.get("is_cps", False)
+        data["cps_data"] = data.get("cps_data") or {}
         return MediaEntry(**data)
 
     @property

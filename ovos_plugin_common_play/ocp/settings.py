@@ -41,14 +41,14 @@ class OCPSettings(PrivateSettings):
     def early_stop_thresh(self):
         """ early_stop_thresh (int): stop collecting results if we get a
                                    match with confidence >= early_stop_thresh"""
-        return self.get("early_stop_thresh", 90)
+        return self.get("early_stop_thresh", 85)
 
     @property
     def early_stop_grace_period(self):
         """early_stop_grace_period (float): sleep this amount before early stop,
                                    allows skills that "just miss" to also be
                                    taken into account"""
-        return self.get("early_stop_grace_period", 1.0)
+        return self.get("early_stop_grace_period", 0.5)
 
     @property
     def backwards_compatibility(self):
@@ -110,7 +110,7 @@ class OCPSettings(PrivateSettings):
         """max_timeout (float): maximum time to wait for skill replies,
                                  after this time, regardless of number of
                                  results, selection is triggered"""
-        return self.get("max_timeout", 5)
+        return self.get("max_timeout", 2.5)
 
     @property
     def min_score(self):

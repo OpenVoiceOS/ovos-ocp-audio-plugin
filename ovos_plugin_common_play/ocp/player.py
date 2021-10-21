@@ -70,6 +70,8 @@ class OCPMediaPlayer(OVOSAbstractApplication):
                        self.handle_pause_request)
         self.add_event('ovos.common_play.resume',
                        self.handle_resume_request)
+        self.add_event('ovos.common_play.stop',
+                       self.handle_stop_request)
         self.add_event('ovos.common_play.next',
                        self.handle_next_request)
         self.add_event('ovos.common_play.previous',
@@ -179,17 +181,23 @@ class OCPMediaPlayer(OVOSAbstractApplication):
 
     # stream handling
     def validate_stream(self):
-        try:
-            self.now_playing.extract_stream()
-        except Exception as e:
-            LOG.exception(e)
-            return False
-        has_gui = is_gui_running() or is_gui_connected(self.bus)
-        if not has_gui or self.settings.force_audioservice:
-            # No gui, so lets force playback to use audio only
-            self.now_playing.playback = PlaybackType.AUDIO_SERVICE
+        if self.now_playing.is_cps:
+            self.now_playing.playback = PlaybackType.SKILL
 
-        self.gui["stream"] = self.now_playing.uri
+        if self.active_backend not in [PlaybackType.SKILL,
+                                       PlaybackType.UNDEFINED,
+                                       PlaybackType.MPRIS]:
+            try:
+                self.now_playing.extract_stream()
+            except Exception as e:
+                LOG.exception(e)
+                return False
+            has_gui = is_gui_running() or is_gui_connected(self.bus)
+            if not has_gui or self.settings.force_audioservice:
+                # No gui, so lets force playback to use audio only
+                self.now_playing.playback = PlaybackType.AUDIO_SERVICE
+            self.gui["stream"] = self.now_playing.uri
+
         self.gui.update_current_track()
         return True
 
@@ -243,11 +251,11 @@ class OCPMediaPlayer(OVOSAbstractApplication):
                     "state": TrackState.PLAYING_AUDIO}))
         elif self.active_backend == PlaybackType.SKILL:
             LOG.debug("Requesting playback: PlaybackType.SKILL")
-            if self.now_playing.data.get("is_old_style"):
+            if self.now_playing.is_cps:
                 LOG.debug("     - Mycroft common play result selected")
                 self.bus.emit(Message('play:start',
                                       {"skill_id": self.now_playing.skill_id,
-                                       "callback_data": self.now_playing.info,
+                                       "callback_data": self.now_playing.cps_data,
                                        "phrase": self.now_playing.phrase}))
             else:
                 self.bus.emit(Message(
@@ -371,7 +379,6 @@ class OCPMediaPlayer(OVOSAbstractApplication):
 
         LOG.debug("Stopping playback")
         if self.active_backend in [PlaybackType.AUDIO_SERVICE,
-                                   PlaybackType.SKILL,
                                    PlaybackType.UNDEFINED]:
             self.stop_audio_service()
         if self.active_backend in [PlaybackType.SKILL,
@@ -467,6 +474,9 @@ class OCPMediaPlayer(OVOSAbstractApplication):
     def handle_pause_request(self, message):
         self.pause()
 
+    def handle_stop_request(self, message):
+        self.stop()
+
     def handle_resume_request(self, message):
         self.resume()
 
@@ -506,10 +516,12 @@ class OCPMediaPlayer(OVOSAbstractApplication):
     def handle_playlist_queue_request(self, message):
         for track in message.data["tracks"]:
             self.playlist.add_entry(track)
+        self.gui.update_playlist()
 
     def handle_playlist_clear_request(self, message):
         self.playlist.clear()
         self.set_media_state(MediaState.NO_MEDIA)
+        self.gui.update_playlist()
 
     # audio ducking
     def handle_duck_request(self, message):

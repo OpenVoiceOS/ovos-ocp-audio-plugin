@@ -44,19 +44,18 @@ class OCP(OVOSAbstractApplication):
                                      settings=self.settings,
                                      resources_dir=res_dir,
                                      gui=self.gui)
-
-        self.add_event("ovos.common_play.ping", self.handle_ping)
-
         self.media_intents = IntentContainer()
         self.register_media_intents()
-
         self.replace_mycroft_cps()
-
-        # bus api shared with play intent
-        self.add_event("ovos.common_play.search", self.handle_play)
+        self.register_ocp_api_events()
 
     def handle_ping(self, message):
         self.bus.emit(message.reply("ovos.common_play.pong"))
+
+    def register_ocp_api_events(self):
+        self.add_event("ovos.common_play.ping", self.handle_ping)
+        # bus api shared with intents
+        self.add_event("ovos.common_play.search", self.handle_play)
 
     def register_ocp_intents(self, message=None):
         self.clear_intents()  # remove old intents
@@ -94,12 +93,10 @@ class OCP(OVOSAbstractApplication):
             "mycroft-playback-control",
             "skill-playback-control",  # simple git clone
 
-            # when ocp was a skill it lived in several places
+            # when ocp was a skill
             "skill-better-playback-control",
             "skill-better-playback-control.jarbasskills",
-            "skill-better-playback-control.openvoiceos",
-            "skill-ovos-common-play",
-            "skill-ovos-common-play.openvoiceos",
+            "skill-better-playback-control.openvoiceos"
         ]
 
         # disable any loaded mycroft cps skill
@@ -198,6 +195,7 @@ class OCP(OVOSAbstractApplication):
 
         # search common play skills
         results = self._search(phrase, utterance, media_type)
+
         self._do_play(phrase, results, media_type)
 
     # "read XXX" - non "play XXX" audio book intent
