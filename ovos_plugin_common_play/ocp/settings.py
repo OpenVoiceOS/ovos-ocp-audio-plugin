@@ -2,6 +2,7 @@ from ovos_plugin_common_play.ocp.status import MediaType, PlaybackMode
 from ovos_utils.skills.settings import PrivateSettings
 from ovos_plugin_common_play.ocp.stream_handlers import YoutubeBackend, \
     BandcampBackend, YdlBackend
+from dbus_next.constants import BusType
 
 
 class OCPSettings(PrivateSettings):
@@ -19,6 +20,13 @@ class OCPSettings(PrivateSettings):
 
     def __init__(self):
         super(OCPSettings, self).__init__("ovos.common_play")
+
+    @property
+    def dbus_type(self):
+        dbustype = self.get("dbus_type") or "session"
+        if dbustype.lower().strip() == "system":
+            return BusType.SYSTEM
+        return BusType.SESSION
 
     @property
     def playback_mode(self):

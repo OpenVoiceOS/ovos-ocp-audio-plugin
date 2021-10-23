@@ -1,7 +1,7 @@
 import asyncio
 from threading import Thread, Event
 from time import sleep
-
+from dbus_next.constants import BusType
 from dbus_next.aio import MessageBus as DbusMessageBus
 from dbus_next.message import Message as DbusMessage, \
     MessageType as DbusMessageType
@@ -34,6 +34,12 @@ class MprisPlayerCtl(Thread):
     def bind(self, ocp_player):
         self._ocp_player = ocp_player
         self.start()
+
+    @property
+    def dbus_type(self):
+        if self._ocp_player:
+            return self._ocp_player.settings.dbus_type
+        return BusType.SESSION
 
     def _update_ocp(self):
         if self.stop_event.is_set():
@@ -325,10 +331,16 @@ class MprisPlayerCtl(Thread):
         self.stop_event.clear()
         self.pause_event.clear()
 
-        if not self.dbus:
-            self.dbus = await DbusMessageBus().connect()
-
         while not self.shutdown_event.is_set():
+            if not self._ocp_player:
+                # wait for self.bind to be called
+                sleep(1)
+                continue
+
+            if not self.dbus:
+                self.dbus = await DbusMessageBus(
+                    bus_type=self.dbus_type).connect()
+
             # ocp requests to manipulate external players
             if self.stop_event.is_set():
                 await self._stop_all()
