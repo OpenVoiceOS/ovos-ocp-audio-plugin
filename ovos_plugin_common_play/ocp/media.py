@@ -54,7 +54,7 @@ class MediaEntry:
                          data.get("duration")  # or get_duration_from_url(url)
         data["skill_icon"] = data.get("skill_icon") or data.get("skill_logo")
         data["status"] = data.get("status") or TrackState.DISAMBIGUATION
-        data["playback"] = data.get("playback") or PlaybackType.UNDEFINED
+        data["playback"] = data.get("playback", PlaybackType.UNDEFINED)
         data["uri"] = data.get("stream") or data.get("uri") or data.get("url")
         data["title"] = data.get("title") or data["uri"]
         data["artist"] = data.get("artist") or data.get("author")
