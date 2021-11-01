@@ -148,8 +148,8 @@ Mycroft.Delegate {
                         
                         Image {
                             id: songSource
-                            Layout.preferredHeight: Kirigami.Units.iconSizes.huge + Kirigami.Units.largeSpacing
-                            Layout.preferredWidth: Kirigami.Units.iconSizes.huge + Kirigami.Units.largeSpacing
+                            Layout.preferredHeight: Mycroft.Units.iconSizes.huge + Kirigami.Units.largeSpacing
+                            Layout.preferredWidth: Mycroft.Units.iconSizes.huge + Kirigami.Units.largeSpacing
                             Layout.alignment: Qt.AlignHCenter
                             fillMode: Image.PreserveAspectFit
                             source: modelData.source
