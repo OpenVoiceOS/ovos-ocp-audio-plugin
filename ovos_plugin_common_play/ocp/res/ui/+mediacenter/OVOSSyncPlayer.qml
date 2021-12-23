@@ -203,7 +203,7 @@ Mycroft.Delegate {
                     contentItem: Kirigami.Icon {
                         anchors.fill: parent
                         anchors.margins: Mycroft.Units.gridUnit
-                        source: root.loopStatus === "RepeatTrack" ? Qt.resolvedUrl("../images/media-playlist-repeat.svg") : root.loopStatus === "None" ? Qt.resolvedUrl("../images/media-playlist-repeat-track.svg") : Qt.resolvedUrl("../images/media-playlist-repeat.svg")
+                        source: root.loopStatus === "RepeatTrack" ? Qt.resolvedUrl("images/media-playlist-repeat.svg") : root.loopStatus === "None" ? Qt.resolvedUrl("images/media-playlist-repeat-track.svg") : Qt.resolvedUrl("images/media-playlist-repeat.svg")
                         color: root.loopStatus === "None" ? "white" : root.loopStatus === "RepeatTrack" ? "white" : "grey"
                     }
 
@@ -235,7 +235,7 @@ Mycroft.Delegate {
                         anchors.fill: parent
                         anchors.margins: Mycroft.Units.gridUnit
 
-                        source: Qt.resolvedUrl("../images/media-skip-backward.svg")
+                        source: Qt.resolvedUrl("images/media-skip-backward.svg")
                         color: root.canPrev === true ? "white" : "grey"
                     }
 
@@ -272,7 +272,7 @@ Mycroft.Delegate {
                     contentItem: Kirigami.Icon {
                         anchors.fill: parent
                         anchors.margins: Mycroft.Units.gridUnit
-                        source: playerState === "Playing" ? Qt.resolvedUrl("../images/media-playback-pause.svg") : Qt.resolvedUrl("../images/media-playback-start.svg")
+                        source: playerState === "Playing" ? Qt.resolvedUrl("images/media-playback-pause.svg") : Qt.resolvedUrl("images/media-playback-start.svg")
                         color: root.canResume === true ? "white" : "grey"
                     }
 
@@ -303,7 +303,7 @@ Mycroft.Delegate {
                     contentItem: Kirigami.Icon {
                         anchors.fill: parent
                         anchors.margins: Mycroft.Units.gridUnit
-                        source: Qt.resolvedUrl("../images/media-skip-forward.svg")
+                        source: Qt.resolvedUrl("images/media-skip-forward.svg")
                         color: root.canNext === true ? "white" : "grey"
                     }
 
@@ -333,7 +333,7 @@ Mycroft.Delegate {
                     contentItem: Kirigami.Icon {
                         anchors.fill: parent
                         anchors.margins: Mycroft.Units.gridUnit
-                        source: Qt.resolvedUrl("../images/media-playlist-shuffle.svg")
+                        source: Qt.resolvedUrl("images/media-playlist-shuffle.svg")
                         color: root.shuffleStatus === true ? "white" : "grey"
                     }
 

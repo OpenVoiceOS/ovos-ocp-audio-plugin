@@ -110,7 +110,7 @@ Item {
                         anchors.fill: parent
                         anchors.margins: Mycroft.Units.gridUnit
 
-                        source: currentState === MediaPlayer.PlayingState ? Qt.resolvedUrl("../images/media-playback-pause.svg") : Qt.resolvedUrl("../images/media-playback-start.svg")
+                        source: currentState === MediaPlayer.PlayingState ? Qt.resolvedUrl("images/media-playback-pause.svg") : Qt.resolvedUrl("images/media-playback-start.svg")
                         color: "white"
                     }
 
@@ -147,7 +147,7 @@ Item {
                         anchors.fill: parent
                         anchors.margins: Mycroft.Units.gridUnit
 
-                        source: Qt.resolvedUrl("../images/media-skip-backward.svg")
+                        source: Qt.resolvedUrl("images/media-skip-backward.svg")
                         color: "white"
                     }
 
@@ -185,7 +185,7 @@ Item {
                         anchors.fill: parent
                         anchors.margins: Mycroft.Units.gridUnit
 
-                        source: Qt.resolvedUrl("../images/media-skip-forward.svg")
+                        source: Qt.resolvedUrl("images/media-skip-forward.svg")
                         color: "white"
                     }
 
@@ -349,7 +349,7 @@ Item {
                         anchors.fill: parent
                         anchors.margins: Mycroft.Units.gridUnit
 
-                        source: Qt.resolvedUrl("../images/back.svg")
+                        source: Qt.resolvedUrl("images/back.svg")
                         color: "white"
                     }
 
