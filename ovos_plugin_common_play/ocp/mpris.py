@@ -28,7 +28,9 @@ class MprisPlayerCtl(Thread):
         self.players = {}
         self.player_meta = {}
         self._player_fails = {}
-
+        self.ignored_players = [
+            "org.mpris.MediaPlayer2.plasma-browser-integration"  # browsers already show up as individual players
+        ]
         self._ocp_player = None
 
     def bind(self, ocp_player):
@@ -73,7 +75,8 @@ class MprisPlayerCtl(Thread):
             self._ocp_player.set_now_playing(data)
 
     async def handle_new_player(self, data):
-        LOG.info(f"Found MPRIS Player: {data['name']}")
+        if data['name'] not in self._player_fails:
+            LOG.info(f"Found MPRIS Player: {data['name']}")
 
     async def handle_player_shuffle(self, shuffle):
         LOG.info(f"MPRIS Player Shuffle: {shuffle}")
@@ -86,9 +89,10 @@ class MprisPlayerCtl(Thread):
 
     async def handle_lost_player(self, name):
         LOG.info(f"Lost MPRIS Player: {name}")
-        self._player_fails.pop(name)
-        self.player_meta.pop(name)
-        self.players.pop(name)
+        if name in self.player_meta:
+            self.player_meta.pop(name)
+        if name in self.players:
+            self.players.pop(name)
 
     async def handle_sync_player(self, data):
         if data.get("state") == 'Playing':
@@ -214,7 +218,7 @@ class MprisPlayerCtl(Thread):
         players = []
         for name in reply.body[0]:
             if "org.mpris.MediaPlayer2" in name:
-                if name in self.players:
+                if name in self.players or name in self.ignored_players:
                     continue
                 await self.handle_new_player({"name": name})
                 introspection = await self.dbus.introspect(
@@ -241,6 +245,8 @@ class MprisPlayerCtl(Thread):
                                   invalidated_properties):
             for changed, variant in changed_properties.items():
                 player_name = properties.bus_name
+                if player_name in self.ignored_players:
+                    continue
                 if changed == "PlaybackStatus":
                     await self.handle_player_state(variant.value)
                     state = self.player_meta[player_name].get("state")
@@ -291,6 +297,9 @@ class MprisPlayerCtl(Thread):
         await self.handle_sync_player(ocp_data)
 
     async def query_player(self, name):
+        if self._player_fails.get(name, 0) >= 3:
+            # do not keep querying players that dont expose full mpris functionality
+            return
         if name not in self.players:
             LOG.error(f"Invalid player: {name}")
             return

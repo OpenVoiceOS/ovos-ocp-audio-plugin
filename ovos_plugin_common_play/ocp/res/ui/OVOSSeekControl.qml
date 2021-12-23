@@ -94,7 +94,7 @@ Item {
 
                 Controls.Button {
                     id: button
-                    Layout.preferredWidth: parent.width > 600 ? Mycroft.Units.iconSizes.large : Mycroft.Units.iconSizes.medium
+                    Layout.preferredWidth: parent.width > 600 ? Kirigami.Units.iconSizes.large : Kirigami.Units.iconSizes.medium
                     Layout.preferredHeight: Layout.preferredWidth
                     highlighted: focus ? 1 : 0
                     z: 1000
@@ -131,7 +131,7 @@ Item {
 
                 Controls.Button {
                     id: prevbutton
-                    Layout.preferredWidth: parent.width > 600 ? Mycroft.Units.iconSizes.large : Mycroft.Units.iconSizes.medium
+                    Layout.preferredWidth: parent.width > 600 ? Kirigami.Units.iconSizes.large : Kirigami.Units.iconSizes.medium
                     Layout.preferredHeight: Layout.preferredWidth
                     highlighted: focus ? 1 : 0
                     z: 1000
@@ -169,7 +169,7 @@ Item {
 
                 Controls.Button {
                     id: nextbutton
-                    Layout.preferredWidth: parent.width > 600 ? Mycroft.Units.iconSizes.large : Mycroft.Units.iconSizes.medium
+                    Layout.preferredWidth: parent.width > 600 ? Kirigami.Units.iconSizes.large : Kirigami.Units.iconSizes.medium
                     Layout.preferredHeight: Layout.preferredWidth
                     highlighted: focus ? 1 : 0
                     z: 1000
@@ -245,7 +245,7 @@ Item {
                         Rectangle {
                             id: hand
                             anchors.verticalCenter: parent.verticalCenter
-                            implicitWidth: Mycroft.Units.iconSizes.small + Mycroft.Units.smallSpacing
+                            implicitWidth: Kirigami.Units.iconSizes.small + Kirigami.Units.smallSpacing
                             implicitHeight: parent.height / 2
                             color: Qt.rgba(0.2, 0.2, 0.2, 1)
                             border.color: "#21bea6"
@@ -333,7 +333,7 @@ Item {
 
                 Controls.Button {
                     id: backButton
-                    Layout.preferredWidth: parent.width > 600 ? Mycroft.Units.iconSizes.large : Mycroft.Units.iconSizes.medium
+                    Layout.preferredWidth: parent.width > 600 ? Kirigami.Units.iconSizes.large : Kirigami.Units.iconSizes.medium
                     Layout.preferredHeight: Layout.preferredWidth
                     highlighted: focus ? 1 : 0
                     z: 1000

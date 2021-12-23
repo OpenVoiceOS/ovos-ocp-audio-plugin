@@ -412,7 +412,7 @@ Mycroft.Delegate {
                 Rectangle {
                     id: hand
                     anchors.verticalCenter: parent.verticalCenter
-                    implicitWidth: Mycroft.Units.iconSizes.small + Kirigami.Units.smallSpacing
+                    implicitWidth: Kirigami.Units.iconSizes.small + Kirigami.Units.smallSpacing
                     implicitHeight: parent.height
                     color: Qt.rgba(0.2, 0.2, 0.2, 1)
                     border.color: "#21bea6"

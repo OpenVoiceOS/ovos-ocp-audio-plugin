@@ -81,7 +81,7 @@ class OCPSettings(PrivateSettings):
     @property
     def force_audioservice(self):
         """
-        if True play all media in audio_only service (vlc), DO NOT use mycroft-gui.
+        if True play all media in audio_only service, DO NOT use mycroft-gui.
         Some use cases:
          - headless installs
          - setups with multiple mycroft-guis connected

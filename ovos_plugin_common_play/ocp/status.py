@@ -111,3 +111,4 @@ class MediaType(IntEnum):
     SHORT_FILM = 17
     SILENT_MOVIE = 18
     BLACK_WHITE_MOVIE = 20
+    CARTOON = 21

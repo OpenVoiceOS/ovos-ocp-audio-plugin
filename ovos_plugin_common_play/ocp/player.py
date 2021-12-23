@@ -236,8 +236,8 @@ class OCPMediaPlayer(OVOSAbstractApplication):
                                    PlaybackType.AUDIO_SERVICE]:
             LOG.debug("Requesting playback: PlaybackType.AUDIO")
             if self.active_backend == PlaybackType.AUDIO_SERVICE:
-                # we explicitly want to use vlc for audio only output
-                self.audio_service.play(self.now_playing.uri, utterance="vlc")
+                # we explicitly want to use simple backend for audio only output
+                self.audio_service.play(self.now_playing.uri, utterance="simple")
                 self.bus.emit(Message("ovos.common_play.track.state", {
                     "state": TrackState.PLAYING_AUDIOSERVICE}))
                 self.set_player_state(PlayerState.PLAYING)
@@ -359,8 +359,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
                 Message(f'ovos.common_play.{self.active_skill}.resume'))
 
         if self.active_backend in [PlaybackType.AUDIO,
-                                   PlaybackType.VIDEO,
-                                   PlaybackType.UNDEFINED]:
+                                   PlaybackType.VIDEO]:
             self.bus.emit(Message('gui.player.media.service.resume'))
 
         if self.active_backend in [PlaybackType.MPRIS]:

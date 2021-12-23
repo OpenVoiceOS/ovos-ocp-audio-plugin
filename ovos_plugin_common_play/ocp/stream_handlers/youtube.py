@@ -103,7 +103,8 @@ def get_ydl_stream(url, preferred_ext=None, backend=YdlBackend.YDLP,
     ydl_opts = ydl_opts or {
         "quiet": True,
         "hls_prefer_native": True,
-        "verbose": False
+        "verbose": False,
+        "format": "best"
     }
 
     if backend == YdlBackend.YDLP:

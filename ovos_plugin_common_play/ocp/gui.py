@@ -20,8 +20,8 @@ class OCPMediaPlayerGUI(GUIInterface):
                               self.handle_play_from_playlist)
         self.player.add_event('ovos.common_play.search.play',
                               self.handle_play_from_search)
-        self.player.add_event('ovos.common_play.collection.play',
-                              self.handle_play_from_collection)
+        self.player.add_event('ovos.common_play.skill.play',
+                              self.handle_play_skill_featured_media)
 
     @property
     def search_spinner_page(self):
@@ -30,6 +30,10 @@ class OCPMediaPlayerGUI(GUIInterface):
     @property
     def search_screen_page(self):
         return join(self.player.res_dir, "ui", "Search.qml")
+
+    @property
+    def skills_page(self):
+        return join(self.player.res_dir, "ui", "OCPSkillsView.qml")
 
     @property
     def audio_player_page(self):
@@ -165,12 +169,13 @@ class OCPMediaPlayerGUI(GUIInterface):
         media = message.data["playlistData"]
         self.player.play_media(media)
 
-    def handle_play_from_collection(self, message):
-        playlist = message.data["playlistData"]
-        collection = message.data["collection"]
+    def handle_play_skill_featured_media(self, message):
+        LOG.info("Featured Media request")
+        print(message.data)
+        playlist = message.data["playlist"]
         media = playlist[0]
         self.player.play_media(media, playlist=playlist,
-                               disambiguation=collection)
+                               disambiguation=playlist)
 
     # audio_only service -> gui
     def handle_sync_seekbar(self, message):

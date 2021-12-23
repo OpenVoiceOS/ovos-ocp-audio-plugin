@@ -244,7 +244,7 @@ class NowPlaying(MediaEntry):
                                self.handle_sync_seekbar)
         self._player.add_event('gui.player.media.service.get.meta',
                                self.handle_player_metadata_request)
-        self._player.add_event('mycroft.audio_only.service.track_info_reply',
+        self._player.add_event('mycroft.audio.service.track_info_reply',
                                self.handle_sync_trackinfo)
 
     def shutdown(self):

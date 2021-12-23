@@ -13,36 +13,74 @@ from ovos_utils.log import LOG
 from ovos_utils.messagebus import Message
 
 
-class OCPSearch(OCPAbstractComponent):
-    def __init__(self, player=None):
-        super(OCPSearch, self).__init__(player)
-        self.search_playlist = Playlist()
+class OCPQuery:
+    def __init__(self, query, ocp_search, media_type=MediaType.GENERIC):
+        self.query = query
+        self.media_type = media_type
+        self.ocp_search = ocp_search
+        self.reset()
+
+    def reset(self):
         self.active_skills = []
-        self.query_replies = {}
-        self.query_timeouts = {}
+        self.query_replies = []
         self.searching = False
         self.search_start = 0
-        self.old_cps = None
-        if player:
-            self.bind(player)
+        self.query_timeouts = self.settings.min_timeout
 
-    def bind(self, player):
-        self._player = player
-        self.old_cps = MycroftCommonPlayInterface() if \
-            self.settings.backwards_compatibility else None
-        if self.old_cps:
-            self.old_cps.bind(player)
-        self.add_event("ovos.common_play.skill.search_start",
-                       self.handle_skill_search_start)
-        self.add_event("ovos.common_play.skill.search_end",
-                       self.handle_skill_search_end)
-        self.add_event("ovos.common_play.query.response",
-                       self.handle_skill_response)
+    @property
+    def settings(self):
+        return self.ocp_search.settings
 
-    def shutdown(self):
-        self.remove_event("ovos.common_play.skill.search_start")
-        self.remove_event("ovos.common_play.skill.search_end")
-        self.remove_event("ovos.common_play.query.response")
+    @property
+    def search_playlist(self):
+        return self.ocp_search.search_playlist
+
+    @property
+    def bus(self):
+        return self.ocp_search.bus
+
+    @property
+    def gui(self):
+        return self.ocp_search.gui
+
+    def send(self):
+        self.query_replies = []
+        self.query_timeouts = self.settings.min_timeout
+        self.search_start = time.time()
+        self.searching = True
+        self.register_events()
+        self.bus.emit(Message('ovos.common_play.query',
+                              {"phrase": self.query,
+                               "question_type": self.media_type}))
+
+    def wait(self):
+        # if there is no match type defined, lets increase timeout a bit
+        # since all skills need to search
+        if self.media_type == MediaType.GENERIC:
+            timeout = self.settings.max_timeout + 3  # timeout bonus
+        else:
+            timeout = self.settings.max_timeout
+        while self.searching and time.time() - self.search_start <= timeout:
+            time.sleep(0.1)
+        self.searching = False
+        self.remove_events()
+
+    @property
+    def results(self):
+        return [s for s in self.query_replies if s.get("results")]
+
+    def register_events(self):
+        self.ocp_search.add_event("ovos.common_play.skill.search_start",
+                                  self.handle_skill_search_start)
+        self.ocp_search.add_event("ovos.common_play.skill.search_end",
+                                  self.handle_skill_search_end)
+        self.ocp_search.add_event("ovos.common_play.query.response",
+                                  self.handle_skill_response)
+
+    def remove_events(self):
+        self.ocp_search.remove_event("ovos.common_play.skill.search_start")
+        self.ocp_search.remove_event("ovos.common_play.skill.search_end")
+        self.ocp_search.remove_event("ovos.common_play.query.response")
 
     def handle_skill_search_start(self, message):
         skill_id = message.data["skill_id"]
@@ -52,26 +90,28 @@ class OCPSearch(OCPAbstractComponent):
 
     def handle_skill_response(self, message):
         search_phrase = message.data["phrase"]
+        if search_phrase != self.query:
+            # not an answer for this search query
+            return
         timeout = message.data.get("timeout")
         skill_id = message.data['skill_id']
         # LOG.debug(f"OVOSCommonPlay result: {skill_id}")
 
         if message.data.get("searching"):
             # extend the timeout by N seconds
-            if timeout and self.settings.allow_extensions and \
-                    search_phrase in self.query_timeouts:
-                self.query_timeouts[search_phrase] += timeout
+            if timeout and self.settings.allow_extensions:
+                self.query_timeouts += timeout
             # else -> expired search
 
-        elif search_phrase in self.query_replies:
+        else:
             # Collect replies until the timeout
-            if not self.searching and not len(
-                    self.query_replies[search_phrase]):
+            if not self.searching and not len(self.query_replies):
                 LOG.debug("  too late!! ignored in track selection process")
                 LOG.warning(
                     f"{message.data['skill_id']} is not answering fast "
                     "enough!")
 
+            # populate search playlist
             has_gui = is_gui_running() or is_gui_connected(self.bus)
             results = message.data.get("results", [])
             for idx, res in enumerate(results):
@@ -89,8 +129,10 @@ class OCPSearch(OCPAbstractComponent):
                         results[idx] = None  # can't play this search result!
                         LOG.error(f"Empty playlist for {res}")
                         continue
-                elif uri and not any(uri.startswith(e) for e in
-                                     available_extractors()):
+                elif uri and res.get("playback") not in [
+                    PlaybackType.SKILL, PlaybackType.UNDEFINED] and \
+                        not any(
+                            uri.startswith(e) for e in available_extractors()):
                     results[idx] = None  # can't play this search result!
                     LOG.error(f"stream handler not available for {res}")
                     continue
@@ -117,13 +159,12 @@ class OCPSearch(OCPAbstractComponent):
 
             # remove filtered results
             message.data["results"] = [r for r in results if r is not None]
-            self.query_replies[search_phrase].append(message.data)
+            self.query_replies.append(message.data)
 
             # abort searching if we gathered enough results
             # TODO ensure we have a decent confidence match, if all matches
             #  are < 50% conf extend timeout instead
-            if time.time() - self.search_start > self.query_timeouts[
-                search_phrase]:
+            if time.time() - self.search_start > self.query_timeouts:
                 if self.searching:
                     self.searching = False
                     LOG.debug("common play query timeout, parsing results")
@@ -133,8 +174,8 @@ class OCPSearch(OCPAbstractComponent):
 
             elif self.searching:
                 for res in message.data.get("results", []):
-                    if res.get("match_confidence",
-                               0) >= self.settings.early_stop_thresh:
+                    if res.get("match_confidence", 0) >= \
+                            self.settings.early_stop_thresh:
                         # got a really good match, dont search further
                         LOG.info(
                             "Receiving very high confidence match, stopping "
@@ -172,21 +213,55 @@ class OCPSearch(OCPAbstractComponent):
             self.searching = False
         self.gui.update_search_results()
 
+
+class OCPSearch(OCPAbstractComponent):
+    def __init__(self, player=None):
+        super(OCPSearch, self).__init__(player)
+        self.search_playlist = Playlist()
+        self.old_cps = None
+        self.ocp_skills = {}
+        if player:
+            self.bind(player)
+
+    def bind(self, player):
+        self._player = player
+        self.old_cps = MycroftCommonPlayInterface() if \
+            self.settings.backwards_compatibility else None
+        if self.old_cps:
+            self.old_cps.bind(player)
+        self.add_event("ovos.common_play.skills.announce",
+                       self.handle_new_ocp_skill)
+        self.add_event("ovos.common_play.skills.detach",
+                       self.handle_ocp_skill_detach)
+
+    def shutdown(self):
+        self.remove_event("ovos.common_play.skills.announce")
+        self.remove_event("ovos.common_play.skills.detach")
+
+    def handle_new_ocp_skill(self, message):
+        skill_id = message.data["skill_id"]
+        if skill_id not in self.ocp_skills:
+            self.ocp_skills[skill_id] = []
+
+    def handle_ocp_skill_detach(self, message):
+        skill_id = message.data["skill_id"]
+        if skill_id in self.ocp_skills:
+            self.ocp_skills.pop(skill_id)
+
+    def get_featured_videos(self):
+        raise NotImplemented
+
     def search(self, phrase, media_type=MediaType.GENERIC):
         # stop any search still happening
         self.bus.emit(Message("ovos.common_play.search.stop"))
         self.gui.show_search_spinner()
         self.clear()
-        self.query_replies[phrase] = []
-        self.query_timeouts[phrase] = self.settings.min_timeout
-        self.search_start = time.time()
-        self.searching = True
-        self.bus.emit(Message('ovos.common_play.query',
-                              {"phrase": phrase,
-                               "question_type": media_type}))
+
+        query = OCPQuery(query=phrase, media_type=media_type, ocp_search=self)
+        query.send()
 
         # old common play will send the messages expected by the official
-        # mycroft stack, but skills are know to over match, dont support
+        # mycroft stack, but skills are known to over match, dont support
         # match type, and the GUI can be different for every skill, it may also
         # cause issues with status tracking and mess up playlists. An
         # imperfect compatibility layer has been implemented at skill and
@@ -194,28 +269,20 @@ class OCPSearch(OCPAbstractComponent):
         if self.old_cps:
             self.old_cps.send_query(phrase, media_type)
 
-        # if there is no match type defined, lets increase timeout a bit
-        # since all skills need to search
-        if media_type == MediaType.GENERIC:
-            bonus = 3  # timeout bonus
-        else:
-            bonus = 0
-
-        while self.searching and \
-                time.time() - self.search_start <= self.settings.max_timeout + bonus:
-            time.sleep(0.1)
-
-        self.searching = False
-
-        self.gui.update_search_results()
-        if self.query_replies.get(phrase):
-            return [s for s in self.query_replies[phrase] if s.get("results")]
+        query.wait()
 
         # fallback to generic search type
-        if self.settings.search_fallback and media_type != MediaType.GENERIC:
+        if not query.results and \
+                self.settings.search_fallback and \
+                media_type != MediaType.GENERIC:
             LOG.debug("OVOSCommonPlay falling back to MediaType.GENERIC")
-            return self.search(phrase, media_type=MediaType.GENERIC)
-        return []
+            query.media_type = MediaType.GENERIC
+            query.reset()
+            query.send()
+            query.wait()
+
+        self.gui.update_search_results()
+        return query.results
 
     def search_skill(self, skill_id, phrase,
                      media_type=MediaType.GENERIC):
