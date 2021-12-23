@@ -20,7 +20,7 @@ setup(
                       "padaos",
                       "youtube-dl",
                       "dbus_next",
-                      "ovos_workshop~=0.0.5a2"],
+                      "ovos_workshop~=0.0.5a5"],
     zip_safe=True,
     include_package_data=True,
     classifiers=[
