@@ -104,12 +104,12 @@ class OCPMediaPlayerGUI(GUIInterface):
 
     def update_search_results(self):
         self["searchModel"] = {
-            "data": [e.info for e in self.player.disambiguation]
+            "data": [e.infocard for e in self.player.disambiguation]
         }
 
     def update_playlist(self):
         self["playlistModel"] = {
-            "data": [e.info for e in self.player.tracks]
+            "data": [e.infocard for e in self.player.tracks]
         }
 
     def show_playback_error(self):
@@ -179,12 +179,22 @@ class OCPMediaPlayerGUI(GUIInterface):
     def handle_play_from_playlist(self, message):
         LOG.info("Playback requested from playlist results")
         media = message.data["playlistData"]
-        self.player.play_media(media)
+        for track in self.player.playlist:
+            if track == media: # found track
+                self.player.play_media(track)
+                break
+        else:
+            LOG.error("Track is not part of loaded playlist!")
 
     def handle_play_from_search(self, message):
         LOG.info("Playback requested from search results")
         media = message.data["playlistData"]
-        self.player.play_media(media)
+        for track in self.player.disambiguation:
+            if track == media:  # found track
+                self.player.play_media(track)
+                break
+        else:
+            LOG.error("Track is not part of search results!")
 
     def handle_play_skill_featured_media(self, message):
         skill_id = message.data["skill_id"]

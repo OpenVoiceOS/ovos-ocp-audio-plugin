@@ -65,13 +65,18 @@ class MediaEntry:
     @property
     def info(self):
         # media results / playlist QML data model
-        return merge_dict(self.as_dict, {
+        return merge_dict(self.as_dict, self.infocard)
+
+    @property
+    def infocard(self):
+        return {
             "duration": self.length,
             "track": self.title,
             "image": self.image,
             "album": self.skill_id,
-            "source": self.skill_icon
-        })
+            "source": self.skill_icon,
+            "uri": self.uri
+        }
 
     @property
     def as_dict(self):
@@ -85,9 +90,9 @@ class MediaEntry:
 
     def __eq__(self, other):
         if isinstance(other, MediaEntry):
-            other = other.as_dict
+            other = other.infocard
         # dict compatison
-        return other == self.as_dict
+        return other == self.infocard
 
     def __repr__(self):
         return str(self.as_dict)
