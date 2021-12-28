@@ -10,6 +10,7 @@ class OCPMediaPlayerGUI(GUIInterface):
         # the skill_id is chosen so the namespace matches the regular bus api
         # ie, the gui event "XXX" is sent in the bus as "ovos.common_play.XXX"
         super(OCPMediaPlayerGUI, self).__init__(skill_id="ovos.common_play")
+        self.ocp_skills = {}  # skill_id: meta
 
     def bind(self, player):
         self.player = player
@@ -61,6 +62,15 @@ class OCPMediaPlayerGUI(GUIInterface):
         super().shutdown()
 
     # OCPMediaPlayer interface
+    def update_ocp_skills(self):
+        self["skillCards"] = [
+            {"skill_id": skill["skill_id"],
+             "title": skill["skill_name"],
+             "image": skill["thumbnail"]
+             }
+            for skill in self.ocp_skills.values()
+            if skill["featured"]]
+
     def update_seekbar_capabilities(self):
         self["canResume"] = True
         self["canPause"] = True
@@ -112,8 +122,13 @@ class OCPMediaPlayerGUI(GUIInterface):
         self.show_page(self.search_spinner_page, override_idle=30)
 
     def show_home(self):
-        self.release()
-        self.show_pages([self.search_screen_page],
+        self.update_ocp_skills()
+        to_remove = [self.search_spinner_page,
+                     self.video_player_page,
+                     self.audio_player_page,
+                     self.audio_service_page]
+        self.remove_pages([p for p in to_remove if p in self.pages])
+        self.show_pages([self.search_screen_page, self.skills_page],
                         index=0, override_idle=True,
                         override_animations=True)
 
@@ -122,7 +137,9 @@ class OCPMediaPlayerGUI(GUIInterface):
         super().release()
 
     def show_player(self):
-        to_remove = [self.search_spinner_page, self.search_screen_page]
+        to_remove = [self.search_spinner_page,
+                     self.search_screen_page,
+                     self.skills_page]
         if self.player.active_backend == PlaybackType.AUDIO_SERVICE or \
                 self.player.settings.force_audioservice:
             page = self.audio_service_page
@@ -170,8 +187,8 @@ class OCPMediaPlayerGUI(GUIInterface):
         self.player.play_media(media)
 
     def handle_play_skill_featured_media(self, message):
-        LOG.info("Featured Media request")
-        print(message.data)
+        skill_id = message.data["skill_id"]
+        LOG.debug(f"Featured Media request: {skill_id}")
         playlist = message.data["playlist"]
         media = playlist[0]
         self.player.play_media(media, playlist=playlist,

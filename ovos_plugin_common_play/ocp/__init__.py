@@ -1,5 +1,5 @@
 from os.path import join, dirname, isfile
-
+from ovos_workshop.skills.decorators.ocp import *
 from ovos_plugin_common_play.ocp.gui import OCPMediaPlayerGUI
 from ovos_plugin_common_play.ocp.player import OCPMediaPlayer
 from ovos_plugin_common_play.ocp.settings import OCPSettings
@@ -44,25 +44,37 @@ class OCP(OVOSAbstractApplication):
                                      settings=self.settings,
                                      resources_dir=res_dir,
                                      gui=self.gui)
-        self.featured_videos = {}  # skill_id : Playlist
         self.media_intents = IntentContainer()
+        self.register_ocp_api_events()
         self.register_media_intents()
         self.replace_mycroft_cps()
-        self.register_ocp_api_events()
 
     def handle_ping(self, message):
         self.bus.emit(message.reply("ovos.common_play.pong"))
 
+    def handle_skill_announce(self, message):
+        skill_id = message.data["skill_id"]
+        skill_name = message.data.get("skill_name") or skill_id
+        img = message.data.get("thumbnail")
+        has_featured = bool(message.data.get("featured_tracks"))
+
+        if skill_id not in self.gui.ocp_skills:
+            LOG.debug(f"Found OCP Skill: {skill_id}")
+            self.gui.ocp_skills[skill_id] = {
+                "skill_id": skill_id,
+                "skill_name": skill_name,
+                "thumbnail": img,
+                "featured": has_featured
+            }
+
     def register_ocp_api_events(self):
         self.add_event("ovos.common_play.ping", self.handle_ping)
+        self.add_event('ovos.common_play.announce', self.handle_skill_announce)
         # bus api shared with intents
         self.add_event("ovos.common_play.search", self.handle_play)
 
-        # trigger a presence announcement from all loaded ocp skills
-        self.bus.emit(Message("ovos.common_play.skills.get"))
-
     def register_ocp_intents(self, message=None):
-        self.clear_intents()  # remove old intentsices]
+        self.clear_intents()  # remove old intents
         self.register_intent("play.intent", self.handle_play)
         self.register_intent("read.intent", self.handle_read)
         self.register_intent("open.intent", self.handle_open)
@@ -70,34 +82,9 @@ class OCP(OVOSAbstractApplication):
         self.register_intent("prev.intent", self.handle_prev)
         self.register_intent("pause.intent", self.handle_pause)
         self.register_intent("resume.intent", self.handle_resume)
-        self.register_intent("featured.intent", self.handle_featured)
 
-    def gather_featured_videos(self):
-        self.bus.emit(Message(""))
-        self.bus.wait_response()
-
-    def handle_featured(self, message):
-        self.player.gui.release()
-
-        base = "/home/user/my_code/ovos_workspace/ovos_common_play/ovos_plugin_common_play/ocp/res/ui/images"
-        self.player.gui["skillCards"] = [
-            {"skill_id": "A",
-             "title": "Skill A",
-             "image": f"{base}/home.png",
-             "playlist": []
-             },
-            {"skill_id": "B",
-             "title": "Skill B",
-             "image": f"{base}/media-fullscreen.svg",
-             "playlist": []
-             },
-            {"skill_id": "C",
-             "title": "Skill C",
-             "image": f"{base}/ocp.png",
-             "playlist": []
-             }
-        ]
-        self.player.gui.show_page(self.player.gui.skills_page)
+        # trigger a presence announcement from all loaded ocp skills
+        self.bus.emit(Message("ovos.common_play.skills.get"))
 
     def register_media_intents(self):
         """

@@ -32,7 +32,7 @@ Mycroft.Delegate {
     topPadding: 0
     bottomPadding: 0
 
-    skillBackgroundSource: "https://source.unsplash.com/weekly?abstract"
+    skillBackgroundSource: "https://source.unsplash.com/1920x1080/?+music"
 
     Keys.onBackPressed: {
         parent.parent.parent.currentIndex++
@@ -47,6 +47,19 @@ Mycroft.Delegate {
             CategoryBoxHomeView {
                 id: homeCatView
             }
+        }
+
+        Kirigami.Heading {
+            id: watchItemList
+            text: "Skills"
+            level: 2
+        }
+
+        Kirigami.Separator {
+            id: sept2
+            Layout.fillWidth: true
+            Layout.preferredHeight: 1
+            z: 100
         }
 
         StackView {

@@ -136,8 +136,7 @@ ItemDelegate {
     onClicked: {
         skillsListView.forceActiveFocus()
         skillsListView.currentIndex = index
-        triggerGuiEvent("skill.play",
-        {"title": model.title, "skill_id": model.skill_id,
-        "playlist": model.playlist, "image": model.image})
+        triggerGuiEvent("featured_tracks.play",
+        {"title": model.title, "skill_id": model.skill_id})
     }
 }
