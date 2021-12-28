@@ -1,10 +1,13 @@
 import enum
 
+import requests
+
 
 class YoutubeBackend(str, enum.Enum):
     YDL = "youtube-dl"
     PYTUBE = "pytube"
     PAFY = "pafy"
+    INVIDIOUS = "invidious"
 
 
 class YdlBackend(str, enum.Enum):
@@ -69,26 +72,21 @@ def get_youtube_live_from_channel(url, backend=YoutubeLiveBackend.PYTUBE,
         raise ValueError("invalid backend")
 
 
-def get_youtube_stream(url, backend=YoutubeBackend.PYTUBE,
+def get_youtube_stream(url, backend=YoutubeBackend.INVIDIOUS,
                        fallback=True, audio_only=False,
                        ydl_backend=YdlBackend.YDL, best=True):
     try:
         if backend == YoutubeBackend.PYTUBE:
             return get_pytube_stream(url, best=best, audio_only=audio_only)
-        if backend == YoutubeBackend.PAFY:
+        elif backend == YoutubeBackend.PAFY:
             return get_pafy_stream(url, audio_only=audio_only, best=best)
-        return get_ydl_stream(url, fallback=fallback, backend=ydl_backend,
-                              best=best, audio_only=audio_only)
+        elif backend != YoutubeBackend.INVIDIOUS:
+            return get_ydl_stream(url, fallback=fallback, backend=ydl_backend,
+                                  best=best, audio_only=audio_only)
     except:
-        if fallback:
-            if backend in [YoutubeBackend.PYTUBE, YoutubeBackend.PAFY]:
-                return get_youtube_stream(url, backend=YoutubeBackend.YDL,
-                                          audio_only=audio_only,
-                                          fallback=False, best=best)
-            return get_youtube_stream(url, backend=YoutubeBackend.PYTUBE,
-                                      audio_only=audio_only,
-                                      fallback=False, best=best)
-        raise
+        if not fallback:
+            raise
+    return get_invidious_stream(url)
 
 
 def is_youtube(url):
@@ -96,6 +94,18 @@ def is_youtube(url):
     if not url:
         return False
     return "youtube.com/" in url or "youtu.be/" in url
+
+
+def get_invidious_stream(url, host="https://vid.puffyan.us", *args, **kwargs):
+    # proxy via invidious instance
+    # public instances: https://docs.invidious.io/Invidious-Instances.md
+    # self host: https://github.com/iv-org/invidious
+    vid_id = url.split("watch?v=")[-1].split("&")[0]
+    info = {
+        "uri": f"{host}/latest_version?id={vid_id}&itag=22",
+        "image": f"{host}/vi/{vid_id}/mqdefault.jpg"
+    }
+    return info
 
 
 def get_ydl_stream(url, preferred_ext=None, backend=YdlBackend.YDLP,

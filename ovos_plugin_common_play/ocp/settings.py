@@ -145,10 +145,11 @@ class OCPSettings(PrivateSettings):
     def youtube_backend(self):
         """class YoutubeBackend(str, enum.Enum):
         YDL = "youtube-dl"
-        PYTUBE = "pytube" <- default
+        PYTUBE = "pytube"
         PAFY = "pafy"
+        INVIDIOUS = "invidious"  <- default
         """
-        return self.get("youtube_backend") or YoutubeBackend.PYTUBE
+        return self.get("youtube_backend") or YoutubeBackend.INVIDIOUS
 
     @property
     def yt_chlive_backend(self):
