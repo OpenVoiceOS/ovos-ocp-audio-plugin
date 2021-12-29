@@ -24,7 +24,7 @@ def get_deezer_audio_stream(url, deezer=None, path=None):
         track_info["image"] = "file://" + t.image_path
         return track_info
     except Exception as e:
-        print(e)
+        LOG.error(e)
         return {}
 
 
