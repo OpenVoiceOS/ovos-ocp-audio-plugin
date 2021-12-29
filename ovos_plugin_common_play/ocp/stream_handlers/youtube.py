@@ -1,5 +1,4 @@
 import enum
-
 import requests
 
 
@@ -73,21 +72,20 @@ def get_youtube_live_from_channel(url, backend=YoutubeLiveBackend.PYTUBE,
         raise ValueError("invalid backend")
 
 
-def get_youtube_stream(url, backend=YoutubeBackend.INVIDIOUS,
-                       fallback=True, audio_only=False,
-                       ydl_backend=YdlBackend.YDL, best=True):
-    try:
-        if backend == YoutubeBackend.PYTUBE:
-            return get_pytube_stream(url, best=best, audio_only=audio_only)
-        elif backend == YoutubeBackend.PAFY:
-            return get_pafy_stream(url, audio_only=audio_only, best=best)
-        elif backend != YoutubeBackend.INVIDIOUS:
-            return get_ydl_stream(url, fallback=fallback, backend=ydl_backend,
-                                  best=best, audio_only=audio_only)
-    except:
-        if not fallback:
-            raise
-    return get_invidious_stream(url)
+def get_youtube_stream(url,
+                       audio_only=False,
+                       ocp_settings=None):
+    settings = ocp_settings or {}
+    backend = settings.get("youtube_backend") or YoutubeBackend.YDL
+    if backend == YoutubeBackend.PYTUBE:
+        extractor = get_pytube_stream
+    elif backend == YoutubeBackend.PAFY:
+        extractor = get_pafy_stream
+    elif backend == YoutubeBackend.INVIDIOUS:
+        extractor = get_invidious_stream
+    else:
+        extractor = get_ydl_stream
+    return extractor(url, audio_only=audio_only, ocp_settings=settings)
 
 
 def is_youtube(url):
@@ -97,14 +95,20 @@ def is_youtube(url):
     return "youtube.com/" in url or "youtu.be/" in url
 
 
-def get_invidious_stream(url, host="https://vid.puffyan.us", *args, **kwargs):
+def get_invidious_stream(url, audio_only=False, ocp_settings=None):
     # proxy via invidious instance
     # public instances: https://docs.invidious.io/Invidious-Instances.md
     # self host: https://github.com/iv-org/invidious
-    # TODO options from config
+
+    settings = ocp_settings or {}
+    host = settings.get("invidious_host")
+    local = "true" if settings.get("proxy_invidious") else "false"
+
     vid_id = url.split("watch?v=")[-1].split("&")[0]
+    stream = f"{host}/latest_version?id={vid_id}&itag=22&local={local}&subtitles=en"
+
     info = {
-        "uri": f"{host}/latest_version?id={vid_id}&itag=22&local=true&subtitles=en",
+        "uri": stream,
         "image": f"{host}/vi/{vid_id}/mqdefault.jpg"
     }
 
@@ -125,8 +129,10 @@ def get_invidious_stream(url, host="https://vid.puffyan.us", *args, **kwargs):
     return info
 
 
-def get_ydl_stream(url, preferred_ext=None, backend=YdlBackend.YDLP,
-                   fallback=True, ydl_opts=None, audio_only=False, best=True):
+def get_ydl_stream(url, audio_only=False, ocp_settings=None,
+                   preferred_ext=None, backend=YdlBackend.YDL,
+                   fallback=True, ydl_opts=None, best=True):
+    settings = ocp_settings or {}
     ydl_opts = ydl_opts or {
         "quiet": True,
         "hls_prefer_native": True,
@@ -135,21 +141,9 @@ def get_ydl_stream(url, preferred_ext=None, backend=YdlBackend.YDLP,
     }
 
     if backend == YdlBackend.YDLP:
-        try:
-            import yt_dlp as youtube_dl
-        except ImportError:
-            if fallback:
-                return get_ydl_stream(url, preferred_ext, YdlBackend.YDL,
-                                      False)
-            raise
+        import yt_dlp as youtube_dl
     elif backend == YdlBackend.YDLC:
-        try:
-            import youtube_dlc as youtube_dl
-        except ImportError:
-            if fallback:
-                return get_ydl_stream(url, preferred_ext, YdlBackend.YDL,
-                                      False, audio_only=audio_only)
-            raise
+        import youtube_dlc as youtube_dl
     elif backend == YdlBackend.YDL:
         import youtube_dl
     else:
@@ -204,8 +198,9 @@ def _select_ydl_format(meta, audio_only=False, preferred_ext=None, best=True):
     return fmts[0]["url"]
 
 
-def get_pafy_stream(url, audio_only=False, best=True):
+def get_pafy_stream(url,  audio_only=False, ocp_settings=None):
     import pafy
+    settings = ocp_settings or {}
     stream = pafy.new(url)
     meta = {
         "url": url,
@@ -236,8 +231,9 @@ def get_pafy_stream(url, audio_only=False, best=True):
     return meta
 
 
-def get_pytube_stream(url, audio_only=False, best=True):
+def get_pytube_stream(url, audio_only=False, ocp_settings=None, best=True):
     from pytube import YouTube
+    settings = ocp_settings or {}
     yt = YouTube(url)
     s = None
     if audio_only:
@@ -300,6 +296,14 @@ def get_youtubesearcher_channel_livestreams(url):
 
 
 if __name__ == "__main__":
+    host = "https://vid.puffyan.us"
+    vid_id = "wBYy8n-DK8M"
+    stream = f"{host}/latest_version?id={vid_id}&itag=22&local=true&subtitles=en"
+    stream2 = f"{host}/latest_version?id={vid_id}&itag=22&local=false&subtitles=en"
+    print(requests.head(stream).history)
+    print(requests.get(stream2).url)
+    print(stream)
+    exit()
     lives = "https://www.youtube.com/channel/UCihCtNZnFkG62U4na9JsPJQ"
     for ch in get_youtubesearcher_channel_livestreams(lives):
         print(ch)

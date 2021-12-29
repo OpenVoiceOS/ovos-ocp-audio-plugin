@@ -144,12 +144,26 @@ class OCPSettings(PrivateSettings):
     @property
     def youtube_backend(self):
         """class YoutubeBackend(str, enum.Enum):
-        YDL = "youtube-dl"
+        YDL = "youtube-dl" <- default
         PYTUBE = "pytube"
         PAFY = "pafy"
-        INVIDIOUS = "invidious"  <- default
+        INVIDIOUS = "invidious"
         """
-        return self.get("youtube_backend") or YoutubeBackend.INVIDIOUS
+        return self.get("youtube_backend") or YoutubeBackend.YDL
+
+    @property
+    def invidious_host(self):
+        """the url to the invidious instance to be used"""
+        return self.get("invidious_host") or "https://vid.puffyan.us"
+
+    @property
+    def proxy_invidious(self):
+        """get final stream locally or from where invidious is hosted
+        This partially allows bypassing geoblocked content,
+        but it is a global flag, not per entry.
+        TODO: allow to specify per track
+        """
+        return self.get("invidious_proxy", False)
 
     @property
     def yt_chlive_backend(self):

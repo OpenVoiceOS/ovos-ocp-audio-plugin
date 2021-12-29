@@ -308,14 +308,15 @@ class NowPlaying(MediaEntry):
             # supports more than youtube!!!
             uri = uri.replace("ydl//", "")
             meta = get_ydl_stream(uri,
-                                  backend=self._player.settings.ydl_backend)
+                ocp_settings=self._player.settings)
             if not meta:
                 LOG.error("ydl stream extraction failed!!!")
         elif uri.startswith("youtube//") or is_youtube(uri):
             uri = uri.replace("youtube//", "")
             meta = get_youtube_stream(
-                uri, backend=self._player.settings.youtube_backend,
-                audio_only=not video, ydl_backend=self._player.settings.ydl_backend)
+                uri,
+                audio_only=not video,
+                ocp_settings=self._player.settings)
             if not meta:
                 LOG.error("youtube stream extraction failed!!!")
 
