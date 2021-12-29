@@ -32,7 +32,7 @@ class OCPAudioBackend(AudioBackend):
         config["search_fallback"] = True
         config["auto_play"] = True
         config["max_timeout"] = 15
-        config["min_timeout"] = 8
+        config["min_timeout"] = 5
         config["min_score"] = 30
 
         ocp_settings = OCPSettings()
