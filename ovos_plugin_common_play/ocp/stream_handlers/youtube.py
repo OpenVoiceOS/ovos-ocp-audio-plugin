@@ -23,17 +23,18 @@ class YoutubeLiveBackend(str, enum.Enum):
 
 def _parse_title(title):
     # try to extract_streams artist from title
-    delims = ["-", ":", "|"]
+    delims = [":", "|", "-"]
+
+    removes = ["(Official Video)", "(Official Music Video)",
+               "(Lyrics)", "(Official)", "(Album Stream)",
+               "(Legendado)"]
+    removes += [s.replace("(", "").replace(")", "") for s in removes] + \
+               [s.replace("[", "").replace("]", "") for s in removes]
+    removes += [s.upper() for s in removes] + [s.lower() for s in removes]
+    removes += ["(HQ)", "()", "[]", "- HQ -"]
+
     for d in delims:
         if d in title:
-            removes = ["(Official Video)", "(Official Music Video)",
-                       "(Lyrics)", "(Official)", "(Album Stream)",
-                       "(Legendado)"]
-            removes += [s.replace("(", "").replace(")", "") for s in removes] + \
-                       [s.replace("[", "").replace("]", "") for s in removes]
-            removes += [s.upper() for s in removes] + [s.lower() for s in
-                                                       removes]
-            removes += ["(HQ)", "()", "[]", "- HQ -"]
             for k in removes:
                 title = title.replace(k, "")
             artist = title.split(d)[0]
@@ -100,11 +101,27 @@ def get_invidious_stream(url, host="https://vid.puffyan.us", *args, **kwargs):
     # proxy via invidious instance
     # public instances: https://docs.invidious.io/Invidious-Instances.md
     # self host: https://github.com/iv-org/invidious
+    # TODO options from config
     vid_id = url.split("watch?v=")[-1].split("&")[0]
     info = {
-        "uri": f"{host}/latest_version?id={vid_id}&itag=22",
+        "uri": f"{host}/latest_version?id={vid_id}&itag=22&local=true&subtitles=en",
         "image": f"{host}/vi/{vid_id}/mqdefault.jpg"
     }
+
+    html = requests.get(f"{host}/watch?v={vid_id}").text
+    info["length"] = float(html.split('"length_seconds":')[-1].split(",")[0]) * 1000
+
+    for m in html.split("<meta ")[1:]:
+        if not m.startswith('name="'):
+            continue
+        if 'name="description"' in m:
+            pass
+        if 'name="keywords"' in m:
+            pass
+        if 'name="twitter:title"' in m:
+            title = m.split('content="')[-1].split(">")[0][:-1]
+            title, artist = _parse_title(title)
+            info["title"] = title
     return info
 
 
