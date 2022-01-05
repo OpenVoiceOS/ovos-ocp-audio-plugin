@@ -1,8 +1,9 @@
 from os.path import join, dirname
 
-from ovos_plugin_common_play.ocp.status import *
 from ovos_utils.gui import GUIInterface
 from ovos_utils.log import LOG
+
+from ovos_plugin_common_play.ocp.status import *
 
 
 class OCPMediaPlayerGUI(GUIInterface):
@@ -49,6 +50,10 @@ class OCPMediaPlayerGUI(GUIInterface):
         return join(self.player.res_dir, "ui", "OVOSVideoPlayer.qml")
 
     @property
+    def web_player_page(self):
+        return join(self.player.res_dir, "ui", "OVOSWebPlayer.qml")
+
+    @property
     def search_page(self):
         return join(self.player.res_dir, "ui", "Disambiguation.qml")
 
@@ -92,15 +97,18 @@ class OCPMediaPlayerGUI(GUIInterface):
 
     def update_current_track(self):
         self.update_seekbar_capabilities()
+
         self["media"] = self.player.now_playing.info
+        self["uri"] = self.player.now_playing.uri
         self["title"] = self.player.now_playing.title
         self["image"] = self.player.now_playing.image or \
                         join(dirname(__file__), "res/ui/images/ocp.png")
         self["artist"] = self.player.now_playing.artist
         self["bg_image"] = self.player.now_playing.bg_image or \
-                        join(dirname(__file__), "res/ui/images/ocp.png")
+                           join(dirname(__file__), "res/ui/images/ocp.png")
         self["duration"] = self.player.now_playing.length
         self["position"] = self.player.now_playing.position
+        self["javascript"] = self.player.now_playing.javascript
 
     def update_search_results(self):
         self["searchModel"] = {
@@ -125,6 +133,7 @@ class OCPMediaPlayerGUI(GUIInterface):
         self.update_ocp_skills()
         to_remove = [self.search_spinner_page,
                      self.video_player_page,
+                     self.web_player_page,
                      self.audio_player_page,
                      self.audio_service_page]
         self.remove_pages([p for p in to_remove if p in self.pages])
@@ -137,50 +146,70 @@ class OCPMediaPlayerGUI(GUIInterface):
         super().release()
 
     def show_player(self):
+        # remove old pages
+        self.remove_pages(self._get_pages_to_rm())
+        # show new pages
+        self.show_pages(self._get_pages_to_display(),
+                        index=0, override_idle=True,
+                        override_animations=True)
+
+    # page helpers
+    def _get_player_page(self):
+        if self.player.active_backend == PlaybackType.AUDIO_SERVICE or \
+                self.player.settings.force_audioservice:
+            return self.audio_service_page
+        elif self.player.active_backend == PlaybackType.VIDEO:
+            return self.video_player_page
+        elif self.player.active_backend == PlaybackType.AUDIO:
+            return self.audio_player_page
+        elif self.player.active_backend == PlaybackType.WEBVIEW:
+            return self.web_player_page
+        elif self.player.active_backend == PlaybackType.MPRIS:
+            return self.audio_service_page
+        else:  # external playback (eg. skill)
+            # TODO ?
+            return self.audio_service_page
+
+    def _get_pages_to_rm(self):
         to_remove = [self.search_spinner_page,
                      self.search_screen_page,
                      self.skills_page]
-        if self.player.active_backend == PlaybackType.AUDIO_SERVICE or \
-                self.player.settings.force_audioservice:
-            page = self.audio_service_page
-            to_remove += [self.video_player_page, self.audio_player_page]
-        elif self.player.active_backend == PlaybackType.VIDEO:
-            page = self.video_player_page
-            to_remove += [self.audio_service_page, self.audio_player_page]
-        elif self.player.active_backend == PlaybackType.AUDIO:
-            page = self.audio_player_page
-            to_remove += [self.video_player_page, self.audio_service_page]
-        else:  # skill / mpris / undefined
-            # TODO ?
-            page = self.audio_service_page
-            to_remove += [self.video_player_page, self.audio_player_page]
 
+        # remove old player pages
+        to_remove += [p for p in (self.video_player_page,
+                                  self.audio_player_page,
+                                  self.audio_service_page,
+                                  self.web_player_page)
+                      if p != self._get_player_page()]
+
+        # check if search_results / playlist pages should be displayed
         if self.player.active_backend in [PlaybackType.MPRIS]:
             # external player, no search or playlists
-            pages = [page]
             to_remove += [self.search_page, self.playlist_page]
         else:
-            pages = [page]
-            if len(self.player.disambiguation):
-                pages.append(self.search_page)
-            else:
+            if not len(self.player.disambiguation):
                 to_remove.append(self.search_page)
-
-            if len(self.player.tracks):
-                pages.append(self.playlist_page)
-            else:
+            if not len(self.player.tracks):
                 to_remove.append(self.playlist_page)
 
-        self.remove_pages([p for p in to_remove if p in self.pages])
-        self.show_pages(pages, index=0, override_idle=True,
-                        override_animations=True)
+        # filter all active pages that fit the criteria
+        return [p for p in to_remove if p in self.pages]
+
+    def _get_pages_to_display(self):
+        # determine pages to be shown
+        pages = [self._get_player_page()]
+        if len(self.player.disambiguation):
+            pages.append(self.search_page)
+        if len(self.player.tracks):
+            pages.append(self.playlist_page)
+        return pages
 
     # gui <-> playlists
     def handle_play_from_playlist(self, message):
         LOG.info("Playback requested from playlist results")
         media = message.data["playlistData"]
         for track in self.player.playlist:
-            if track == media: # found track
+            if track == media:  # found track
                 self.player.play_media(track)
                 break
         else:
@@ -201,7 +230,7 @@ class OCPMediaPlayerGUI(GUIInterface):
         LOG.debug(f"Featured Media request: {skill_id}")
         playlist = message.data["playlist"]
         media = playlist[0]
-        self.player.play_media(media, playlist=playlist,
+        self.player.play_media(media, playlist=[media],
                                disambiguation=playlist)
 
     # audio_only service -> gui

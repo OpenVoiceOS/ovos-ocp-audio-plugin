@@ -251,7 +251,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
                     "state": TrackState.PLAYING_AUDIO}))
         elif self.active_backend == PlaybackType.SKILL:
             LOG.debug("Requesting playback: PlaybackType.SKILL")
-            if self.now_playing.is_cps:
+            if self.now_playing.is_cps:  # mycroft-core compat layer
                 LOG.debug("     - Mycroft common play result selected")
                 self.bus.emit(Message('play:start',
                                       {"skill_id": self.now_playing.skill_id,
@@ -272,6 +272,11 @@ class OCPMediaPlayer(OVOSAbstractApplication):
                 "repeat": False}))
             self.bus.emit(Message("ovos.common_play.track.state", {
                 "state": TrackState.PLAYING_VIDEO}))
+        elif self.active_backend == PlaybackType.WEBVIEW:
+            LOG.debug("Requesting playback: PlaybackType.WEBVIEW")
+            # open a url in native webview in mycroft-gui
+            self.bus.emit(Message("ovos.common_play.track.state", {
+                "state": TrackState.PLAYING_WEBVIEW}))
         else:
             raise ValueError("invalid playback request")
 

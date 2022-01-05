@@ -20,11 +20,13 @@ class TrackState(IntEnum):
     PLAYING_VIDEO = 22  # Skill forwarded playback to gui player
     PLAYING_AUDIO = 23  # Skill forwarded audio playback to gui player
     PLAYING_MPRIS = 24  # External media player is handling playback
+    PLAYING_WEBVIEW = 25  # Media playback handled in browser (eg. javascript)
 
     QUEUED_SKILL = 30  # Waiting playback to be handled inside skill
     QUEUED_AUDIOSERVICE = 31  # Waiting playback in audio service
     QUEUED_VIDEO = 32  # Waiting playback in gui
     QUEUED_AUDIO = 33  # Waiting playback in gui
+    QUEUED_WEBVIEW = 34  # Waiting playback in gui
 
 
 class MediaState(IntEnum):
@@ -68,13 +70,13 @@ class LoopState(IntEnum):
 
 class PlaybackType(IntEnum):
     SKILL = 0  # skills handle playback whatever way they see fit,
-    # eg spotify / mycroft common play
+               # eg spotify / mycroft common play
     VIDEO = 1  # Video results
     AUDIO = 2  # Results should be played audio only
     AUDIO_SERVICE = 3  # Results should be played without using the GUI
     MPRIS = 4  # External MPRIS compliant player
-    UNDEFINED = 100  # data not available,
-    # hopefully status will be updated soon..
+    WEBVIEW = 5  # GUI webview, render a url instead of media player
+    UNDEFINED = 100  # data not available, hopefully status will be updated soon..
 
 
 class PlaybackMode(IntEnum):

@@ -16,7 +16,7 @@ class MediaEntry:
                  playback=PlaybackType.UNDEFINED,
                  status=TrackState.DISAMBIGUATION, phrase=None,
                  position=0, length=None, bg_image=None, skill_icon=None,
-                 artist=None, is_cps=False, cps_data=None,
+                 artist=None, is_cps=False, cps_data=None, javascript="",
                  **kwargs):
         self.match_confidence = match_confidence
         self.title = title
@@ -34,6 +34,7 @@ class MediaEntry:
         self.is_cps = is_cps
         self.data = kwargs
         self.cps_data = cps_data or {}
+        self.javascript = javascript  # custom code to run in Webview after page load
 
     def update(self, entry, skipkeys=None):
         skipkeys = skipkeys or []
