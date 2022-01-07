@@ -68,13 +68,18 @@ class OCPMediaPlayerGUI(GUIInterface):
 
     # OCPMediaPlayer interface
     def update_ocp_skills(self):
-        self["skillCards"] = [
+        skills_cards = [
             {"skill_id": skill["skill_id"],
              "title": skill["skill_name"],
              "image": skill["thumbnail"]
              }
             for skill in self.ocp_skills.values()
             if skill["featured"]]
+
+        if not self.player.settings.adult_content:
+            pass # TODO filter adult skills
+
+        self["skillCards"] = skills_cards
 
     def update_seekbar_capabilities(self):
         self["canResume"] = True

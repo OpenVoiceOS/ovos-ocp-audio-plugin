@@ -312,14 +312,18 @@ class NowPlaying(MediaEntry):
                 ocp_settings=self._player.settings)
             if not meta:
                 LOG.error("ydl stream extraction failed!!!")
+
         elif uri.startswith("youtube//") or is_youtube(uri):
             uri = uri.replace("youtube//", "")
-            meta = get_youtube_stream(
-                uri,
-                audio_only=not video,
-                ocp_settings=self._player.settings)
+            if self.playback != PlaybackType.WEBVIEW:
+                meta = get_youtube_stream(
+                    uri,
+                    audio_only=not video,
+                    ocp_settings=self._player.settings)
             if not meta:
                 LOG.error("youtube stream extraction failed!!!")
+                LOG.warning("Forcing webview playback")
+                self.playback = PlaybackType.WEBVIEW
 
         # .pls and .m3u are not supported by gui player, parse the file
         if ".pls" in uri or ".m3u" in uri:

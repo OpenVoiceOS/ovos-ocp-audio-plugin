@@ -115,6 +115,10 @@ class OCPQuery:
             has_gui = is_gui_running() or is_gui_connected(self.bus)
             results = message.data.get("results", [])
             for idx, res in enumerate(results):
+                # skip adult content results unless explicitly enabled
+                if not self.settings.adult_content and res.get("media_type", "") == MediaType.ADULT:
+                    continue
+
                 # filter uris we can play, usually files and http streams, but some
                 # skills might return results that depend on additional packages,
                 # eg. soundcloud, rss, youtube, deezer....

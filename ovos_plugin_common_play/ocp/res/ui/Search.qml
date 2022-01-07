@@ -27,7 +27,7 @@ Mycroft.Delegate {
     id: root
     skillBackgroundSource: "https://source.unsplash.com/1920x1080/?+music"
     property bool compactMode: parent.height >= 550 ? 0 : 1
-    fillWidth: compactMode ? 1 : 0
+    fillWidth: true
 
     Component.onCompleted: {
         txtFld.forceActiveFocus()

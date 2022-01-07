@@ -9,6 +9,7 @@ import Mycroft 1.0 as Mycroft
 
 Mycroft.Delegate {
     id: root
+    fillWidth: true
     property var pageUrl: sessionData.uri
     
     onPageUrlChanged: {

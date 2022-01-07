@@ -142,6 +142,15 @@ class OCPSettings(PrivateSettings):
         return self.get("merge_search", True)
 
     @property
+    def adult_content(self):
+        """by default adult content is not displayed in skills menu
+        TODO:
+         - split into its own UI
+         - modify search results (and voice interaction) via this flag
+        """
+        return self.get("adult_content", False)
+
+    @property
     def youtube_backend(self):
         """class YoutubeBackend(str, enum.Enum):
         YDL = "youtube-dl" <- default
