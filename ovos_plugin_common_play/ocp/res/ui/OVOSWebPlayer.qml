@@ -11,6 +11,7 @@ Mycroft.Delegate {
     id: root
     fillWidth: true
     property var pageUrl: sessionData.uri
+    skillBackgroundSource: "black"
 
     onPageUrlChanged: {
         console.log("opening webview from mediacenter")
