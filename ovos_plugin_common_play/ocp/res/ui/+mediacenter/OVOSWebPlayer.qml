@@ -11,11 +11,19 @@ Mycroft.Delegate {
     id: root
     fillWidth: true
     property var pageUrl: sessionData.uri
-
+    
     onPageUrlChanged: {
         console.log("opening webview from mediacenter")
         console.log(pageUrl)
         webview.url = pageUrl
+    }
+
+    function viewLeftPressed() {
+        parent.parent.parent.currentIndex--
+    }
+
+    function viewRightPressed() {
+        parent.parent.parent.currentIndex++
     }
 
     WebEngineView {
@@ -56,7 +64,7 @@ Mycroft.Delegate {
                 request.openIn(webview);
             }
         }
-
+        
         onJavaScriptDialogRequested: function(request) {
             request.accepted = true;
         }
@@ -67,6 +75,12 @@ Mycroft.Delegate {
 
         onJavaScriptConsoleMessage: {
             console.log(message)
+            if(message == "rightPageRequested") {
+                viewRightPressed()
+            }
+            if(message == "leftPageRequested") {
+                viewLeftPressed()
+            }
         }
     }
-}
+} 
