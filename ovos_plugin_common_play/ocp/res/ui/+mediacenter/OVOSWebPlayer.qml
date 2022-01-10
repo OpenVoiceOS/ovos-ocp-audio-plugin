@@ -44,7 +44,6 @@ Mycroft.Delegate {
 
         onLoadingChanged: {
             if(loadRequest.status == WebEngineView.LoadSucceededStatus && sessionData.javascript){
-                webview.runJavaScript("useFullscreen()")
                 webview.runJavaScript(sessionData.javascript, function(result) { console.log(result); })
             }
         }
