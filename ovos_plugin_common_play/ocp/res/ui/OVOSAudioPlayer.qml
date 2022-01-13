@@ -55,6 +55,7 @@ Mycroft.Delegate {
     property color spectrumColorPeak: sessionData.spectrumColor ? sessionData.spectrumColor : "#2d5dbd"
     property real spectrumScale: 4
     property bool spectrumVisible: true
+    property int spectrumType: sessionData.visualizationType ? sessionData.visualizationType : 1 // 1. Bars, 2. Waves
     readonly property real spectrumHeight: (rep.parent.height / normalize(spectrumScale))
 
     //Support custom colors for text / seekbar background / seekbar forground
@@ -297,7 +298,7 @@ Mycroft.Delegate {
             anchors.left: parent.left
             anchors.right: parent.right
             height: parent.height * 0.30
-            color: Qt.rgba(0, 0, 0, 0.2)
+            color: Qt.rgba(0, 0, 0, 0.5)
 
             RowLayout {
                 anchors.top: parent.top
@@ -307,6 +308,7 @@ Mycroft.Delegate {
                 anchors.leftMargin: Mycroft.Units.gridUnit * 2
                 anchors.rightMargin: Mycroft.Units.gridUnit * 2
                 height: parent.height
+                z: 2
 
                 Label {
                     id: playerPosLabelBottom
@@ -341,6 +343,17 @@ Mycroft.Delegate {
                 anchors.leftMargin: Kirigami.Units.largeSpacing
                 anchors.rightMargin: Kirigami.Units.largeSpacing
 
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        if(root.spectrumType == 1) {
+                            root.spectrumType = 2
+                        } else {
+                            root.spectrumType = 1
+                        }
+                    }
+                }
+
                 Row {
                     id: visualizationRowItemParent
                     anchors.left: parent.left
@@ -349,9 +362,8 @@ Mycroft.Delegate {
                     anchors.rightMargin: horizontalMode ? parent.width * 0.18 : parent.width * 0.14
                     height: parent.height
                     spacing: 4
-                    visible: spectrumVisible
-                    enabled: spectrumVisible
-                    z: -5
+                    visible: spectrumVisible && spectrumType == 1
+                    enabled: spectrumVisible && spectrumType == 1
 
                     Repeater {
                         id: rep
@@ -385,6 +397,15 @@ Mycroft.Delegate {
                             }
                         }
                     }
+                }
+
+                SpectrumWaveDelegate {
+                    height: parent.height
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    visible: spectrumVisible && spectrumType == 2
+                    enabled: spectrumVisible && spectrumType == 2
+                    spectrumLocalLength: root.soundModelLength
+                    spectrumLocalData: root.spectrum
                 }
             }
         }
