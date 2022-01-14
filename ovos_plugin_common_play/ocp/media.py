@@ -183,7 +183,7 @@ class Playlist(list):
         return False
 
     def _validate_position(self):
-        if self.position >= len(self) or self.position < 0:
+        if len(self) and (self.position >= len(self) or self.position < 0):
             LOG.error("Playlist pointer is in an invalid position! Going to "
                       "start of playlist")
             self._position = 0
@@ -326,7 +326,7 @@ class NowPlaying(MediaEntry):
                 self.playback = PlaybackType.WEBVIEW
 
         # .pls and .m3u are not supported by gui player, parse the file
-        if ".pls" in uri or ".m3u" in uri:
+        if "pls" in uri or "m3u" in uri:
             meta = get_playlist_stream(uri)
 
         meta = meta or {"uri": uri}
