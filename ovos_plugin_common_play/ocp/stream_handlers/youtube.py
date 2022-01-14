@@ -101,7 +101,7 @@ def get_invidious_stream(url, audio_only=False, ocp_settings=None):
     # self host: https://github.com/iv-org/invidious
 
     settings = ocp_settings or {}
-    host = settings.get("invidious_host")
+    host = settings.get("invidious_host") or "https://vid.puffyan.us"
     local = "true" if settings.get("proxy_invidious") else "false"
 
     vid_id = url.split("watch?v=")[-1].split("&")[0]

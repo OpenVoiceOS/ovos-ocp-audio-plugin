@@ -185,11 +185,11 @@ class OCPSettings(PrivateSettings):
     @property
     def ydl_backend(self):
         """class YdlBackend(str, enum.Enum):
-        YDL = "youtube-dl" <- default
+        YDL = "youtube-dl"
         YDLC = "youtube-dlc"
-        YDLP = "yt-dlp"
+        YDLP = "yt-dlp" <- default
         """
-        return self.get("ydl_backend") or YdlBackend.YDL
+        return self.get("ydl_backend") or YdlBackend.YDLP
 
     @property
     def bandcamp_backend(self):
