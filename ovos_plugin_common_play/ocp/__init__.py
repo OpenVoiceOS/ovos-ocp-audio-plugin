@@ -8,7 +8,7 @@ from ovos_utils.gui import can_use_gui
 from ovos_utils.log import LOG
 from ovos_utils.messagebus import Message
 from ovos_workshop import OVOSAbstractApplication
-from padaos import IntentContainer
+from padacioso import IntentContainer
 
 
 class OCP(OVOSAbstractApplication):
@@ -91,7 +91,7 @@ class OCP(OVOSAbstractApplication):
         NOTE: uses the same format as mycroft .intent files, language
         support is handled the same way
         """
-        locale_folder = join(dirname(__file__), "locale", self.lang)
+        locale_folder = join(dirname(__file__), "res", "locale", self.lang)
         for intent_name in self.intent2media:
             path = join(locale_folder, intent_name + ".intent")
             if not isfile(path):
