@@ -348,8 +348,10 @@ Mycroft.Delegate {
                     onClicked: {
                         if(root.spectrumType == 1) {
                             root.spectrumType = 2
+                            Mycroft.MycroftController.sendRequest("ovos.common_play.spectrum", {"type": 2})
                         } else {
                             root.spectrumType = 1
+                            Mycroft.MycroftController.sendRequest("ovos.common_play.spectrum", {"type": 1})
                         }
                     }
                 }
