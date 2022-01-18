@@ -107,25 +107,27 @@ def get_invidious_stream(url, audio_only=False, ocp_settings=None):
     vid_id = url.split("watch?v=")[-1].split("&")[0]
     stream = f"{host}/latest_version?id={vid_id}&itag=22&local={local}&subtitles=en"
 
+    html = requests.get(f"{host}/watch?v={vid_id}").text
+
     info = {
         "uri": stream,
-        "image": f"{host}/vi/{vid_id}/mqdefault.jpg"
+        "title": html.split("<title>")[-1].split("</title>")[0],
+        "image": f"{host}/vi/{vid_id}/maxres.jpg",
+        "length": float(html.split('"length_seconds":')[-1].split(",")[0]) * 1000
     }
-
-    html = requests.get(f"{host}/watch?v={vid_id}").text
-    info["length"] = float(html.split('"length_seconds":')[-1].split(",")[0]) * 1000
 
     for m in html.split("<meta ")[1:]:
         if not m.startswith('name="'):
             continue
+
         if 'name="description"' in m:
             pass
-        if 'name="keywords"' in m:
+        elif 'name="keywords"' in m:
             pass
-        if 'name="twitter:title"' in m:
-            title = m.split('content="')[-1].split(">")[0][:-1]
-            title, artist = _parse_title(title)
-            info["title"] = title
+        elif 'name="thumbnail"' in m:
+            pic = m.split('content="')[-1].split(">")[0][:-1]
+            info["image"] = f"{host}{pic}"
+
     return info
 
 
@@ -293,47 +295,3 @@ def get_youtubesearcher_channel_livestreams(url):
             }
     except:
         pass
-
-
-if __name__ == "__main__":
-    host = "https://vid.puffyan.us"
-    vid_id = "wBYy8n-DK8M"
-    stream = f"{host}/latest_version?id={vid_id}&itag=22&local=true&subtitles=en"
-    stream2 = f"{host}/latest_version?id={vid_id}&itag=22&local=false&subtitles=en"
-    print(requests.head(stream).history)
-    print(requests.get(stream2).url)
-    print(stream)
-    exit()
-    lives = "https://www.youtube.com/channel/UCihCtNZnFkG62U4na9JsPJQ"
-    for ch in get_youtubesearcher_channel_livestreams(lives):
-        print(ch)
-        break
-    for ch in get_pytube_channel_livestreams(lives):
-        print(ch)
-        break
-
-    exit()
-   # print(get_youtube_live_from_channel(lives))
-   # print(get_pytube_channel_livestreams(lives))
-
-    # print(get_pytube_stream("https://www.youtube.com/watch?v=2Vw-8JuLT-8"))
-    print(get_youtube_stream("https://www.youtube.com/watch?v=Ya3WXzEBL1E"))
-    # print(get_pafy_stream(
-    #    "https://www.youtube.com/watch?v=2Vw-8JuLT-8"))
-
-    exit()
-    """
-        print(get_ydl_channel_livestream(
-        "https://www.youtube.com/user/Euronews"))
-
-    print(get_pytube_channel_livestream(
-        "https://www.youtube.com/user/Euronews"))
-
-
-    print(get_pytube_channel_livestream(
-        "https://www.youtube.com/channel/UCQfwfsi5VrQ8yKZ-UWmAEFg"))
-    print(get_pytube_channel_livestream(
-        "https://www.youtube.com/channel/UCknLrEdhRCp1aegoMqRaCZg"))
-    print(get_pytube_channel_livestream(
-        "https://www.youtube.com/user/RussiaToday"))
-"""
