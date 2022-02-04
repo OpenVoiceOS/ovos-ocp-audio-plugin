@@ -86,7 +86,7 @@ class MediaEntry:
         if self.artist:
             meta['xesam:artist'] = Variant('as', [self.artist])
         if self.title:
-            meta['xesam:artist'] = Variant('s', self.title)
+            meta['xesam:title'] = Variant('s', self.title)
         if self.image:
             meta['mpris:artUrl'] = Variant('s', self.image)
         if self.length:

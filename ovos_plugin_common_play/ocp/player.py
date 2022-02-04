@@ -137,12 +137,11 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         if state == self.state:
             return
         self.state = state
-        if state == PlayerState.PLAYING:
-            self.gui["status"] = "Playing"
-        if state == PlayerState.PAUSED:
-            self.gui["status"] = "Paused"
-        if state == PlayerState.STOPPED:
-            self.gui["status"] = "Stopped"
+        state2str = {PlayerState.PLAYING: "Playing", PlayerState.PAUSED: "Paused", PlayerState.STOPPED: "Stopped"}
+        self.gui["status"] = state2str[self.state]
+        self.mpris.update_props({"CanPause": self.state == PlayerState.PLAYING,
+                                 "CanPlay": self.state == PlayerState.PAUSED,
+                                 "PlaybackStatus": state2str[state]})
         self.bus.emit(Message("ovos.common_play.player.state",
                               {"state": self.state}))
 
@@ -443,16 +442,15 @@ class OCPMediaPlayer(OVOSAbstractApplication):
                 LOG.info(f"PlayerState changed: {repr(k)}")
         if state == PlayerState.PLAYING:
             self.state = PlayerState.PLAYING
-            self.mpris.update_props({"PlaybackStatus": "Playing"})
-        if state == PlayerState.PAUSED:
+        elif state == PlayerState.PAUSED:
             self.state = PlayerState.PAUSED
-            self.mpris.update_props({"PlaybackStatus": "Paused"})
-        if state == PlayerState.STOPPED:
+        elif state == PlayerState.STOPPED:
             self.state = PlayerState.STOPPED
-            self.mpris.update_props({"PlaybackStatus": "Stopped"})
 
-        self.mpris.update_props({"CanPause": self.state == PlayerState.PLAYING})
-        self.mpris.update_props({"CanPlay": self.state == PlayerState.PAUSED})
+        state2str = {PlayerState.PLAYING: "Playing", PlayerState.PAUSED: "Paused", PlayerState.STOPPED: "Stopped"}
+        self.mpris.update_props({"CanPause": state == PlayerState.PLAYING,
+                                 "CanPlay": state == PlayerState.PAUSED,
+                                 "PlaybackStatus": state2str[state]})
 
     def handle_player_media_update(self, message):
         state = message.data.get("state")
