@@ -7,6 +7,7 @@ from ovos_utils.json_helper import merge_dict
 from ovos_utils.log import LOG
 from ovos_utils.messagebus import Message
 from os.path import join, dirname
+from dbus_next.service import Variant
 
 
 # TODO subclass from dict (?)
@@ -78,6 +79,19 @@ class MediaEntry:
             "source": self.skill_icon,
             "uri": self.uri
         }
+
+    @property
+    def mpris_metadata(self):
+        meta = {"xesam:url": Variant('s', self.uri)}
+        if self.artist:
+            meta['xesam:artist'] = Variant('as', [self.artist])
+        if self.title:
+            meta['xesam:artist'] = Variant('s', self.title)
+        if self.image:
+            meta['mpris:artUrl'] = Variant('s', self.image)
+        if self.length:
+            meta['mpris:length'] = Variant('d', self.length)
+        return meta
 
     @property
     def as_dict(self):

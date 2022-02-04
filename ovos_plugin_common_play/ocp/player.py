@@ -179,6 +179,10 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         self.gui.update_current_track()
         self.gui.update_playlist()
 
+        self.mpris.update_props(
+            {"Metadata": self.now_playing.mpris_metadata}
+        )
+
     # stream handling
     def validate_stream(self):
         if self.now_playing.is_cps:
@@ -279,6 +283,9 @@ class OCPMediaPlayer(OVOSAbstractApplication):
                 "state": TrackState.PLAYING_WEBVIEW}))
         else:
             raise ValueError("invalid playback request")
+
+        self.mpris.update_props({"CanGoNext": self.can_next})
+        self.mpris.update_props({"CanGoPrevious": self.can_prev})
 
     def play_shuffle(self):
         LOG.debug("Shuffle == True")
@@ -436,10 +443,16 @@ class OCPMediaPlayer(OVOSAbstractApplication):
                 LOG.info(f"PlayerState changed: {repr(k)}")
         if state == PlayerState.PLAYING:
             self.state = PlayerState.PLAYING
+            self.mpris.update_props({"PlaybackStatus": "Playing"})
         if state == PlayerState.PAUSED:
             self.state = PlayerState.PAUSED
+            self.mpris.update_props({"PlaybackStatus": "Paused"})
         if state == PlayerState.STOPPED:
             self.state = PlayerState.STOPPED
+            self.mpris.update_props({"PlaybackStatus": "Stopped"})
+
+        self.mpris.update_props({"CanPause": self.state == PlayerState.PLAYING})
+        self.mpris.update_props({"CanPlay": self.state == PlayerState.PAUSED})
 
     def handle_player_media_update(self, message):
         state = message.data.get("state")

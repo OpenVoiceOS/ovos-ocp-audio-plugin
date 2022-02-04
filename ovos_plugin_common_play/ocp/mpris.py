@@ -1,16 +1,28 @@
 import asyncio
 from threading import Thread, Event
 from time import sleep
-from dbus_next.constants import BusType
+
 from dbus_next.aio import MessageBus as DbusMessageBus
+from dbus_next.constants import BusType
 from dbus_next.message import Message as DbusMessage, \
     MessageType as DbusMessageType
+from dbus_next.service import ServiceInterface, method, dbus_property, PropertyAccess
+from ovos_utils.log import LOG
+
 from ovos_plugin_common_play.ocp.status import TrackState, PlaybackType, \
     PlayerState, LoopState
-from ovos_utils.log import LOG
 
 
 class MprisPlayerCtl(Thread):
+    """ detects other media players in the system and integrates with them
+    - stop internal playback when an external player starts
+    - display gui with data from external media player
+    - provide voice control over the external player
+    - provide gui controls over the external player
+    - advertises OCP over mpris so external applications can control it
+        eg, KDE connect will allow controlling OCP via the phone
+    """
+
     def __init__(self, daemonic=True):
         super(MprisPlayerCtl, self).__init__()
         self.dbus = None
@@ -24,17 +36,24 @@ class MprisPlayerCtl(Thread):
         self.next_event = Event()
         self.prev_event = Event()
 
+        self.mediaPlayer2Interface = _MediaPlayer2Interface('org.mpris.MediaPlayer2')
+        self.mediaPlayer2PlayerInterface = _MediaPlayer2PlayerInterface('org.mpris.MediaPlayer2.Player')
+        self._ocp_player = None
+
         self.main_player = None
         self.players = {}
         self.player_meta = {}
         self._player_fails = {}
+        # TODO from .conf
         self.ignored_players = [
+            "org.mpris.MediaPlayer2.OCP",
             "org.mpris.MediaPlayer2.plasma-browser-integration"  # browsers already show up as individual players
         ]
-        self._ocp_player = None
 
     def bind(self, ocp_player):
         self._ocp_player = ocp_player
+        self.mediaPlayer2PlayerInterface.bind(self._ocp_player)
+        self.mediaPlayer2Interface.bind(self._ocp_player)
         self.start()
 
     @property
@@ -42,6 +61,14 @@ class MprisPlayerCtl(Thread):
         if self._ocp_player:
             return self._ocp_player.settings.dbus_type
         return BusType.SESSION
+
+    async def export_ocp(self):
+        self.dbus.export('/org/mpris/MediaPlayer2', self.mediaPlayer2Interface)
+        self.dbus.export('/org/mpris/MediaPlayer2', self.mediaPlayer2PlayerInterface)
+        await self.dbus.request_name('org.mpris.MediaPlayer2.OCP')
+
+    def update_props(self, props):
+        self.mediaPlayer2PlayerInterface.emit_properties_changed(props)
 
     def _update_ocp(self):
         if self.stop_event.is_set():
@@ -241,8 +268,8 @@ class MprisPlayerCtl(Thread):
 
         # listen to signals
         async def on_properties_changed(interface_name,
-                                  changed_properties,
-                                  invalidated_properties):
+                                        changed_properties,
+                                        invalidated_properties):
             for changed, variant in changed_properties.items():
                 player_name = properties.bus_name
                 if player_name in self.ignored_players:
@@ -253,7 +280,7 @@ class MprisPlayerCtl(Thread):
                     if state != variant.value or not state:
                         self.player_meta[player_name]["state"] = variant.value
                         await self.handle_sync_player(
-                            {"state":  variant.value,
+                            {"state": variant.value,
                              "external_player": player_name})
                 elif changed == "Metadata":
                     await self.update_player_meta(player_name, variant.value)
@@ -349,6 +376,7 @@ class MprisPlayerCtl(Thread):
             if not self.dbus:
                 self.dbus = await DbusMessageBus(
                     bus_type=self.dbus_type).connect()
+                await self.export_ocp()
 
             # ocp requests to manipulate external players
             if self.stop_event.is_set():
@@ -407,3 +435,185 @@ class MprisPlayerCtl(Thread):
         while self.loop.is_running():
             sleep(0.2)
         self.loop.close()
+
+
+class _MediaPlayer2Interface(ServiceInterface):
+    def __init__(self, name='org.mpris.MediaPlayer2'):
+        super().__init__(name)
+        self._ocp_player = None
+        self._identity = "OCP"
+        self._desktopEntry = "OCP"
+        self._supportedMimeTypes = ["audio/mpeg", "audio/x-mpeg", "video/mpeg", "video/x-mpeg", "video/mpeg-system",
+                                    "video/x-mpeg-system", "video/mp4", "audio/mp4", "video/x-msvideo",
+                                    "video/quicktime", "application/ogg", "application/x-ogg", "video/x-ms-asf",
+                                    "video/x-ms-asf-plugin", "application/x-mplayer2", "video/x-ms-wmv",
+                                    "video/x-google-vlc-plugin", "audio/wav", "audio/x-wav", "audio/3gpp", "video/3gpp",
+                                    "audio/3gpp2", "video/3gpp2", "video/divx", "video/flv", "video/x-flv",
+                                    "video/x-matroska", "audio/x-matroska", "application/xspf+xml"]
+        self._supportedUriSchemes = ["file", "http", "https", "rtsp", "realrtsp", "pnm", "ftp", "mtp", "smb", "mms",
+                                     "mmsu", "mmst", "mmsh", "unsv", "itpc", "icyx", "rtmp", "rtp", "dccp", "dvd",
+                                     "vcd"]
+        self._canQuit = False
+        self._hasTrackList = False
+
+    def bind(self, ocp_player):
+        self._ocp_player = ocp_player
+        self._hasTrackList = len(self._ocp_player.playlist) > 0
+
+    def update_props(self, props):
+        self.emit_properties_changed(props)
+
+    @dbus_property(access=PropertyAccess.READ)
+    def Identity(self) -> 's':
+        return self._identity
+
+    @dbus_property(access=PropertyAccess.READ)
+    def DesktopEntry(self) -> 's':
+        return self._desktopEntry
+
+    @dbus_property(access=PropertyAccess.READ)
+    def SupportedMimeTypes(self) -> 'as':
+        return self._supportedMimeTypes
+
+    @dbus_property(access=PropertyAccess.READ)
+    def SupportedUriSchemes(self) -> 'as':
+        return self._supportedUriSchemes
+
+    @dbus_property(access=PropertyAccess.READ)
+    def HasTrackList(self) -> 'b':
+        return True
+
+    @dbus_property(access=PropertyAccess.READ)
+    def CanQuit(self) -> 'b':
+        return self._canQuit
+
+    @dbus_property(access=PropertyAccess.READ)
+    def CanSetFullscreen(self) -> 'b':
+        return False
+
+    @dbus_property(access=PropertyAccess.READ)
+    def Fullscreen(self) -> 'b':
+        return False
+
+    @dbus_property(access=PropertyAccess.READ)
+    def CanRaise(self) -> 'b':
+        return False
+
+    @method()
+    def Quit(self):
+        if self._canQuit:
+            self._ocp_player.shutdown()
+
+
+class _MediaPlayer2PlayerInterface(ServiceInterface):
+    def __init__(self, name):
+        super().__init__(name)
+        self._ocp_player = None
+
+    def bind(self, ocp_player):
+        self._ocp_player = ocp_player
+
+    @dbus_property(access=PropertyAccess.READ)
+    def Metadata(self) -> 'a{sv}':
+        return self._ocp_player.now_playing.mpris_metadata
+
+    @dbus_property(access=PropertyAccess.READ)
+    def PlaybackStatus(self) -> 's':
+        # TODO validate strings
+        if self._ocp_player.state == PlayerState.PLAYING:
+            return "Playing"
+        if self._ocp_player.state == PlayerState.PAUSED:
+            return "Paused"
+        return "Stopped"
+
+    @dbus_property()
+    def LoopStatus(self) -> 's':
+        # TODO validate strings
+        if self._ocp_player.loop_state == LoopState.REPEAT_TRACK:
+            return "RepeatTrack"
+        if self._ocp_player.loop_state == LoopState.REPEAT:
+            return "Repeat"
+        return "None"
+
+    @LoopStatus.setter
+    def LoopStatus_setter(self, val: 's'):
+        # TODO translate state
+        self._ocp_player.loop_state = val
+
+    @dbus_property()
+    def Shuffle(self) -> 'b':
+        return self._ocp_player.shuffle
+
+    @Shuffle.setter
+    def Shuffle_setter(self, val: 'b'):
+        self._ocp_player.shuffle = val
+
+    @dbus_property()
+    def Volume(self) -> 'd':
+        return 100
+
+    @Volume.setter
+    def Volume_setter(self, val: 'd'):
+        LOG.debug("Volume set not implemented, use master device volume")
+
+    @dbus_property(access=PropertyAccess.READ)
+    def Rate(self) -> 'd':
+        return 1
+
+    @dbus_property(access=PropertyAccess.READ)
+    def Position(self) -> 'd':
+        return 1 # TODO from ocp_player
+
+    @dbus_property(access=PropertyAccess.READ)
+    def CanPlay(self) -> 'b':
+        return self._ocp_player.state == PlayerState.PAUSED
+
+    @dbus_property(access=PropertyAccess.READ)
+    def CanPause(self) -> 'b':
+        return self._ocp_player.state == PlayerState.PLAYING
+
+    @dbus_property(access=PropertyAccess.READ)
+    def CanSeek(self) -> 'b':
+        return False
+
+    @dbus_property(access=PropertyAccess.READ)
+    def CanGoNext(self) -> 'b':
+        return self._ocp_player.can_next
+
+    @dbus_property(access=PropertyAccess.READ)
+    def CanGoPrevious(self) -> 'b':
+        return self._ocp_player.can_prev
+
+    @dbus_property(access=PropertyAccess.READ)
+    def CanControl(self) -> 'b':
+        return True
+
+    @method()
+    def Previous(self):
+        self._ocp_player.play_prev()
+
+    @method()
+    def Next(self):
+        self._ocp_player.play_next()
+
+    @method()
+    def Stop(self):
+        self._ocp_player.pause()
+
+    @method()
+    def Play(self):
+        self._ocp_player.resume()
+
+    @method()
+    def Pause(self):
+        self._ocp_player.pause()
+
+    @method()
+    def PlayPause(self):
+        if self._ocp_player.state == PlayerState.PAUSED:
+            self._ocp_player.resume()
+        else:
+            self._ocp_player.pause()
+
+
+
