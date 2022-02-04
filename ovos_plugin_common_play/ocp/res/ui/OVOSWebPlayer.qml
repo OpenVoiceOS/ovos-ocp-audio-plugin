@@ -27,7 +27,7 @@ Mycroft.Delegate {
         settings.errorPageEnabled: true
         settings.pluginsEnabled: true
         settings.allowWindowActivationFromJavaScript: true
-        settings.javascriptCanOpenWindows: true
+        settings.javascriptCanOpenWindows: sessionData.javascriptCanOpenWindows
         settings.fullScreenSupportEnabled: true
         settings.autoLoadIconsForPage: true
         settings.touchIconsEnabled: true
@@ -50,9 +50,7 @@ Mycroft.Delegate {
         ]
 
         onNewViewRequested: function(request) {
-            if (!request.userInitiated) {
-                console.log("Warning: Blocked a popup window.");
-            } else {
+            if (sessionData.allowUrlChange) {
                 request.openIn(webview);
             }
         }

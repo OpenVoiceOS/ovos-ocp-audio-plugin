@@ -113,7 +113,13 @@ class OCPMediaPlayerGUI(GUIInterface):
                            join(dirname(__file__), "res/ui/images/ocp.png")
         self["duration"] = self.player.now_playing.length
         self["position"] = self.player.now_playing.position
+        # options below control the web player
+        # javascript can be executed on page load and page behaviour modified
+        # default values provide crude protection against ads and popups
+        # TODO default permissive or restrictive?
         self["javascript"] = self.player.now_playing.javascript
+        self["javascriptCanOpenWindows"] = False  # TODO allow to be defined per track
+        self["allowUrlChange"] = False # TODO allow to be defined per track
 
     def update_search_results(self):
         self["searchModel"] = {
