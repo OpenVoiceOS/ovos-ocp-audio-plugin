@@ -8,7 +8,7 @@ from dbus_next.message import Message as DbusMessage, \
     MessageType as DbusMessageType
 from dbus_next.service import ServiceInterface, method, dbus_property, PropertyAccess
 from ovos_utils.log import LOG
-
+from mycroft_bus_client.message import Message
 from ovos_plugin_common_play.ocp.status import TrackState, PlaybackType, \
     PlayerState, LoopState
 
@@ -550,11 +550,14 @@ class _MediaPlayer2PlayerInterface(ServiceInterface):
 
     @dbus_property()
     def Volume(self) -> 'd':
-        return 100
+        msg = self._ocp_player.bus.wait_for_response(Message("mycroft.volume.get"), timeout=0.5)
+        if msg:
+            return float(msg.data["percent"])
+        return 1.0
 
     @Volume.setter
     def Volume_setter(self, val: 'd'):
-        LOG.debug("Volume set not implemented, use master device volume")
+        self._ocp_player.bus.emit(Message("mycroft.volume.set", {"percent": val}))
 
     @dbus_property(access=PropertyAccess.READ)
     def Rate(self) -> 'd':
