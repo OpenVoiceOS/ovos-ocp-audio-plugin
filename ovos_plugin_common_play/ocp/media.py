@@ -37,12 +37,15 @@ class MediaEntry:
         self.cps_data = cps_data or {}
         self.javascript = javascript  # custom code to run in Webview after page load
 
-    def update(self, entry, skipkeys=None):
+    def update(self, entry, skipkeys=None, newonly=False):
         skipkeys = skipkeys or []
         if isinstance(entry, MediaEntry):
             entry = entry.as_dict
         for k, v in entry.items():
             if k not in skipkeys and hasattr(self, k):
+                if newonly and self.__getattribute__(k):
+                    # skip, do not replace existing values
+                    continue
                 self.__setattr__(k, v)
 
     @staticmethod
@@ -273,8 +276,11 @@ class NowPlaying(MediaEntry):
         self._player.remove_event('gui.player.media.service.get.meta')
         self._player.remove_event('mycroft.audio_only.service.track_info_reply')
 
-    def update(self, entry, skipkeys=None):
-        super(NowPlaying, self).update(entry, skipkeys)
+    def update(self, entry, skipkeys=None, newonly=False):
+        super().update(entry, skipkeys, newonly)
+        # uri updates should not be skipped
+        if newonly and entry.get("uri"):
+            super().update({"uri": entry["uri"]})
         # sync with gui media player on track change
         self.bus.emit(Message("gui.player.media.service.set.meta",
                               {"title": self.title,
@@ -346,7 +352,7 @@ class NowPlaying(MediaEntry):
         meta = meta or {"uri": uri}
 
         # update media entry with new data
-        self.update(meta)
+        self.update(meta, newonly=True)
 
     # events from gui_player/audio_service
     def handle_player_metadata_request(self, message):

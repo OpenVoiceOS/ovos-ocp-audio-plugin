@@ -41,7 +41,7 @@ def _parse_title(title):
             title = title.strip() or "..."
             artist = artist.strip() or "..."
             return title, artist
-    return title, ""
+    return title.replace(" - Topic", ""), ""
 
 
 def get_youtube_live_from_channel(url, backend=YoutubeLiveBackend.PYTUBE,
