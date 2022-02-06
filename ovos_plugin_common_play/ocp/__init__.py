@@ -70,8 +70,13 @@ class OCP(OVOSAbstractApplication):
     def register_ocp_api_events(self):
         self.add_event("ovos.common_play.ping", self.handle_ping)
         self.add_event('ovos.common_play.announce', self.handle_skill_announce)
+        self.add_event('ovos.common_play.home', self.handle_home)
         # bus api shared with intents
         self.add_event("ovos.common_play.search", self.handle_play)
+
+    def handle_home(self):
+        # homescreen / launch from .desktop
+        self.gui.show_home()
 
     def register_ocp_intents(self, message=None):
         self.clear_intents()  # remove old intents
