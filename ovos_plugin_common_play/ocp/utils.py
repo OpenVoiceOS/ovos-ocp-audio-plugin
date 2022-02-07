@@ -1,14 +1,17 @@
+import shutil
 import tempfile
-from os.path import basename
+from os import makedirs
+from os.path import basename, expanduser, isfile, join, dirname
 
-try:
-    import audio_metadata
-except ImportError:  # common conflicts with attrs version.... replace ASAP
-    audio_metadata = None
 from ovos_plugin_common_play.ocp.status import TrackState, PlaybackType
 
 
 def extract_metadata(uri):
+    try:
+        import audio_metadata
+    except ImportError:  # common conflicts with attrs version.... replace ASAP
+        audio_metadata = None
+
     meta = {"uri": uri,
             "title": basename(uri),
             "playback": PlaybackType.AUDIO,
@@ -43,3 +46,21 @@ def extract_metadata(uri):
         except:
             pass
     return meta
+
+
+def create_desktop_file():
+    res = join(dirname(__file__), "res", "desktop")
+    desktop_path = expanduser("~/.local/share/applications")
+    icon_path = expanduser("~/.local/share/icons")
+    makedirs(desktop_path, exist_ok=True)
+    makedirs(icon_path, exist_ok=True)
+
+    src_desktop = join(res, "OCP.desktop")
+    dst_desktop = join(desktop_path, "OCP.desktop")
+    if not isfile(dst_desktop):
+        shutil.copy(src_desktop, dst_desktop)
+
+    src_icon = join(res, "OCP.png")
+    dst_icon = join(icon_path, "OCP.png")
+    if not isfile(dst_icon):
+        shutil.copy(src_icon, dst_icon)

@@ -6,6 +6,7 @@ from ovos_plugin_common_play.ocp.settings import OCPSettings
 from ovos_plugin_common_play.ocp.status import *
 from ovos_utils.gui import can_use_gui
 from ovos_utils.log import LOG
+from ovos_plugin_common_play.ocp.utils import create_desktop_file
 from ovos_utils.messagebus import Message
 from ovos_workshop import OVOSAbstractApplication
 from padacioso import IntentContainer
@@ -56,6 +57,10 @@ class OCP(OVOSAbstractApplication):
         self.register_ocp_api_events()
         self.register_media_intents()
         self.replace_mycroft_cps()
+        try:
+            create_desktop_file()
+        except:  # permission errors and stuff
+            pass
 
     def handle_ping(self, message):
         self.bus.emit(message.reply("ovos.common_play.pong"))
