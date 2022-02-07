@@ -6,7 +6,7 @@ PLUGIN_ENTRY_POINT = 'ovos_common_play=ovos_plugin_common_play'
 
 setup(
     name='ovos_plugin_common_play',
-    version='0.0.1a9',
+    version='0.0.1a10',
     description='OVOS common play audio service adapter plugin',
     url='https://github.com/OpenVoiceOS/ovos-common-play-plugin',
     author='JarbasAi',
@@ -20,7 +20,7 @@ setup(
                       "padacioso~=0.1.1",
                       "yt-dlp",
                       "dbus_next",
-                      "ovos_workshop~=0.0.5a6"],
+                      "ovos_workshop~=0.0.5a8"],
     zip_safe=True,
     include_package_data=True,
     classifiers=[
