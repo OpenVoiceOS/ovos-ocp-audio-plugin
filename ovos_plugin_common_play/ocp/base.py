@@ -1,3 +1,6 @@
+from ovos_plugin_common_play.ocp.settings import OCPSettings
+
+
 class OCPAbstractComponent:
     def __init__(self, player=None):
         """
@@ -17,7 +20,7 @@ class OCPAbstractComponent:
     @property
     def settings(self):
         if not self._player:
-            return {}
+            return OCPSettings()
         return self._player.settings
 
     @property

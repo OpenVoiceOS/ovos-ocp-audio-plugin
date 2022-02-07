@@ -14,11 +14,15 @@ from ovos_utils.messagebus import Message
 
 
 class OCPQuery:
-    def __init__(self, query, ocp_search, media_type=MediaType.GENERIC):
+    def __init__(self, query, ocp_search=None, media_type=MediaType.GENERIC):
         self.query = query
         self.media_type = media_type
         self.ocp_search = ocp_search
+        self._bus = None
         self.reset()
+
+    def bind(self, bus):
+        self._bus = bus
 
     def reset(self):
         self.active_skills = []
@@ -29,19 +33,27 @@ class OCPQuery:
 
     @property
     def settings(self):
-        return self.ocp_search.settings
+        if self.ocp_search:
+            return self.ocp_search.settings
+        return OCPSettings()
 
     @property
     def search_playlist(self):
-        return self.ocp_search.search_playlist
+        if self.ocp_search:
+            return self.ocp_search.search_playlist
+        return Playlist()
 
     @property
     def bus(self):
-        return self.ocp_search.bus
+        if self._bus:
+            return self._bus
+        if self.ocp_search:
+            return self.ocp_search.bus
 
     @property
     def gui(self):
-        return self.ocp_search.gui
+        if self.ocp_search:
+            return self.ocp_search.gui
 
     def send(self):
         self.query_replies = []
@@ -70,17 +82,23 @@ class OCPQuery:
         return [s for s in self.query_replies if s.get("results")]
 
     def register_events(self):
-        self.ocp_search.add_event("ovos.common_play.skill.search_start",
+        self.bus.on("ovos.common_play.skill.search_start",
                                   self.handle_skill_search_start)
-        self.ocp_search.add_event("ovos.common_play.skill.search_end",
+        self.bus.on("ovos.common_play.skill.search_end",
                                   self.handle_skill_search_end)
-        self.ocp_search.add_event("ovos.common_play.query.response",
+        self.bus.on("ovos.common_play.query.response",
                                   self.handle_skill_response)
 
     def remove_events(self):
-        self.ocp_search.remove_event("ovos.common_play.skill.search_start")
-        self.ocp_search.remove_event("ovos.common_play.skill.search_end")
-        self.ocp_search.remove_event("ovos.common_play.query.response")
+        self.bus.remove_all_listeners("ovos.common_play.skill.search_start")
+        self.bus.remove_all_listeners("ovos.common_play.skill.search_end")
+        self.bus.remove_all_listeners("ovos.common_play.query.response")
+
+    def close(self):
+        self.remove_events()
+        if self._bus:
+            self._bus.close()
+            self._bus = None
 
     def handle_skill_search_start(self, message):
         skill_id = message.data["skill_id"]
@@ -115,10 +133,11 @@ class OCPQuery:
             has_gui = is_gui_running() or is_gui_connected(self.bus)
             results = message.data.get("results", [])
             for idx, res in enumerate(results):
-                # skip adult content results unless explicitly enabled
-                if not self.settings.adult_content and \
-                        res.get("media_type", MediaType.GENERIC) in [MediaType.ADULT, MediaType.HENTAI]:
-                    continue
+                if self.media_type not in [MediaType.ADULT, MediaType.HENTAI]:
+                    # skip adult content results unless explicitly enabled
+                    if not self.settings.adult_content and \
+                            res.get("media_type", MediaType.GENERIC) in [MediaType.ADULT, MediaType.HENTAI]:
+                        continue
 
                 # filter uris we can play, usually files and http streams, but some
                 # skills might return results that depend on additional packages,
@@ -156,7 +175,7 @@ class OCPQuery:
                 if res not in self.search_playlist:
                     self.search_playlist.add_entry(res)
                     # update search UI
-                    if self.searching and res["match_confidence"] >= 30:
+                    if self.gui and self.searching and res["match_confidence"] >= 30:
                         self.gui["footer_text"] = \
                             f"skill - {skill_id}\n" \
                             f"match - {res['title']}\n" \
@@ -173,9 +192,10 @@ class OCPQuery:
                 if self.searching:
                     self.searching = False
                     LOG.debug("common play query timeout, parsing results")
-                    self.gui["footer_text"] = "Timeout!\n " \
-                                              "selecting best result\n" \
-                                              " "
+                    if self.gui:
+                        self.gui["footer_text"] = "Timeout!\n " \
+                                                  "selecting best result\n" \
+                                                  " "
 
             elif self.searching:
                 for res in message.data.get("results", []):
@@ -185,11 +205,12 @@ class OCPQuery:
                         LOG.info(
                             "Receiving very high confidence match, stopping "
                             "search early")
-                        self.gui["footer_text"] = \
-                            f"High confidence match!\n " \
-                            f"skill - {skill_id}\n" \
-                            f"match - {res['title']}\n" \
-                            f"confidence - {res['match_confidence']} "
+                        if self.gui:
+                            self.gui["footer_text"] = \
+                                f"High confidence match!\n " \
+                                f"skill - {skill_id}\n" \
+                                f"match - {res['title']}\n" \
+                                f"confidence - {res['match_confidence']} "
                         # allow other skills to "just miss"
                         if self.settings.early_stop_grace_period:
                             LOG.debug(
@@ -213,10 +234,12 @@ class OCPQuery:
         # be employed but this works fine for now
         if not self.active_skills and self.searching:
             LOG.info("Received search responses from all skills!")
-            self.gui["footer_text"] = "Received search responses from all " \
-                                      "skills!\nselecting best result"
+            if self.gui:
+                self.gui["footer_text"] = "Received search responses from all " \
+                                          "skills!\nselecting best result"
             self.searching = False
-        self.gui.update_search_results()
+        if self.gui:
+            self.gui.update_search_results()
 
 
 class OCPSearch(OCPAbstractComponent):
@@ -259,7 +282,8 @@ class OCPSearch(OCPAbstractComponent):
     def search(self, phrase, media_type=MediaType.GENERIC):
         # stop any search still happening
         self.bus.emit(Message("ovos.common_play.search.stop"))
-        self.gui.show_search_spinner()
+        if self.gui:
+            self.gui.show_search_spinner()
         self.clear()
 
         query = OCPQuery(query=phrase, media_type=media_type, ocp_search=self)
@@ -286,7 +310,8 @@ class OCPSearch(OCPAbstractComponent):
             query.send()
             query.wait()
 
-        self.gui.update_search_results()
+        if self.gui:
+            self.gui.update_search_results()
         return query.results
 
     def search_skill(self, skill_id, phrase,
@@ -340,9 +365,11 @@ class OCPSearch(OCPAbstractComponent):
 
     def clear(self):
         self.search_playlist.clear()
-        self.gui.update_search_results()
+        if self.gui:
+            self.gui.update_search_results()
 
     def replace(self, playlist):
         self.search_playlist.clear()
         self.search_playlist.replace(playlist)
-        self.gui.update_search_results()
+        if self.gui:
+            self.gui.update_search_results()
