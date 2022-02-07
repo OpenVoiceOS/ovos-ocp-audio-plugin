@@ -27,22 +27,6 @@ class OCPAudioBackend(AudioBackend):
 
     def create_ocp(self, config):
         mode = config.get("mode", "auto")
-        config["auto_play"] = True
-        config["force_audioservice"] = False
-
-        config["backwards_compatibility"] = True
-        config["search_fallback"] = True
-        config["max_timeout"] = 15
-        config["min_timeout"] = 5
-        config["min_score"] = 30
-
-        config["ydl_backend"] = "yt-dlp"
-        config["youtube_backend"] = "youtube-dl"
-        config["invidious_host"] = "https://vid.puffyan.us"
-        config["invidious_proxy"] = False
-
-        config["adult_content"] = False
-
         ocp_settings = OCPSettings()
         ocp_settings.update(config)
 

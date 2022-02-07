@@ -26,12 +26,12 @@ class MediaEntry:
         self.skill_id = skill_id
         self.status = status
         self.playback = playback
-        self.image = image or join(dirname(__file__), "res/ui/images/ocp.png")
+        self.image = image or join(dirname(__file__), "res/ui/images/ocp_bg.png")
         self.position = position
         self.phrase = phrase
         self.length = length  # None -> live stream
         self.skill_icon = skill_icon or join(dirname(__file__), "res/ui/images/ocp.png")
-        self.bg_image = bg_image or "https://source.unsplash.com/weekly?music"
+        self.bg_image = bg_image or join(dirname(__file__), "res/ui/images/ocp_bg.png")
         self.is_cps = is_cps
         self.data = kwargs
         self.cps_data = cps_data or {}

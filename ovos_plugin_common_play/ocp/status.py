@@ -105,7 +105,6 @@ class MediaType(IntEnum):
     TV = 9
     MOVIE = 10
     TRAILER = 11
-    ADULT = 12
     VISUAL_STORY = 13
     BEHIND_THE_SCENES = 14
     DOCUMENTARY = 15
@@ -114,3 +113,6 @@ class MediaType(IntEnum):
     SILENT_MOVIE = 18
     BLACK_WHITE_MOVIE = 20
     CARTOON = 21
+
+    ADULT = 69
+    HENTAI = 70

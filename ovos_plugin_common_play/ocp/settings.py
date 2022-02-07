@@ -111,14 +111,14 @@ class OCPSettings(PrivateSettings):
         """min_timeout (float): minimum time to wait for skill replies,
                                  after this time, if at least 1 result was
                                  found, selection is triggered"""
-        return self.get("min_timeout", 1)
+        return self.get("min_timeout", 5)
 
     @property
     def max_timeout(self):
         """max_timeout (float): maximum time to wait for skill replies,
                                  after this time, regardless of number of
                                  results, selection is triggered"""
-        return self.get("max_timeout", 2.5)
+        return self.get("max_timeout", 15)
 
     @property
     def min_score(self):

@@ -1,6 +1,6 @@
 # OCP - OVOS Common Play
 
-![](./ovos_plugin_common_play/ocp/res/ui/images/ocp.png) 
+![](./OCP.png) 
 
 ## Configuration
 

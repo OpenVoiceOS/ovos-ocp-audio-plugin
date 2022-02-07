@@ -30,7 +30,12 @@ class OCP(OVOSAbstractApplication):
         "comic": MediaType.VISUAL_STORY,
         "movietrailer": MediaType.TRAILER,
         "behind_scenes": MediaType.BEHIND_THE_SCENES,
-        "porn": MediaType.ADULT
+
+    }
+    # filtered content
+    adultintents = {
+        "porn": MediaType.ADULT,
+        "hentai": MediaType.HENTAI
     }
 
     def __init__(self, bus=None, lang=None, settings=None):
@@ -57,6 +62,7 @@ class OCP(OVOSAbstractApplication):
         skill_name = message.data.get("skill_name") or skill_id
         img = message.data.get("thumbnail")
         has_featured = bool(message.data.get("featured_tracks"))
+        media_type = message.data.get("media_type") or [MediaType.GENERIC]
 
         if skill_id not in self.gui.ocp_skills:
             LOG.debug(f"Found OCP Skill: {skill_id}")
@@ -64,7 +70,8 @@ class OCP(OVOSAbstractApplication):
                 "skill_id": skill_id,
                 "skill_name": skill_name,
                 "thumbnail": img,
-                "featured": has_featured
+                "featured": has_featured,
+                "media_type": media_type
             }
 
     def register_ocp_api_events(self):
@@ -97,7 +104,11 @@ class OCP(OVOSAbstractApplication):
         support is handled the same way
         """
         locale_folder = join(dirname(__file__), "res", "locale", self.lang)
-        for intent_name in self.intent2media:
+        intents = self.intent2media
+        if self.settings.adult_content:
+            intents.update(self.adultintents)
+
+        for intent_name in intents:
             path = join(locale_folder, intent_name + ".intent")
             if not isfile(path):
                 continue

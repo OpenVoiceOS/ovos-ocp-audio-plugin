@@ -116,7 +116,8 @@ class OCPQuery:
             results = message.data.get("results", [])
             for idx, res in enumerate(results):
                 # skip adult content results unless explicitly enabled
-                if not self.settings.adult_content and res.get("media_type", "") == MediaType.ADULT:
+                if not self.settings.adult_content and \
+                        res.get("media_type", MediaType.GENERIC) in [MediaType.ADULT, MediaType.HENTAI]:
                     continue
 
                 # filter uris we can play, usually files and http streams, but some
@@ -339,4 +340,9 @@ class OCPSearch(OCPAbstractComponent):
 
     def clear(self):
         self.search_playlist.clear()
+        self.gui.update_search_results()
+
+    def replace(self, playlist):
+        self.search_playlist.clear()
+        self.search_playlist.replace(playlist)
         self.gui.update_search_results()

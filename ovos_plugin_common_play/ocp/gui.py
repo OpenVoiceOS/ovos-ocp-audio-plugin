@@ -1,5 +1,6 @@
 from os.path import join, dirname
-
+from time import sleep
+from mycroft_bus_client.message import Message
 from ovos_utils.gui import GUIInterface
 from ovos_utils.log import LOG
 
@@ -68,16 +69,19 @@ class OCPMediaPlayerGUI(GUIInterface):
 
     # OCPMediaPlayer interface
     def update_ocp_skills(self):
+        # trigger a presence announcement from all loaded ocp skills
+        self.bus.emit(Message("ovos.common_play.skills.get"))
+        sleep(0.2)
         skills_cards = [
             {"skill_id": skill["skill_id"],
              "title": skill["skill_name"],
-             "image": skill["thumbnail"]
-             }
-            for skill in self.ocp_skills.values()
-            if skill["featured"]]
+             "image": skill["thumbnail"],
+             "media_type": skill.get("media_type") or [MediaType.GENERIC]
+        } for skill in self.ocp_skills.values() if skill["featured"]]
 
-        if not self.player.settings.adult_content:
-            pass # TODO filter adult skills
+        skills_cards = [s for s in skills_cards
+                        if MediaType.ADULT not in s["media_type"] and
+                        MediaType.HENTAI not in s["media_type"]]
 
         self["skillCards"] = skills_cards
 
@@ -110,7 +114,7 @@ class OCPMediaPlayerGUI(GUIInterface):
                         join(dirname(__file__), "res/ui/images/ocp.png")
         self["artist"] = self.player.now_playing.artist
         self["bg_image"] = self.player.now_playing.bg_image or \
-                           join(dirname(__file__), "res/ui/images/ocp.png")
+                           join(dirname(__file__), "res/ui/images/ocp_bg.png")
         self["duration"] = self.player.now_playing.length
         self["position"] = self.player.now_playing.position
         # options below control the web player
@@ -148,6 +152,7 @@ class OCPMediaPlayerGUI(GUIInterface):
                      self.audio_player_page,
                      self.audio_service_page]
         self.remove_pages([p for p in to_remove if p in self.pages])
+        sleep(0.2)
         self.show_pages([self.search_screen_page, self.skills_page],
                         index=0, override_idle=True,
                         override_animations=True)
@@ -159,6 +164,7 @@ class OCPMediaPlayerGUI(GUIInterface):
     def show_player(self):
         # remove old pages
         self.remove_pages(self._get_pages_to_rm())
+        sleep(0.2)
         # show new pages
         self.show_pages(self._get_pages_to_display(),
                         index=0, override_idle=True,
@@ -183,14 +189,12 @@ class OCPMediaPlayerGUI(GUIInterface):
 
     def _get_pages_to_rm(self):
         to_remove = [self.search_spinner_page,
-                     self.search_screen_page,
-                     self.skills_page]
+                     self.web_player_page]
 
         # remove old player pages
         to_remove += [p for p in (self.video_player_page,
                                   self.audio_player_page,
-                                  self.audio_service_page,
-                                  self.web_player_page)
+                                  self.audio_service_page)
                       if p != self._get_player_page()]
 
         # check if search_results / playlist pages should be displayed
@@ -240,9 +244,10 @@ class OCPMediaPlayerGUI(GUIInterface):
         skill_id = message.data["skill_id"]
         LOG.debug(f"Featured Media request: {skill_id}")
         playlist = message.data["playlist"]
-        media = playlist[0]
-        self.player.play_media(media, playlist=[media],
-                               disambiguation=playlist)
+
+        self.player.playlist.clear()
+        self.player.media.replace(playlist)
+        self.show_page(self.search_page, override_idle=True)
 
     # audio_only service -> gui
     def handle_sync_seekbar(self, message):
