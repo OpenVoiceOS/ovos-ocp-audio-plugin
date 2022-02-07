@@ -1,17 +1,17 @@
+import random
 from os.path import join, dirname
 
-import random
-
-from ovos_plugin_common_play.ocp.gui import OCPMediaPlayerGUI
-from ovos_plugin_common_play.ocp.media import Playlist, MediaEntry, NowPlaying
-from ovos_plugin_common_play.ocp.search import OCPSearch
-from ovos_plugin_common_play.ocp.settings import OCPSettings
-from ovos_plugin_common_play.ocp.status import *
 from ovos_utils.gui import is_gui_connected, is_gui_running
 from ovos_utils.log import LOG
 from ovos_utils.messagebus import Message
-from ovos_workshop import OVOSAbstractApplication
+
+from ovos_plugin_common_play.ocp.gui import OCPMediaPlayerGUI
+from ovos_plugin_common_play.ocp.media import Playlist, MediaEntry, NowPlaying
 from ovos_plugin_common_play.ocp.mpris import MprisPlayerCtl
+from ovos_plugin_common_play.ocp.search import OCPSearch
+from ovos_plugin_common_play.ocp.settings import OCPSettings
+from ovos_plugin_common_play.ocp.status import *
+from ovos_workshop import OVOSAbstractApplication
 
 
 class OCPMediaPlayer(OVOSAbstractApplication):
@@ -299,6 +299,9 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         if self.active_backend in [PlaybackType.MPRIS]:
             self.mpris.play_next()
             return
+        elif self.active_backend in [PlaybackType.SKILL, PlaybackType.UNDEFINED]:
+            self.bus.emit(Message(f'ovos.common_play.{self.now_playing.skill_id}.next'))
+            return
         self.pause()  # make more responsive
 
         if self.loop_state == LoopState.REPEAT_TRACK:
@@ -328,6 +331,9 @@ class OCPMediaPlayer(OVOSAbstractApplication):
     def play_prev(self):
         if self.active_backend in [PlaybackType.MPRIS]:
             self.mpris.play_prev()
+            return
+        elif self.active_backend in [PlaybackType.SKILL, PlaybackType.UNDEFINED]:
+            self.bus.emit(Message(f'ovos.common_play.{self.now_playing.skill_id}.prev'))
             return
         self.pause()  # make more responsive
 
