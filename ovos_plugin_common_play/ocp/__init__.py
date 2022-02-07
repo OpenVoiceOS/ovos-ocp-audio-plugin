@@ -9,6 +9,8 @@ from ovos_utils.log import LOG
 from ovos_utils.messagebus import Message
 from ovos_workshop import OVOSAbstractApplication
 from padacioso import IntentContainer
+from ovos_utils.intents.intent_service_interface import IntentQueryApi
+from threading import Event
 
 
 class OCP(OVOSAbstractApplication):
@@ -44,6 +46,7 @@ class OCP(OVOSAbstractApplication):
         gui = OCPMediaPlayerGUI()
         super().__init__(skill_id="ovos.common_play", resources_dir=res_dir,
                          bus=bus, lang=lang, settings=settings, gui=gui)
+        self._intents_event = Event()
         self.player = OCPMediaPlayer(bus=self.bus,
                                      lang=self.lang,
                                      settings=self.settings,
@@ -86,14 +89,26 @@ class OCP(OVOSAbstractApplication):
         self.gui.show_home()
 
     def register_ocp_intents(self, message=None):
-        self.clear_intents()  # remove old intents
-        self.register_intent("play.intent", self.handle_play)
-        self.register_intent("read.intent", self.handle_read)
-        self.register_intent("open.intent", self.handle_open)
-        self.register_intent("next.intent", self.handle_next)
-        self.register_intent("prev.intent", self.handle_prev)
-        self.register_intent("pause.intent", self.handle_pause)
-        self.register_intent("resume.intent", self.handle_resume)
+        if not self._intents_event.is_set():
+            missing = True
+        else:
+            # check list of registered intents
+            # if needed register ocp intents again
+            # this accounts for restarts etc
+            i = IntentQueryApi(self.bus)
+            intents = i.get_padatious_manifest()
+            missing = not any(e.startswith("ovos.common_play:") for e in intents)
+
+        if missing:
+            LOG.info("OCP intents missing, registering")
+            self.register_intent("play.intent", self.handle_play)
+            self.register_intent("read.intent", self.handle_read)
+            self.register_intent("open.intent", self.handle_open)
+            self.register_intent("next.intent", self.handle_next)
+            self.register_intent("prev.intent", self.handle_prev)
+            self.register_intent("pause.intent", self.handle_pause)
+            self.register_intent("resume.intent", self.handle_resume)
+            self._intents_event.set()
 
         # trigger a presence announcement from all loaded ocp skills
         self.bus.emit(Message("ovos.common_play.skills.get"))
@@ -126,12 +141,7 @@ class OCP(OVOSAbstractApplication):
             "mycroft-playback-control.mycroftai",  # msm install
             # (mycroft skills override the repo name ???? )
             "mycroft-playback-control",
-            "skill-playback-control",  # simple git clone
-
-            # when ocp was a skill
-            "skill-better-playback-control",
-            "skill-better-playback-control.jarbasskills",
-            "skill-better-playback-control.openvoiceos"
+            "skill-playback-control"  # simple git clone
         ]
 
         # disable any loaded mycroft cps skill
@@ -151,7 +161,7 @@ class OCP(OVOSAbstractApplication):
         self.add_event("mycroft.skills.loaded", unload_mycroft_cps)
 
         # if skills service (re)loads (re)register OCP
-        self.add_event("mycroft.ready", self.replace_mycroft_cps)
+        self.bus.once("mycroft.ready",  self.replace_mycroft_cps)
 
     def default_shutdown(self):
         self.player.shutdown()
