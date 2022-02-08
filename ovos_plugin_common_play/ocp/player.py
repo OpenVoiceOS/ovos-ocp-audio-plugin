@@ -397,6 +397,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         if self.active_backend in [PlaybackType.AUDIO_SERVICE,
                                    PlaybackType.UNDEFINED]:
             self.stop_audio_service()
+            self.set_player_state(PlayerState.STOPPED)
         if self.active_backend in [PlaybackType.SKILL,
                                    PlaybackType.UNDEFINED]:
             self.stop_audio_skill()
@@ -404,10 +405,9 @@ class OCPMediaPlayer(OVOSAbstractApplication):
                                    PlaybackType.VIDEO,
                                    PlaybackType.UNDEFINED]:
             self.stop_gui_player()
+            self.set_player_state(PlayerState.STOPPED)
         #if self.active_backend in [PlaybackType.MPRIS]:
         #    self.mpris.stop()
-
-        self.set_player_state(PlayerState.STOPPED)
 
     def stop_gui_player(self):
         self.bus.emit(Message("gui.player.media.service.stop"))
@@ -475,7 +475,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
                 self.active_backend != PlaybackType.MPRIS:
             self.play_next()
             return
-        self.stop()
+
         self.gui.handle_end_of_playback(message)
 
     # ovos common play bus api requests
