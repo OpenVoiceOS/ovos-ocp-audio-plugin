@@ -10,18 +10,23 @@ from ovos_plugin_common_play.ocp.status import *
 from ovos_plugin_common_play.ocp.stream_handlers import available_extractors
 from ovos_utils.gui import is_gui_connected, is_gui_running
 from ovos_utils.log import LOG
-from ovos_utils.messagebus import Message
+from ovos_utils.messagebus import Message, get_mycroft_bus
 
 
 class OCPQuery:
-    def __init__(self, query, ocp_search=None, media_type=MediaType.GENERIC):
+    def __init__(self, query, ocp_search=None, media_type=MediaType.GENERIC, bus=None):
         self.query = query
         self.media_type = media_type
         self.ocp_search = ocp_search
-        self._bus = None
+        self._bus = bus
+        self.__dedicated_bus = False
         self.reset()
 
-    def bind(self, bus):
+    def bind(self, bus=None):
+        bus = bus or self._bus
+        if not bus:
+            self.__dedicated_bus = True
+            bus = get_mycroft_bus()
         self._bus = bus
 
     def reset(self):
@@ -94,9 +99,18 @@ class OCPQuery:
         self.bus.remove_all_listeners("ovos.common_play.skill.search_end")
         self.bus.remove_all_listeners("ovos.common_play.query.response")
 
+    def __enter__(self):
+        """ Context handler, registers bus events """
+        self.bind()
+        return self
+
+    def __exit__(self, _type, value, traceback):
+        """ Removes the bus events """
+        self.close()
+
     def close(self):
         self.remove_events()
-        if self._bus:
+        if self._bus and self.__dedicated_bus:
             self._bus.close()
             self._bus = None
 
