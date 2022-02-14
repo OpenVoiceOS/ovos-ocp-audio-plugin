@@ -1,6 +1,5 @@
 ovos-plugin-manager>=0.0.1a3
 padacioso~=0.1.1
-ovos_workshop~=0.0.5a8
+ovos_workshop~=0.0.5a9
 ovos_audio_plugin_simple~=0.0.1a1
 dbus-next
-yt-dlp

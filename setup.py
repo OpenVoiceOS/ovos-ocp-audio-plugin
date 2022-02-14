@@ -19,7 +19,7 @@ setup(
                       "ovos_audio_plugin_simple~=0.0.1a1",
                       "padacioso~=0.1.1",
                       "dbus_next",
-                      "ovos_workshop~=0.0.5a8"],
+                      "ovos_workshop~=0.0.5a9"],
     extras_require={
         'extractors': ["yt-dlp", "deezeridu", "feedparser", "pybandcamp"]
     },
