@@ -5,7 +5,7 @@ from os.path import join, dirname, isfile
 
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
-from padaos import IntentContainer
+from padacioso import IntentContainer
 
 
 class TestEnglishMediaIntents(unittest.TestCase):
@@ -41,35 +41,35 @@ class TestEnglishMediaIntents(unittest.TestCase):
     def test_radio(self):
         self.assertEqual(
             self.media_intents.calc_intent("play heavy metal radio"),
-            {'entities': {'query': 'heavy metal'}, 'name': 'radio'})
+            {'conf': 0.9, 'entities': {'query': 'heavy metal'}, 'name': 'radio'})
         self.assertEqual(
             self.media_intents.calc_intent("play radio"),
-            {'entities': {}, 'name': 'radio'})
+            {'conf': 1, 'entities': {}, 'name': 'radio'})
         self.assertEqual(
             self.media_intents.calc_intent("play internet radio"),
-            {'entities': {}, 'name': 'radio'})
+            {'conf': 1, 'entities': {}, 'name': 'radio'})
 
     def test_music(self):
         self.assertEqual(
             self.media_intents.calc_intent("play heavy metal music"),
-            {'entities': {'query': 'heavy metal'}, 'name': 'music'})
+            {'conf': 0.9, 'entities': {'query': 'heavy metal'}, 'name': 'music'})
         self.assertEqual(
             self.media_intents.calc_intent("play music"),
-            {'entities': {}, 'name': 'music'})
+            {'conf': 1, 'entities': {}, 'name': 'music'})
         self.assertEqual(
             self.media_intents.calc_intent("play some music"),
-            {'entities': {}, 'name': 'music'})
+            {'conf': 0.9, 'entities': {'query': 'some'}, 'name': 'music'})
 
     def test_movie(self):
         self.assertEqual(
             self.media_intents.calc_intent("play a horror film"),
-            {'entities': {'query': 'horror'}, 'name': 'movie'})
+            {'conf': 0.9, 'entities': {'query': 'horror'}, 'name': 'movie'})
         self.assertEqual(
             self.media_intents.calc_intent("play a movie"),
-            {'entities': {}, 'name': 'movie'})
+            {'conf': 0.9, 'entities': {'query': 'a'}, 'name': 'movie'})
         self.assertEqual(
             self.media_intents.calc_intent("play the matrix movie"),
-            {'entities': {'query': 'the matrix'}, 'name': 'movie'})
+            {'conf': 0.9, 'entities': {'query': 'the matrix'}, 'name': 'movie'})
 
 
 if __name__ == '__main__':
