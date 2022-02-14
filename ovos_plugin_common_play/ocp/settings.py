@@ -153,12 +153,12 @@ class OCPSettings(PrivateSettings):
     @property
     def youtube_backend(self):
         """class YoutubeBackend(str, enum.Enum):
-        YDL = "youtube-dl" <- default
+        YDL = "youtube-dl"
         PYTUBE = "pytube"
         PAFY = "pafy"
-        INVIDIOUS = "invidious"
+        INVIDIOUS = "invidious" <- default (no dependencies)
         """
-        return self.get("youtube_backend") or YoutubeBackend.YDL
+        return self.get("youtube_backend") or YoutubeBackend.INVIDIOUS
 
     @property
     def invidious_host(self):
