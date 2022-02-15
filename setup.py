@@ -6,9 +6,9 @@ PLUGIN_ENTRY_POINT = 'ovos_common_play=ovos_plugin_common_play'
 
 setup(
     name='ovos_plugin_common_play',
-    version='0.0.1a11post1',
+    version='0.0.1a12',
     description='OVOS common play audio service adapter plugin',
-    url='https://github.com/OpenVoiceOS/ovos-common-play-plugin',
+    url='https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin',
     author='JarbasAi',
     author_email='jarbasai@mailfence.com',
     license='Apache-2.0',
