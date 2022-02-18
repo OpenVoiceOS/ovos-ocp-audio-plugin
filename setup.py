@@ -4,9 +4,17 @@ from setuptools import setup
 
 PLUGIN_ENTRY_POINT = 'ovos_common_play=ovos_plugin_common_play'
 
+def _get_version():
+    with open('ovos_plugin_common_play/versioning/ocp_versions.py') as versions:
+        for line in versions:
+            if line.startswith('CURRENT_OCP_VERSION'):
+                # CURRENT_OSM_VERSION = "0.0.10a9" --> "0.0.10a9"
+                return line.replace('"','').strip('\n').split('= ')[1]
+
+
 setup(
     name='ovos_plugin_common_play',
-    version='0.0.1a12',
+    version=_get_version(),
     description='OVOS common play audio service adapter plugin',
     url='https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin',
     author='JarbasAi',
