@@ -1,8 +1,19 @@
 # Changelog
 
-## [Unreleased](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/HEAD)
+## [V0.0.1a2](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.1a2) (2022-02-25)
 
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/f6b0dc8082672f6c5f092be7ffe2d0f4b0520882...HEAD)
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/f6b0dc8082672f6c5f092be7ffe2d0f4b0520882...V0.0.1a2)
+
+**Implemented enhancements:**
+
+- Add Audio Wave Visualization [\#5](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/5) ([AIIX](https://github.com/AIIX))
+- Add basic gui page keynav support to webplayer and fullscreen mode [\#4](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/4) ([AIIX](https://github.com/AIIX))
+- Add missing german intents [\#2](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/2) ([Y0ngg4n](https://github.com/Y0ngg4n))
+- add keynav and qml for bigscreen [\#1](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/1) ([AIIX](https://github.com/AIIX))
+
+**Fixed bugs:**
+
+- use mycroft icon units instead of kirigami [\#3](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/3) ([AIIX](https://github.com/AIIX))
 
 **Closed issues:**
 
@@ -12,11 +23,6 @@
 
 - feat/workflows [\#8](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/8) ([JarbasAl](https://github.com/JarbasAl))
 - feat/pypi\_automation [\#7](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/7) ([JarbasAl](https://github.com/JarbasAl))
-- Add Audio Wave Visualization [\#5](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/5) ([AIIX](https://github.com/AIIX))
-- Add basic gui page keynav support to webplayer and fullscreen mode [\#4](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/4) ([AIIX](https://github.com/AIIX))
-- use mycroft icon units instead of kirigami [\#3](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/3) ([AIIX](https://github.com/AIIX))
-- Add missing german intents [\#2](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/2) ([Y0ngg4n](https://github.com/Y0ngg4n))
-- add keynav and qml for bigscreen [\#1](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/1) ([AIIX](https://github.com/AIIX))
 
 
 
