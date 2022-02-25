@@ -1,0 +1,5 @@
+ovos-plugin-manager
+padacioso~=0.1.1
+ovos_workshop
+ovos_audio_plugin_simple
+dbus-next
