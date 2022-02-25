@@ -48,6 +48,7 @@ def required(requirements_file):
         return [pkg for pkg in requirements
                 if pkg.strip() and not pkg.startswith("#")]
 
+PLUGIN_ENTRY_POINT = 'ovos_common_play=ovos_plugin_common_play'
 
 setup(
     name='ovos_plugin_common_play',
