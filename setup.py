@@ -1,20 +1,57 @@
 #!/usr/bin/env python3
+import os
 from setuptools import setup
 
+BASEDIR = os.path.abspath(os.path.dirname(__file__))
 
-PLUGIN_ENTRY_POINT = 'ovos_common_play=ovos_plugin_common_play'
 
-def _get_version():
-    with open('ovos_plugin_common_play/versioning/ocp_versions.py') as versions:
-        for line in versions:
-            if line.startswith('CURRENT_OCP_VERSION'):
-                # CURRENT_OSM_VERSION = "0.0.10a9" --> "0.0.10a9"
-                return line.replace('"','').strip('\n').split('= ')[1]
+def get_version():
+    """ Find the version of the package"""
+    version = None
+    version_file = os.path.join(BASEDIR, 'ovos_plugin_common_play', 'version.py')
+    major, minor, build, alpha = (None, None, None, None)
+    with open(version_file) as f:
+        for line in f:
+            if 'VERSION_MAJOR' in line:
+                major = line.split('=')[1].strip()
+            elif 'VERSION_MINOR' in line:
+                minor = line.split('=')[1].strip()
+            elif 'VERSION_BUILD' in line:
+                build = line.split('=')[1].strip()
+            elif 'VERSION_ALPHA' in line:
+                alpha = line.split('=')[1].strip()
+
+            if ((major and minor and build and alpha) or
+                    '# END_VERSION_BLOCK' in line):
+                break
+    version = f"{major}.{minor}.{build}"
+    if alpha and int(alpha) > 0:
+        version += f"a{alpha}"
+    return version
+
+
+def package_files(directory):
+    paths = []
+    for (path, directories, filenames) in os.walk(directory):
+        for filename in filenames:
+            paths.append(os.path.join('..', path, filename))
+    return paths
+
+
+def required(requirements_file):
+    """ Read requirements file and remove comments and empty lines. """
+    with open(os.path.join(BASEDIR, requirements_file), 'r') as f:
+        requirements = f.read().splitlines()
+        if 'MYCROFT_LOOSE_REQUIREMENTS' in os.environ:
+            print('USING LOOSE REQUIREMENTS!')
+            requirements = [r.replace('==', '>=').replace('~=', '>=') for r in requirements]
+        return [pkg for pkg in requirements
+                if pkg.strip() and not pkg.startswith("#")]
 
 
 setup(
     name='ovos_plugin_common_play',
-    version=_get_version(),
+    version=get_version(),
     description='OVOS common play audio service adapter plugin',
     url='https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin',
     author='JarbasAi',
@@ -23,11 +60,8 @@ setup(
     packages=['ovos_plugin_common_play',
               'ovos_plugin_common_play.ocp',
               'ovos_plugin_common_play.ocp.stream_handlers'],
-    install_requires=["ovos-plugin-manager>=0.0.1a3",
-                      "ovos_audio_plugin_simple~=0.0.1a1",
-                      "padacioso~=0.1.1",
-                      "dbus_next",
-                      "ovos_workshop~=0.0.5a9"],
+    install_requires=required("requirements/requirements.txt"),
+    package_data={'': package_files('ovos_plugin_common_play')},
     extras_require={
         'extractors': ["yt-dlp", "deezeridu", "feedparser", "pybandcamp"]
     },
