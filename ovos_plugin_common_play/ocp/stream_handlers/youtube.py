@@ -13,6 +13,7 @@ class YdlBackend(str, enum.Enum):
     YDL = "youtube-dl"
     YDLC = "youtube-dlc"
     YDLP = "yt-dlp"
+    AUTO = "auto"
 
 
 class YoutubeLiveBackend(str, enum.Enum):
@@ -132,8 +133,7 @@ def get_invidious_stream(url, audio_only=False, ocp_settings=None):
 
 
 def get_ydl_stream(url, audio_only=False, ocp_settings=None,
-                   preferred_ext=None, backend=YdlBackend.YDL,
-                   fallback=True, ydl_opts=None, best=True):
+                   ydl_opts=None, best=True):
     settings = ocp_settings or {}
     ydl_opts = ydl_opts or {
         "quiet": True,
@@ -142,7 +142,13 @@ def get_ydl_stream(url, audio_only=False, ocp_settings=None,
         "format": "best"
     }
 
-    if backend == YdlBackend.YDLP:
+    backend = settings.get("ydl_backend") or YdlBackend.AUTO
+    if backend == YdlBackend.AUTO:
+        try:
+            import yt_dlp as youtube_dl
+        except:
+            import youtube_dl
+    elif backend == YdlBackend.YDLP:
         import yt_dlp as youtube_dl
     elif backend == YdlBackend.YDLC:
         import youtube_dlc as youtube_dl
