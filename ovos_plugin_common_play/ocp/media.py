@@ -2,7 +2,7 @@ from ovos_plugin_common_play.ocp.status import *
 from ovos_plugin_common_play.ocp.stream_handlers import is_youtube, \
     get_deezer_audio_stream, get_rss_first_stream, \
     get_youtube_live_from_channel, find_mime, get_bandcamp_audio_stream, \
-    get_ydl_stream, get_youtube_stream, get_playlist_stream
+    get_ydl_stream, get_youtube_stream, get_playlist_stream, YoutubeBackend
 from ovos_utils.json_helper import merge_dict
 from ovos_utils.log import LOG
 from ovos_utils.messagebus import Message
@@ -255,6 +255,10 @@ class NowPlaying(MediaEntry):
     def bus(self):
         return self._player.bus
 
+    @property
+    def _settings(self):
+        return self._player.settings
+
     def as_entry(self):
         return MediaEntry.from_dict(self.as_dict)
 
@@ -303,8 +307,8 @@ class NowPlaying(MediaEntry):
         if uri.startswith("bandcamp//"):
             uri = uri.replace("bandcamp//", "")
             meta = get_bandcamp_audio_stream(
-                uri, backend=self._player.settings.bandcamp_backend,
-                ydl_backend=self._player.settings.ydl_backend)
+                uri, backend=self._settings.bandcamp_backend,
+                ydl_backend=self._settings.ydl_backend)
             if not meta:
                 LOG.error("bandcamp stream extraction failed!!!")
 
@@ -319,7 +323,7 @@ class NowPlaying(MediaEntry):
         elif uri.startswith("youtube.channel.live//"):
             uri = uri.replace("youtube.channel.live//", "")
             uri = get_youtube_live_from_channel(
-                uri, backend=self._player.settings.yt_chlive_backend)["url"]
+                uri, backend=self._settings.yt_chlive_backend)["url"]
             if not uri:
                 LOG.error("youtube channel live stream extraction failed!!!")
             else:
@@ -328,22 +332,27 @@ class NowPlaying(MediaEntry):
         if uri.startswith("ydl//"):
             # supports more than youtube!!!
             uri = uri.replace("ydl//", "")
-            meta = get_ydl_stream(uri,
-                ocp_settings=self._player.settings)
+            meta = get_ydl_stream(uri, ocp_settings=self._settings)
             if not meta:
                 LOG.error("ydl stream extraction failed!!!")
 
         elif uri.startswith("youtube//") or is_youtube(uri):
             uri = uri.replace("youtube//", "")
+            if self._settings.youtube_backend == YoutubeBackend.WEBVIEW:
+                self.playback = meta["playback"] = PlaybackType.WEBVIEW
+
             if self.playback != PlaybackType.WEBVIEW:
                 meta = get_youtube_stream(
-                    uri,
-                    audio_only=not video,
-                    ocp_settings=self._player.settings)
-            if not meta:
+                    uri, audio_only=not video, ocp_settings=self._settings)
+
+            if not meta and self.playback != PlaybackType.WEBVIEW:
                 LOG.error("youtube stream extraction failed!!!")
                 LOG.warning("Forcing webview playback")
-                self.playback = PlaybackType.WEBVIEW
+                self.playback = meta["playback"] = PlaybackType.WEBVIEW
+
+            if self.playback == PlaybackType.WEBVIEW:
+                vid_id = uri.split("v=")[-1].split("&")[0]
+                uri = f"https://{self._settings.invidious_host}/watch?v={vid_id}"
 
         # .pls and .m3u are not supported by gui player, parse the file
         if "pls" in uri or "m3u" in uri:

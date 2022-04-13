@@ -1,3 +1,5 @@
+import requests
+
 from ovos_plugin_common_play.ocp.status import MediaType, PlaybackMode
 from ovos_utils.skills.settings import PrivateSettings
 from ovos_plugin_common_play.ocp.stream_handlers import YoutubeBackend, \
@@ -156,6 +158,7 @@ class OCPSettings(PrivateSettings):
         YDL = "youtube-dl"
         PYTUBE = "pytube"
         PAFY = "pafy"
+        WEBVIEW = "webview" (WIP AND BROKEN)
         INVIDIOUS = "invidious" <- default (no dependencies)
         """
         return self.get("youtube_backend") or YoutubeBackend.INVIDIOUS
@@ -163,7 +166,15 @@ class OCPSettings(PrivateSettings):
     @property
     def invidious_host(self):
         """the url to the invidious instance to be used"""
-        return self.get("invidious_host") or "https://vid.puffyan.us"
+        instance = self.get("invidious_host")
+        if not instance:
+            try:
+                api_url = "https://api.invidious.io/instances.json?pretty=1&sort_by=type,health"
+                instance = requests.get(api_url).json()[0][0]
+            except:
+                # hosted by a OpenVoiceOS member
+                instance = "https://video.strongthany.cc"
+        return instance
 
     @property
     def proxy_invidious(self):
