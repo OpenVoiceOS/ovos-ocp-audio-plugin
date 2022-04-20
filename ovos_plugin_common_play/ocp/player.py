@@ -226,10 +226,13 @@ class OCPMediaPlayer(OVOSAbstractApplication):
     def play(self):
         # stop any external media players
         self.mpris.stop()
-        self.gui.show_player()
+        # validate new stream
+        # TODO buffering animation ?
         if not self.validate_stream():
+            # TODO error animation
             self.on_invalid_media()
             return
+        self.gui.show_player()
 
         if self.now_playing.uri not in self.track_history:
             self.track_history[self.now_playing.uri] = 0

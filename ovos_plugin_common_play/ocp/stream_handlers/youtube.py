@@ -7,6 +7,7 @@ class YoutubeBackend(str, enum.Enum):
     PYTUBE = "pytube"
     PAFY = "pafy"
     INVIDIOUS = "invidious"
+    WEBVIEW = "webview"
 
 
 class YdlBackend(str, enum.Enum):
