@@ -293,13 +293,3 @@ def get_youtubesearcher_channel_livestreams(url):
             }
     except:
         pass
-
-
-if __name__ == "__main__":
-    urls = ["https://www.youtube.com/c/euronewsportugues",
-            "https://www.youtube.com/channel/euronewsportugues",
-            "https://www.youtube.com/EuronewsUSA",
-            "https://www.youtube.com/c/EuronewsUSA",
-            "https://www.youtube.com/channel/EuronewsUSA"]
-    for url in urls:
-        print(get_youtube_live_from_channel(url))
