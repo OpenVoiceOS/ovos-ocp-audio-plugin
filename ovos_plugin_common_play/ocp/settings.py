@@ -186,14 +186,6 @@ class OCPSettings(PrivateSettings):
         return self.get("invidious_proxy", False)
 
     @property
-    def yt_chlive_backend(self):
-        """class YoutubeLiveBackend(str, enum.Enum):
-        PYTUBE = "pytube" <- default
-        YT_SEARCHER = "youtube_searcher"
-        """
-        return self.get("youtube_backend") or YoutubeBackend.PYTUBE
-
-    @property
     def ydl_backend(self):
         """class YdlBackend(str, enum.Enum):
         YDL = "youtube-dl"

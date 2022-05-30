@@ -1,5 +1,7 @@
 import enum
+
 import requests
+from ovos_utils.log import LOG
 
 
 class YoutubeBackend(str, enum.Enum):
@@ -15,11 +17,6 @@ class YdlBackend(str, enum.Enum):
     YDLC = "youtube-dlc"
     YDLP = "yt-dlp"
     AUTO = "auto"
-
-
-class YoutubeLiveBackend(str, enum.Enum):
-    PYTUBE = "pytube"
-    YT_SEARCHER = "youtube_searcher"
 
 
 def _parse_title(title):
@@ -46,32 +43,25 @@ def _parse_title(title):
     return title.replace(" - Topic", ""), ""
 
 
-def get_youtube_live_from_channel(url, backend=YoutubeLiveBackend.PYTUBE,
-                                  fallback=True):
-    if backend == YoutubeLiveBackend.PYTUBE:
-        try:
-            for vid in get_pytube_channel_livestreams(url):
-                return vid
-        except:
-            if fallback:
-                return get_youtube_live_from_channel(
-                    url, backend=YoutubeLiveBackend.YT_SEARCHER, fallback=False)
-            raise
-    elif backend == YoutubeLiveBackend.YT_SEARCHER:
-        try:
-            for vid in get_youtubesearcher_channel_livestreams(url):
-                return vid
-        except:
-            if fallback:
-                return get_youtube_live_from_channel(
-                    url, backend=YoutubeLiveBackend.PYTUBE,
-                    fallback=False)
-            raise
+def get_youtube_live_from_channel(url, ocp_settings=None):
+    # TODO improve channel name handling
+    url = url.split("?")[0]
+    if "/c/" in url or "/channel/" in url:
+        channel_name = url.split("/channel/")[-1].split("/c/")[-1].split("/")[0]
     else:
-        if fallback:
-            return get_youtube_live_from_channel(url,
-                                                 backend=YoutubeLiveBackend.PYTUBE)
-        raise ValueError("invalid backend")
+        channel_name = url.split("/")[-1]
+
+    # we see different patterns randomly used in the wild
+    # i do not know a easy way to check which are valid for a channel
+    # lazily try: except: and hail mary
+    try:
+        # seems to work for all channels
+        url = f"https://www.youtube.com/{channel_name}/live"
+        return get_youtube_stream(url, ocp_settings=ocp_settings)
+    except:
+        # works for some channels only
+        url = f"https://www.youtube.com/c/{channel_name}/live"
+        return get_youtube_stream(url, ocp_settings=ocp_settings)
 
 
 def get_youtube_stream(url,
@@ -207,7 +197,7 @@ def _select_ydl_format(meta, audio_only=False, preferred_ext=None, best=True):
     return fmts[0]["url"]
 
 
-def get_pafy_stream(url,  audio_only=False, ocp_settings=None):
+def get_pafy_stream(url, audio_only=False, ocp_settings=None):
     import pafy
     settings = ocp_settings or {}
     stream = pafy.new(url)
@@ -286,6 +276,7 @@ def get_pytube_channel_livestreams(url):
 
 
 def get_youtubesearcher_channel_livestreams(url):
+    LOG.warning("youtube_searcher is abandonware, support will be removed in the next release")
     try:
         from youtube_searcher import extract_videos
         for e in extract_videos(url):
@@ -302,3 +293,13 @@ def get_youtubesearcher_channel_livestreams(url):
             }
     except:
         pass
+
+
+if __name__ == "__main__":
+    urls = ["https://www.youtube.com/c/euronewsportugues",
+            "https://www.youtube.com/channel/euronewsportugues",
+            "https://www.youtube.com/EuronewsUSA",
+            "https://www.youtube.com/c/EuronewsUSA",
+            "https://www.youtube.com/channel/EuronewsUSA"]
+    for url in urls:
+        print(get_youtube_live_from_channel(url))
