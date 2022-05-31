@@ -323,7 +323,7 @@ class NowPlaying(MediaEntry):
         elif uri.startswith("youtube.channel.live//"):
             uri = uri.replace("youtube.channel.live//", "")
             uri = get_youtube_live_from_channel(
-                uri, backend=self._settings.yt_chlive_backend)["url"]
+                uri, ocp_settings=self._settings)["url"]
             if not uri:
                 LOG.error("youtube channel live stream extraction failed!!!")
             else:
