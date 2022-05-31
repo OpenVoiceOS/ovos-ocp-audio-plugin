@@ -46,14 +46,15 @@ def _parse_title(title):
 def get_youtube_live_from_channel(url, ocp_settings=None):
     # TODO improve channel name handling
     url = url.split("?")[0]
-    if "/c/" in url or "/channel/" in url:
-        channel_name = url.split("/channel/")[-1].split("/c/")[-1].split("/")[0]
+    if "/c/" in url or "/channel/" in url or "/user/" in url:
+        channel_name = url.split("/channel/")[-1].split("/c/")[-1].split("/user/")[-1].split("/")[0]
     else:
         channel_name = url.split("/")[-1]
 
     # we see different patterns randomly used in the wild
     # i do not know a easy way to check which are valid for a channel
     # lazily try: except: and hail mary
+    # TODO invidious backend can not handle channels
     try:
         # seems to work for all channels
         url = f"https://www.youtube.com/{channel_name}/live"
@@ -68,7 +69,7 @@ def get_youtube_stream(url,
                        audio_only=False,
                        ocp_settings=None):
     settings = ocp_settings or {}
-    backend = settings.get("youtube_backend") or YoutubeBackend.YDL
+    backend = settings.get("youtube_backend") or YoutubeBackend.INVIDIOUS
     if backend == YoutubeBackend.PYTUBE:
         extractor = get_pytube_stream
     elif backend == YoutubeBackend.PAFY:
@@ -93,34 +94,33 @@ def get_invidious_stream(url, audio_only=False, ocp_settings=None):
     # self host: https://github.com/iv-org/invidious
 
     settings = ocp_settings or {}
-    host = settings.get("invidious_host") or "https://vid.puffyan.us"
+    host = settings.get("invidious_host") or "https://invidious.jarbasai.online"
     local = "true" if settings.get("proxy_invidious") else "false"
 
-    vid_id = url.split("watch?v=")[-1].split("&")[0]
-    stream = f"{host}/latest_version?id={vid_id}&itag=22&local={local}&subtitles=en"
+    if url.endswith("/live"):
+        html = requests.get(url.replace("/live", ""), cookies={'CONSENT': 'YES+1'}).text
+        vid_id = html.split('{"url":"/watch?v=')[1].split('",')[0].split('&')[0]
+    else:
+        vid_id = url.split("watch?v=")[-1].split("&")[0]
+    api = f"{host}/api/v1/videos/{vid_id}"
+    data = requests.get(api).json()
+    if "error" in data:
+        return {}
 
-    html = requests.get(f"{host}/watch?v={vid_id}").text
+    if audio_only:
+        pass  # TODO
 
-    info = {
+    if data.get("liveNow"):
+        # TODO invidious backend can not handle lives, what do?
+        return get_ydl_stream(f"https://www.youtube.com/watch?v={vid_id}", ocp_settings=ocp_settings)
+    else:
+        stream = f"{host}/latest_version?id={vid_id}&itag=22&local={local}&subtitles=en"
+    return {
         "uri": stream,
-        "title": html.split("<title>")[-1].split("</title>")[0],
-        "image": f"{host}/vi/{vid_id}/maxres.jpg",
-        "length": float(html.split('"length_seconds":')[-1].split(",")[0]) * 1000
+        "title": data["title"],
+        "image": host + data['videoThumbnails'][0]["url"],
+        "length": data['lengthSeconds']
     }
-
-    for m in html.split("<meta ")[1:]:
-        if not m.startswith('name="'):
-            continue
-
-        if 'name="description"' in m:
-            pass
-        elif 'name="keywords"' in m:
-            pass
-        elif 'name="thumbnail"' in m:
-            pic = m.split('content="')[-1].split(">")[0][:-1]
-            info["image"] = f"{host}{pic}"
-
-    return info
 
 
 def get_ydl_stream(url, audio_only=False, ocp_settings=None,
