@@ -3,7 +3,7 @@ import requests
 from ovos_plugin_common_play.ocp.status import MediaType, PlaybackMode
 from ovos_utils.skills.settings import PrivateSettings
 from ovos_plugin_common_play.ocp.stream_handlers import YoutubeBackend, \
-    BandcampBackend, YdlBackend
+    BandcampBackend, YdlBackend, YoutubeLiveBackend
 from dbus_next.constants import BusType
 
 
@@ -195,7 +195,7 @@ class OCPSettings(PrivateSettings):
         YDL = "youtube-dl"
             # same as above, but always uses YoutubeBackend.YDL internally
         """
-        return self.get("youtube_backend") or YoutubeBackend.PYTUBE
+        return self.get("youtube_live_backend") or YoutubeLiveBackend.REDIRECT
 
     @property
     def ydl_backend(self):
