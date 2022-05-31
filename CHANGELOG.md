@@ -2,7 +2,15 @@
 
 ## [Unreleased](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/HEAD)
 
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.2a1...HEAD)
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.2a2...HEAD)
+
+**Fixed bugs:**
+
+- Fix/stream xtract/yt channel live [\#11](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/11) ([NeonJarbas](https://github.com/NeonJarbas))
+
+## [V0.0.2a2](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.2a2) (2022-04-20)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.2a1...V0.0.2a2)
 
 **Implemented enhancements:**
 
