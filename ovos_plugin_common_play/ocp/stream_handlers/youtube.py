@@ -99,10 +99,10 @@ def get_invidious_stream(url, audio_only=False, ocp_settings=None):
     local = "true" if settings.get("proxy_invidious") else "false"
 
     if url.endswith("/live"):
-        html = requests.get(url.replace("/live", ""), cookies={'CONSENT': 'YES+1'}).text
-        vid_id = html.split('{"url":"/watch?v=')[1].split('",')[0].split('&')[0]
-    else:
-        vid_id = url.split("watch?v=")[-1].split("&")[0]
+        # TODO invidious backend can not handle lives, what do?
+        return get_ydl_stream(url, ocp_settings=ocp_settings)
+
+    vid_id = url.split("watch?v=")[-1].split("&")[0]
     api = f"{host}/api/v1/videos/{vid_id}"
     data = requests.get(api).json()
     if "error" in data:
@@ -307,7 +307,6 @@ def get_youtube_live_from_channel_redirect(url, ocp_settings=None):
     # we see different patterns randomly used in the wild
     # i do not know a easy way to check which are valid for a channel
     # lazily try: except: and hail mary
-    # TODO invidious backend can not handle channels
     try:
         # seems to work for all channels
         url = f"https://www.youtube.com/{channel_name}/live"
