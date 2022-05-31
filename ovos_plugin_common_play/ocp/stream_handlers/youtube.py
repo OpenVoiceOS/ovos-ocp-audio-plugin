@@ -52,7 +52,7 @@ def _parse_title(title):
 
 def get_youtube_live_from_channel(url, ocp_settings=None):
     settings = ocp_settings or {}
-    backend = settings.get("youtube_backend") or YoutubeLiveBackend.REDIRECT
+    backend = settings.get("youtube_live_backend") or YoutubeLiveBackend.REDIRECT
     if backend == YoutubeLiveBackend.YT_SEARCHER:
         extractor = get_youtubesearcher_channel_livestreams
     elif backend == YoutubeLiveBackend.PYTUBE:
