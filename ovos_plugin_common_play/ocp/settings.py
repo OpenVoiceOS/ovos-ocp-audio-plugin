@@ -186,6 +186,18 @@ class OCPSettings(PrivateSettings):
         return self.get("invidious_proxy", False)
 
     @property
+    def yt_chlive_backend(self):
+        """class YoutubeLiveBackend(str, enum.Enum):
+        PYTUBE = "pytube"
+        YT_SEARCHER = "youtube_searcher"
+        REDIRECT = "redirect"  <- default
+            # uses youtube auto redirect https://www.youtube.com/{channel_name}/live
+        YDL = "youtube-dl"
+            # same as above, but always uses YoutubeBackend.YDL internally
+        """
+        return self.get("youtube_backend") or YoutubeBackend.PYTUBE
+
+    @property
     def ydl_backend(self):
         """class YdlBackend(str, enum.Enum):
         YDL = "youtube-dl"

@@ -19,6 +19,13 @@ class YdlBackend(str, enum.Enum):
     AUTO = "auto"
 
 
+class YoutubeLiveBackend(str, enum.Enum):
+    REDIRECT = "redirect"  # url = f"https://www.youtube.com/c/{channel_name}/live"
+    YDL = "youtube-dl"  # same as above, but always uses YoutubeBackend.YDL internally
+    PYTUBE = "pytube"
+    YT_SEARCHER = "youtube_searcher"
+
+
 def _parse_title(title):
     # try to extract_streams artist from title
     delims = [":", "|", "-"]
@@ -44,25 +51,19 @@ def _parse_title(title):
 
 
 def get_youtube_live_from_channel(url, ocp_settings=None):
-    # TODO improve channel name handling
-    url = url.split("?")[0]
-    if "/c/" in url or "/channel/" in url or "/user/" in url:
-        channel_name = url.split("/channel/")[-1].split("/c/")[-1].split("/user/")[-1].split("/")[0]
+    settings = ocp_settings or {}
+    backend = settings.get("youtube_backend") or YoutubeLiveBackend.REDIRECT
+    if backend == YoutubeLiveBackend.YT_SEARCHER:
+        extractor = get_youtubesearcher_channel_livestreams
+    elif backend == YoutubeLiveBackend.PYTUBE:
+        extractor = get_pytube_channel_livestreams
+    elif backend == YoutubeLiveBackend.YDL:
+        ocp_settings = dict(ocp_settings)
+        ocp_settings["youtube_backend"] = YoutubeBackend.YDL
+        extractor = get_youtube_live_from_channel_redirect
     else:
-        channel_name = url.split("/")[-1]
-
-    # we see different patterns randomly used in the wild
-    # i do not know a easy way to check which are valid for a channel
-    # lazily try: except: and hail mary
-    # TODO invidious backend can not handle channels
-    try:
-        # seems to work for all channels
-        url = f"https://www.youtube.com/{channel_name}/live"
-        return get_youtube_stream(url, ocp_settings=ocp_settings)
-    except:
-        # works for some channels only
-        url = f"https://www.youtube.com/c/{channel_name}/live"
-        return get_youtube_stream(url, ocp_settings=ocp_settings)
+        extractor = get_youtube_live_from_channel_redirect
+    return extractor(url, ocp_settings=settings)
 
 
 def get_youtube_stream(url,
@@ -259,7 +260,7 @@ def get_pytube_stream(url, audio_only=False, ocp_settings=None, best=True):
     return info
 
 
-def get_pytube_channel_livestreams(url):
+def get_pytube_channel_livestreams(url, ocp_settings=None):
     from pytube import Channel
     yt = Channel(url)
     for v in yt.videos_generator():
@@ -275,7 +276,7 @@ def get_pytube_channel_livestreams(url):
             }
 
 
-def get_youtubesearcher_channel_livestreams(url):
+def get_youtubesearcher_channel_livestreams(url, ocp_settings=None):
     LOG.warning("youtube_searcher is abandonware, support will be removed in the next release")
     try:
         from youtube_searcher import extract_videos
@@ -293,3 +294,25 @@ def get_youtubesearcher_channel_livestreams(url):
             }
     except:
         pass
+
+
+def get_youtube_live_from_channel_redirect(url, ocp_settings=None):
+    # TODO improve channel name handling
+    url = url.split("?")[0]
+    if "/c/" in url or "/channel/" in url or "/user/" in url:
+        channel_name = url.split("/channel/")[-1].split("/c/")[-1].split("/user/")[-1].split("/")[0]
+    else:
+        channel_name = url.split("/")[-1]
+
+    # we see different patterns randomly used in the wild
+    # i do not know a easy way to check which are valid for a channel
+    # lazily try: except: and hail mary
+    # TODO invidious backend can not handle channels
+    try:
+        # seems to work for all channels
+        url = f"https://www.youtube.com/{channel_name}/live"
+        return get_youtube_stream(url, ocp_settings=ocp_settings)
+    except:
+        # works for some channels only
+        url = f"https://www.youtube.com/c/{channel_name}/live"
+        return get_youtube_stream(url, ocp_settings=ocp_settings)
