@@ -23,7 +23,7 @@ class MprisPlayerCtl(Thread):
         eg, KDE connect will allow controlling OCP via the phone
     """
 
-    def __init__(self, daemonic=True):
+    def __init__(self, daemonic=True, manage_players=False):
         super(MprisPlayerCtl, self).__init__()
         self.dbus = None
         self.loop = asyncio.get_event_loop()
@@ -44,6 +44,7 @@ class MprisPlayerCtl(Thread):
         self.players = {}
         self.player_meta = {}
         self._player_fails = {}
+        self.manage_players = manage_players
         # TODO from .conf
         self.ignored_players = [
             "org.mpris.MediaPlayer2.OCP",
@@ -71,7 +72,7 @@ class MprisPlayerCtl(Thread):
         self.mediaPlayer2PlayerInterface.emit_properties_changed(props)
 
     def _update_ocp(self):
-        if self.stop_event.is_set():
+        if self.stop_event.is_set() or not self.manage_players:
             return
         if self._ocp_player and self.player_meta.get(self.main_player):
             data = self.player_meta[self.main_player]
@@ -129,13 +130,13 @@ class MprisPlayerCtl(Thread):
 
     async def _set_main_player(self, name):
         self.main_player = name
-        self._update_ocp()
         # if there are multiple external players playing, stop the
         # previous ones!
-        # TODO config option disabled by default!
-        for p in self.players:
-            if p != name:
-                await self._stop_player(p)
+        if self.manage_players:
+            self._update_ocp()
+            for p in self.players:
+                if p != name:
+                    await self._stop_player(p)
 
     async def _play_prev(self, name, max_tries=1):
         if name not in self.players:

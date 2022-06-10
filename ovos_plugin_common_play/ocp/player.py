@@ -20,7 +20,10 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         settings = settings or OCPSettings()
         resources_dir = resources_dir or join(dirname(__file__), "res")
         gui = gui or OCPMediaPlayerGUI()
-        self.mpris = MprisPlayerCtl()
+        # mpris settings
+        manage_players = settings.get("manage_external_players", False)
+        self.mpris = MprisPlayerCtl(manage_players=manage_players)
+
         self.state = PlayerState.STOPPED
         self.loop_state = LoopState.NONE
         self.media_state = MediaState.NO_MEDIA

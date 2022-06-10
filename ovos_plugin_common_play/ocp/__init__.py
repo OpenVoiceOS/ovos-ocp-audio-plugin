@@ -1,5 +1,5 @@
 from os.path import join, dirname, isfile
-from ovos_workshop.skills.decorators.ocp import *
+from ovos_workshop.decorators.ocp import *
 from ovos_plugin_common_play.ocp.gui import OCPMediaPlayerGUI
 from ovos_plugin_common_play.ocp.player import OCPMediaPlayer
 from ovos_plugin_common_play.ocp.settings import OCPSettings
