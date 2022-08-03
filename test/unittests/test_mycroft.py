@@ -11,6 +11,7 @@ from ovos_plugin_common_play import OCPAudioBackend
 
 try:
     from mycroft.version import OVOS_VERSION_STR
+
     is_ovos = True
 except:
     is_ovos = False
@@ -23,7 +24,9 @@ class TestCPS(unittest.TestCase):
         self.bus.emitted_msgs = []
 
         def get_msg(msg):
-            self.bus.emitted_msgs.append(json.loads(msg))
+            msg = json.loads(msg)
+            msg.pop("context")
+            self.bus.emitted_msgs.append(msg)
 
         self.bus.on("message", get_msg)
 
@@ -41,39 +44,32 @@ class TestCPS(unittest.TestCase):
                                     'skill_playback_control_mycroftaiPlay'],
                                    ['skill_playback_control_mycroftaiPhrase',
                                     'skill_playback_control_mycroftaiPhrase']],
-                      'at_least_one': [], 'optional': []},
-             'context': {'skill_id': 'skill-playback-control.mycroftai'}},
+                      'at_least_one': [], 'optional': []}},
             {'type': 'register_intent',
              'data': {'name': 'skill-playback-control.mycroftai:handle_prev',
                       'requires': [['skill_playback_control_mycroftaiPrev',
                                     'skill_playback_control_mycroftaiPrev'],
                                    ['skill_playback_control_mycroftaiTrack',
                                     'skill_playback_control_mycroftaiTrack']],
-                      'at_least_one': [], 'optional': []},
-             'context': {'skill_id': 'skill-playback-control.mycroftai'}},
+                      'at_least_one': [], 'optional': []}},
             {'type': 'register_intent',
              'data': {'name': 'skill-playback-control.mycroftai:handle_pause',
                       'requires': [['skill_playback_control_mycroftaiPause',
                                     'skill_playback_control_mycroftaiPause']],
-                      'at_least_one': [], 'optional': []},
-             'context': {'skill_id': 'skill-playback-control.mycroftai'}},
+                      'at_least_one': [], 'optional': []}},
             {'type': 'register_intent',
              'data': {'name': 'skill-playback-control.mycroftai:handle_next',
                       'requires': [['skill_playback_control_mycroftaiNext',
                                     'skill_playback_control_mycroftaiNext'],
                                    ['skill_playback_control_mycroftaiTrack',
                                     'skill_playback_control_mycroftaiTrack']],
-                      'at_least_one': [], 'optional': []},
-             'context': {'skill_id': 'skill-playback-control.mycroftai'}},
+                      'at_least_one': [], 'optional': []}},
             {'type': 'register_intent',
              'data': {'name': 'skill-playback-control.mycroftai:handle_play', 'requires': [],
                       'at_least_one': [['skill_playback_control_mycroftaiPlayResume',
-                                        'skill_playback_control_mycroftaiResume']], 'optional': []},
-             'context': {'skill_id': 'skill-playback-control.mycroftai'}}
+                                        'skill_playback_control_mycroftaiResume']], 'optional': []}}
         ]
         for intent in cps_msgs:
-            if not is_ovos:
-                intent["context"].pop("skill_id")
             self.assertIn(intent, self.bus.emitted_msgs)
 
         # assert that mycroft common play intents loaded
@@ -108,17 +104,13 @@ class TestCPS(unittest.TestCase):
         # assert that mycroft common play was deregistered
         disable_msgs = [
             {'type': 'skillmanager.deactivate',
-             'data': {'skill': 'skill-playback-control.mycroftai'},
-             'context': {}},
+             'data': {'skill': 'skill-playback-control.mycroftai'}},
             {'type': 'skillmanager.deactivate',
-             'data': {'skill': 'mycroft-playback-control.mycroftai'},
-             'context': {}},
+             'data': {'skill': 'mycroft-playback-control.mycroftai'}},
             {'type': 'skillmanager.deactivate',
-             'data': {'skill': 'mycroft-playback-control'},
-             'context': {}},
+             'data': {'skill': 'mycroft-playback-control'}},
             {'type': 'skillmanager.deactivate',
-             'data': {'skill': 'skill-playback-control'},
-             'context': {}}
+             'data': {'skill': 'skill-playback-control'}}
         ]  # possible skill-ids for mycroft skill
         for msg in disable_msgs:
             self.assertIn(msg, self.bus.emitted_msgs)
@@ -133,53 +125,40 @@ class TestCPS(unittest.TestCase):
             {'type': 'padatious:register_intent',
              'data': {
                  'file_name': f'{locale_folder}/play.intent',
-                 'name': 'ovos.common_play:play.intent', 'lang': 'en-us'},
-             'context': {'skill_id': 'ovos.common_play'}},
+                 'name': 'ovos.common_play:play.intent', 'lang': 'en-us'}},
             {'type': 'padatious:register_intent',
              'data': {
                  'file_name': f'{locale_folder}/read.intent',
-                 'name': 'ovos.common_play:read.intent', 'lang': 'en-us'},
-             'context': {'skill_id': 'ovos.common_play'}},
+                 'name': 'ovos.common_play:read.intent', 'lang': 'en-us'}},
             {'type': 'padatious:register_intent',
              'data': {
                  'file_name': f'{locale_folder}/open.intent',
-                 'name': 'ovos.common_play:open.intent', 'lang': 'en-us'},
-             'context': {'skill_id': 'ovos.common_play'}},
+                 'name': 'ovos.common_play:open.intent', 'lang': 'en-us'}},
             {'type': 'padatious:register_intent',
              'data': {
                  'file_name': f'{locale_folder}/next.intent',
-                 'name': 'ovos.common_play:next.intent', 'lang': 'en-us'},
-             'context': {'skill_id': 'ovos.common_play'}},
+                 'name': 'ovos.common_play:next.intent', 'lang': 'en-us'}},
             {'type': 'padatious:register_intent',
              'data': {
                  'file_name': f'{locale_folder}/prev.intent',
-                 'name': 'ovos.common_play:prev.intent', 'lang': 'en-us'},
-             'context': {'skill_id': 'ovos.common_play'}},
+                 'name': 'ovos.common_play:prev.intent', 'lang': 'en-us'}},
             {'type': 'padatious:register_intent',
              'data': {
                  'file_name': f'{locale_folder}/pause.intent',
-                 'name': 'ovos.common_play:pause.intent', 'lang': 'en-us'},
-             'context': {'skill_id': 'ovos.common_play'}},
+                 'name': 'ovos.common_play:pause.intent', 'lang': 'en-us'}},
             {'type': 'padatious:register_intent',
              'data': {
                  'file_name': f'{locale_folder}/resume.intent',
-                 'name': 'ovos.common_play:resume.intent', 'lang': 'en-us'},
-             'context': {'skill_id': 'ovos.common_play'}},
+                 'name': 'ovos.common_play:resume.intent', 'lang': 'en-us'}},
             {'type': 'ovos.common_play.skills.get',
-             'data': {},
-             'context': {}}
+             'data': {}}
         ]
         for intent in ocp_msgs:
-            if not is_ovos:
-                intent["context"].pop("skill_id")
             self.assertIn(intent, self.bus.emitted_msgs)
 
         # assert that mycroft common play intents unloaded
         detach_msg = {'type': 'detach_skill',
-                      'data': {'skill_id': 'skill-playback-control.mycroftai:'},
-                      'context': {'skill_id': 'skill-playback-control.mycroftai'}}
-        if not is_ovos:
-            detach_msg["context"].pop("skill_id")
+                      'data': {'skill_id': 'skill-playback-control.mycroftai:'}}
         self.assertIn(detach_msg, self.bus.emitted_msgs)
         for intent in cps_intents:
             self.assertNotIn(intent, intents.registered_intents)
