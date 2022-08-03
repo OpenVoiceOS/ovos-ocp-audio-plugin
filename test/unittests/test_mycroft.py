@@ -9,6 +9,12 @@ from ovos_utils.messagebus import FakeBus
 import ovos_plugin_common_play
 from ovos_plugin_common_play import OCPAudioBackend
 
+try:
+    from mycroft.version import OVOS_VERSION_STR
+    is_ovos = True
+except:
+    is_ovos = False
+
 
 class TestCPS(unittest.TestCase):
     @classmethod
@@ -66,6 +72,8 @@ class TestCPS(unittest.TestCase):
              'context': {'skill_id': 'skill-playback-control.mycroftai'}}
         ]
         for intent in cps_msgs:
+            if not is_ovos:
+                intent["context"].pop("skill_id")
             self.assertIn(intent, self.bus.emitted_msgs)
 
         # assert that mycroft common play intents loaded
@@ -162,12 +170,16 @@ class TestCPS(unittest.TestCase):
              'context': {}}
         ]
         for intent in ocp_msgs:
+            if not is_ovos:
+                intent["context"].pop("skill_id")
             self.assertIn(intent, self.bus.emitted_msgs)
 
         # assert that mycroft common play intents unloaded
         detach_msg = {'type': 'detach_skill',
                       'data': {'skill_id': 'skill-playback-control.mycroftai:'},
                       'context': {'skill_id': 'skill-playback-control.mycroftai'}}
+        if not is_ovos:
+            detach_msg["context"].pop("skill_id")
         self.assertIn(detach_msg, self.bus.emitted_msgs)
         for intent in cps_intents:
             self.assertNotIn(intent, intents.registered_intents)
