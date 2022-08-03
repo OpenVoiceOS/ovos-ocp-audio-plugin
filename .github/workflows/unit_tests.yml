@@ -49,9 +49,9 @@ jobs:
           sudo apt install python3-dev
           python -m pip install build wheel
       - name: Install core repo
-          run: |
-            sudo apt install libfann-dev
-            pip install ovos-core[skills_lgpl]
+        run: |
+          sudo apt install libfann-dev
+          pip install ovos-core[skills_lgpl]
       - name: Install OCP
         run: |
           pip install .
