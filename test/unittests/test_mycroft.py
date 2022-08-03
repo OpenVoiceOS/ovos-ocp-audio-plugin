@@ -9,13 +9,6 @@ from ovos_utils.messagebus import FakeBus
 import ovos_plugin_common_play
 from ovos_plugin_common_play import OCPAudioBackend
 
-try:
-    from mycroft.version import OVOS_VERSION_STR
-
-    is_ovos = True
-except:
-    is_ovos = False
-
 
 class TestCPS(unittest.TestCase):
     @classmethod
