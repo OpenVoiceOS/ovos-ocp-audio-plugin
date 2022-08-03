@@ -9,7 +9,7 @@ setup(
     name='ovos-tskill-mycroft-cps',
     version='0.0.1',
     description='this is a OVOS test skill for the mycroft common play framework',
-    url='https://github.com/OpenVoiceOS/skill-abort-test',
+    url='https://github.com/MycroftAI/skill-playback-control',
     author='JarbasAi',
     author_email='jarbasai@mailfence.com',
     license='Apache-2.0',
@@ -17,7 +17,6 @@ setup(
     package_data={'ovos_tskill_mycroft_cps': ['locale/*']},
     packages=['ovos_tskill_mycroft_cps'],
     include_package_data=True,
-    install_requires=["ovos-workshop"],
     keywords='ovos skill plugin',
     entry_points={'ovos.plugin.skill': PLUGIN_ENTRY_POINT}
 )

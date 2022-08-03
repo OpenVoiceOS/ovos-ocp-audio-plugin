@@ -1,14 +1,16 @@
 import json
 import unittest
-from os.path import dirname
+from os.path import dirname, join
+
 from mycroft.skills.intent_service import IntentService
 from mycroft.skills.skill_loader import SkillLoader
 from ovos_utils.messagebus import FakeBus
 
+import ovos_plugin_common_play
 from ovos_plugin_common_play import OCPAudioBackend
 
 
-class TestEnglishMediaIntents(unittest.TestCase):
+class TestCPS(unittest.TestCase):
     @classmethod
     def setUpClass(self) -> None:
         self.bus = FakeBus()
@@ -27,31 +29,35 @@ class TestEnglishMediaIntents(unittest.TestCase):
 
         # assert that mycroft common play intents registered
         cps_msgs = [
-            {'type': 'register_intent', 'data': {'name': 'skill-playback-control.mycroftai:play',
-                                                 'requires': [['skill_playback_control_mycroftaiPlay',
-                                                               'skill_playback_control_mycroftaiPlay'],
-                                                              ['skill_playback_control_mycroftaiPhrase',
-                                                               'skill_playback_control_mycroftaiPhrase']],
-                                                 'at_least_one': [], 'optional': []},
+            {'type': 'register_intent',
+             'data': {'name': 'skill-playback-control.mycroftai:play',
+                      'requires': [['skill_playback_control_mycroftaiPlay',
+                                    'skill_playback_control_mycroftaiPlay'],
+                                   ['skill_playback_control_mycroftaiPhrase',
+                                    'skill_playback_control_mycroftaiPhrase']],
+                      'at_least_one': [], 'optional': []},
              'context': {'skill_id': 'skill-playback-control.mycroftai'}},
-            {'type': 'register_intent', 'data': {'name': 'skill-playback-control.mycroftai:handle_prev',
-                                                 'requires': [['skill_playback_control_mycroftaiPrev',
-                                                               'skill_playback_control_mycroftaiPrev'],
-                                                              ['skill_playback_control_mycroftaiTrack',
-                                                               'skill_playback_control_mycroftaiTrack']],
-                                                 'at_least_one': [], 'optional': []},
+            {'type': 'register_intent',
+             'data': {'name': 'skill-playback-control.mycroftai:handle_prev',
+                      'requires': [['skill_playback_control_mycroftaiPrev',
+                                    'skill_playback_control_mycroftaiPrev'],
+                                   ['skill_playback_control_mycroftaiTrack',
+                                    'skill_playback_control_mycroftaiTrack']],
+                      'at_least_one': [], 'optional': []},
              'context': {'skill_id': 'skill-playback-control.mycroftai'}},
-            {'type': 'register_intent', 'data': {'name': 'skill-playback-control.mycroftai:handle_pause',
-                                                 'requires': [['skill_playback_control_mycroftaiPause',
-                                                               'skill_playback_control_mycroftaiPause']],
-                                                 'at_least_one': [], 'optional': []},
+            {'type': 'register_intent',
+             'data': {'name': 'skill-playback-control.mycroftai:handle_pause',
+                      'requires': [['skill_playback_control_mycroftaiPause',
+                                    'skill_playback_control_mycroftaiPause']],
+                      'at_least_one': [], 'optional': []},
              'context': {'skill_id': 'skill-playback-control.mycroftai'}},
-            {'type': 'register_intent', 'data': {'name': 'skill-playback-control.mycroftai:handle_next',
-                                                 'requires': [['skill_playback_control_mycroftaiNext',
-                                                               'skill_playback_control_mycroftaiNext'],
-                                                              ['skill_playback_control_mycroftaiTrack',
-                                                               'skill_playback_control_mycroftaiTrack']],
-                                                 'at_least_one': [], 'optional': []},
+            {'type': 'register_intent',
+             'data': {'name': 'skill-playback-control.mycroftai:handle_next',
+                      'requires': [['skill_playback_control_mycroftaiNext',
+                                    'skill_playback_control_mycroftaiNext'],
+                                   ['skill_playback_control_mycroftaiTrack',
+                                    'skill_playback_control_mycroftaiTrack']],
+                      'at_least_one': [], 'optional': []},
              'context': {'skill_id': 'skill-playback-control.mycroftai'}},
             {'type': 'register_intent',
              'data': {'name': 'skill-playback-control.mycroftai:handle_play', 'requires': [],
@@ -90,16 +96,21 @@ class TestEnglishMediaIntents(unittest.TestCase):
         self.bus.emitted_msgs = []
         cfg = {}
         ocp = OCPAudioBackend(cfg, self.bus)
-        for idx, msg in enumerate(self.bus.emitted_msgs):
-            if msg["data"].get("file_name"):
-                self.bus.emitted_msgs[idx]["data"]["file_name"] = msg["data"]["file_name"].split("/")[-1]
 
         # assert that mycroft common play was deregistered
         disable_msgs = [
-            {'type': 'skillmanager.deactivate', 'data': {'skill': 'skill-playback-control.mycroftai'}, 'context': {}},
-            {'type': 'skillmanager.deactivate', 'data': {'skill': 'mycroft-playback-control.mycroftai'}, 'context': {}},
-            {'type': 'skillmanager.deactivate', 'data': {'skill': 'mycroft-playback-control'}, 'context': {}},
-            {'type': 'skillmanager.deactivate', 'data': {'skill': 'skill-playback-control'}, 'context': {}}
+            {'type': 'skillmanager.deactivate',
+             'data': {'skill': 'skill-playback-control.mycroftai'},
+             'context': {}},
+            {'type': 'skillmanager.deactivate',
+             'data': {'skill': 'mycroft-playback-control.mycroftai'},
+             'context': {}},
+            {'type': 'skillmanager.deactivate',
+             'data': {'skill': 'mycroft-playback-control'},
+             'context': {}},
+            {'type': 'skillmanager.deactivate',
+             'data': {'skill': 'skill-playback-control'},
+             'context': {}}
         ]  # possible skill-ids for mycroft skill
         for msg in disable_msgs:
             self.assertIn(msg, self.bus.emitted_msgs)
@@ -108,29 +119,47 @@ class TestEnglishMediaIntents(unittest.TestCase):
                 skill.deactivate()
 
         # assert that OCP intents registered
+        locale_folder = join(dirname(ovos_plugin_common_play.__file__),
+                             "ocp", "res", "locale", "en-us")
         ocp_msgs = [
-            {'type': 'padatious:register_intent', 'data': {
-                'file_name': 'play.intent',
-                'name': 'ovos.common_play:play.intent', 'lang': 'en-us'}, 'context': {'skill_id': 'ovos.common_play'}},
-            {'type': 'padatious:register_intent', 'data': {
-                'file_name': 'read.intent',
-                'name': 'ovos.common_play:read.intent', 'lang': 'en-us'}, 'context': {'skill_id': 'ovos.common_play'}},
-            {'type': 'padatious:register_intent', 'data': {
-                'file_name': 'open.intent',
-                'name': 'ovos.common_play:open.intent', 'lang': 'en-us'}, 'context': {'skill_id': 'ovos.common_play'}},
-            {'type': 'padatious:register_intent', 'data': {
-                'file_name': 'next.intent',
-                'name': 'ovos.common_play:next.intent', 'lang': 'en-us'}, 'context': {'skill_id': 'ovos.common_play'}},
-            {'type': 'padatious:register_intent', 'data': {
-                'file_name': 'prev.intent',
-                'name': 'ovos.common_play:prev.intent', 'lang': 'en-us'}, 'context': {'skill_id': 'ovos.common_play'}},
-            {'type': 'padatious:register_intent', 'data': {
-                'file_name': 'pause.intent',
-                'name': 'ovos.common_play:pause.intent', 'lang': 'en-us'}, 'context': {'skill_id': 'ovos.common_play'}},
-            {'type': 'padatious:register_intent', 'data': {
-                'file_name': 'resume.intent',
-                'name': 'ovos.common_play:resume.intent', 'lang': 'en-us'}, 'context': {'skill_id': 'ovos.common_play'}},
-            {'type': 'ovos.common_play.skills.get', 'data': {}, 'context': {}}
+            {'type': 'padatious:register_intent',
+             'data': {
+                 'file_name': f'{locale_folder}/play.intent',
+                 'name': 'ovos.common_play:play.intent', 'lang': 'en-us'},
+             'context': {'skill_id': 'ovos.common_play'}},
+            {'type': 'padatious:register_intent',
+             'data': {
+                 'file_name': f'{locale_folder}/read.intent',
+                 'name': 'ovos.common_play:read.intent', 'lang': 'en-us'},
+             'context': {'skill_id': 'ovos.common_play'}},
+            {'type': 'padatious:register_intent',
+             'data': {
+                 'file_name': f'{locale_folder}/open.intent',
+                 'name': 'ovos.common_play:open.intent', 'lang': 'en-us'},
+             'context': {'skill_id': 'ovos.common_play'}},
+            {'type': 'padatious:register_intent',
+             'data': {
+                 'file_name': f'{locale_folder}/next.intent',
+                 'name': 'ovos.common_play:next.intent', 'lang': 'en-us'},
+             'context': {'skill_id': 'ovos.common_play'}},
+            {'type': 'padatious:register_intent',
+             'data': {
+                 'file_name': f'{locale_folder}/prev.intent',
+                 'name': 'ovos.common_play:prev.intent', 'lang': 'en-us'},
+             'context': {'skill_id': 'ovos.common_play'}},
+            {'type': 'padatious:register_intent',
+             'data': {
+                 'file_name': f'{locale_folder}/pause.intent',
+                 'name': 'ovos.common_play:pause.intent', 'lang': 'en-us'},
+             'context': {'skill_id': 'ovos.common_play'}},
+            {'type': 'padatious:register_intent',
+             'data': {
+                 'file_name': f'{locale_folder}/resume.intent',
+                 'name': 'ovos.common_play:resume.intent', 'lang': 'en-us'},
+             'context': {'skill_id': 'ovos.common_play'}},
+            {'type': 'ovos.common_play.skills.get',
+             'data': {},
+             'context': {}}
         ]
         for intent in ocp_msgs:
             self.assertIn(intent, self.bus.emitted_msgs)
