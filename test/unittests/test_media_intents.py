@@ -4,7 +4,7 @@ import unittest
 from os.path import join, dirname, isfile
 
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-
+import ovos_plugin_common_play
 from padacioso import IntentContainer
 
 
@@ -13,9 +13,8 @@ class TestEnglishMediaIntents(unittest.TestCase):
     def setUpClass(self) -> None:
         self.media_intents = IntentContainer()
 
-        locale_folder = join(dirname(dirname(__file__)),
-                             "ovos_plugin_common_play", "ocp", "res",
-                             "locale", "en-us")
+        locale_folder = join(dirname(ovos_plugin_common_play.__file__),
+                             "ocp", "res", "locale", "en-us")
         for intent_name in ["music", "video", "audiobook", "radio",
                             "radio_drama", "game", "tv",
                             "podcast", "news", "movie", "short_movie",
