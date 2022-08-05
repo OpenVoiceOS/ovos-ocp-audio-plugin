@@ -2,11 +2,12 @@ from os.path import basename
 from pprint import pformat
 
 from mycroft_bus_client import Message
+from ovos_plugin_manager.templates.audio import AudioBackend
+from ovos_utils.log import LOG
+
 from ovos_plugin_common_play.ocp import OCP, OCPSettings
 from ovos_plugin_common_play.ocp.status import *
 from ovos_plugin_common_play.ocp.utils import extract_metadata
-from ovos_plugin_manager.templates.audio import AudioBackend
-from ovos_utils.log import LOG
 
 
 class OCPAudioBackend(AudioBackend):
@@ -149,3 +150,90 @@ def load_service(base_config, bus):
     instances = [OCPAudioBackend(s[1], bus, s[0]) for s in
                  services]
     return instances
+
+
+OCPPluginConfig = {
+    "local": {
+        "type": "ovos_common_play",
+        "active": True,
+        # all values below are optional
+
+        # DBUS
+        ## dbus type for MPRIS, "session" or "system"
+        "dbus_type": "session",
+        ## allow OCP to control MPRIS enabled 3rd party applications
+        ## voice enable them (next/prev/stop/resume..)
+        ## and stop them when OCP starts it's own playback
+        ## NOTE: OCP can be controlled itself via MPRIS independentely of this setting
+        "manage_external_players": False,
+
+        # Playback settings
+        ## AUTO = 0 - play each entry as considered appropriate,
+        ##            ie, make it happen the best way possible
+        ## AUDIO_ONLY = 10  - only consider audio entries
+        ## VIDEO_ONLY = 20  - only consider video entries
+        ## FORCE_AUDIO = 30 - cast video to audio unconditionally
+        ##                   (audio can still play in mycroft-gui)
+        ## FORCE_AUDIOSERVICE = 40 - cast everything to audio service backend,
+        ##                           mycroft-gui will not be used
+        ## EVENTS_ONLY = 50 - only emit ocp events,
+        ##                    do not display or play anything.
+        ##                    allows integration with external interfaces
+        "playback_mode": 0,
+
+        ## when media playback ends "click next"
+        "autoplay": True,
+        ## if True behaves as if the search results are part of the playlist
+        ##  eg:
+        ##   - click next in last track -> play next search result
+        ##   - end of playlist + autoplay -> play next search result
+        "merge_search": True,
+
+        # search params
+        ## minimum time to wait for skill replies,
+        # after this time, if at least 1 result was
+        # found, selection is triggered
+        "min_timeout": 5,
+        ## maximum time to wait for skill replies,
+        ## after this time, regardless of number of
+        ## results, selection is triggered
+        "max_timeout": 15,
+        ## ignore results below min_Score
+        "min_score": 50,
+        ## stop collecting results if we get a
+        ## match with confidence >= early_stop_thresh
+        "early_stop_thresh": 85,
+        ## sleep this amount before early stop,
+        ## allows skills that "just miss" to also be taken into account
+        "early_stop_grace_period": 0.5,
+        ## if True emits the regular mycroft-core
+        ## bus messages to get results from "old style" skills
+        "backwards_compatibility": True,
+        ## allow skills to request more time,
+        ## extends min_timeout for individual queries (up to max_timeout)
+        "allow_extensions": True,
+        ## if no results for a MediaType, perform a second query with MediaType.GENERIC
+        "search_fallback": True,
+
+        # stream extractor settings
+        ## how to handle bandcamp streams
+        ## "pybandcamp", "youtube-dl"
+        "bandcamp_backend": "pybandcamp",
+        ## how to handle youtube streams
+        ## "youtube-dl", "pytube", "pafy", "invidious"
+        "youtube_backend": "invidious",
+        ## the url to the invidious instance to be used"
+        ## by default uses a random instance
+        "invidious_host": None,
+        ## get final stream locally or from where invidious is hosted
+        ## This partially allows bypassing geoblocked content,
+        ## but it is a global flag, not per entry.
+        "invidious_proxy": False,
+        ## different forks of youtube-dl are supported
+        ## "yt-dlp", "youtube-dl", "youtube-dlc"
+        "ydl_backend": "yt-dlp",
+        ## how to extract live streams from a youtube channel
+        ## "pytube", "youtube_searcher", "redirect", "youtube-dl"
+        "youtube_live_backend": "redirect"  # uses youtube auto redirect https://www.youtube.com/{channel_name}/live
+    }
+}

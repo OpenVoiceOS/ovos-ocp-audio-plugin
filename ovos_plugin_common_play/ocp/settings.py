@@ -35,11 +35,11 @@ class OCPSettings(PrivateSettings):
         """class PlaybackMode(IntEnum):
         AUTO = 0 - play each entry as considered appropriate,
                    ie, make it happen the best way possible
-        AUDIO_ONLY = 10  - only consider audio_only entries
+        AUDIO_ONLY = 10  - only consider audio entries
         VIDEO_ONLY = 20  - only consider video entries
-        FORCE_AUDIO = 30 - cast video to audio_only unconditionally
-                           (audio_only can still play in mycroft-gui)
-        FORCE_AUDIOSERVICE = 40 - cast everything to audio_only service backend,
+        FORCE_AUDIO = 30 - cast video to audio unconditionally
+                           (audio can still play in mycroft-gui)
+        FORCE_AUDIOSERVICE = 40 - cast everything to audio service backend,
                                   mycroft-gui will not be used
         EVENTS_ONLY = 50 - only emit ocp events,
                            do not display or play anything.
@@ -83,25 +83,26 @@ class OCPSettings(PrivateSettings):
     @property
     def force_audioservice(self):
         """
-        if True play all media in audio_only service, DO NOT use mycroft-gui.
+        if True play all media in audio service, DO NOT use mycroft-gui.
         Some use cases:
          - headless installs
          - setups with multiple mycroft-guis connected
 
-         WARNING: videos may be cast to audio_only or filtered
-                  media types that can be safely cast to audio_only only streams
-                  when GUI is not available defined in self.cast2audio
+         WARNING: videos may be cast to audio or filtered
 
-                    MediaType.MUSIC
-                    MediaType.PODCAST
-                    MediaType.AUDIOBOOK
-                    MediaType.RADIO
-                    MediaType.RADIO_THEATRE
-                    MediaType.VISUAL_STORY
-                    MediaType.NEWS
+              media types that can be safely cast to audio only streams
+              when GUI is not available defined in self.cast2audio:
 
+                MediaType.MUSIC
+                MediaType.PODCAST
+                MediaType.AUDIOBOOK
+                MediaType.RADIO
+                MediaType.RADIO_THEATRE
+                MediaType.VISUAL_STORY
+                MediaType.NEWS
         """
-        return self.get("force_audioservice", False)
+        return self.get("force_audioservice") or \
+               self.playback_mode == PlaybackMode.FORCE_AUDIOSERVICE
 
     @property
     def autoplay(self):

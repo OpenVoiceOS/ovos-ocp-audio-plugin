@@ -49,6 +49,8 @@ def required(requirements_file):
                 if pkg.strip() and not pkg.startswith("#")]
 
 PLUGIN_ENTRY_POINT = 'ovos_common_play=ovos_plugin_common_play'
+PLUGIN_CONFIG_ENTRY_POINT = 'ovos_common_play.config=ovos_plugin_common_play:OCPPluginConfig'
+
 
 setup(
     name='ovos_plugin_common_play',
@@ -86,5 +88,6 @@ setup(
         'Programming Language :: Python :: 3.6',
     ],
     keywords='ovos audio plugin',
-    entry_points={'mycroft.plugin.audioservice': PLUGIN_ENTRY_POINT}
+    entry_points={'mycroft.plugin.audioservice': PLUGIN_ENTRY_POINT,
+                  'mycroft.plugin.audioservice.config': PLUGIN_CONFIG_ENTRY_POINT}
 )
