@@ -220,10 +220,10 @@ class OCPAudioPlayerBackend(AudioBackend):
             tracks = [tracks]
         elif not isinstance(tracks, list):
             raise ValueError
+        self.load_track(tracks[0])
         self._tracks = [_uri2meta(t) for t in tracks]
-        msg = Message('ovos.common_play.playlist.queue',
-                      {'tracks': self._tracks})
-        self.bus.emit(msg)
+        self.bus.emit(Message('ovos.common_play.playlist.queue',
+                      {'tracks': self._tracks}))
 
 
 def _uri2meta(uri):
