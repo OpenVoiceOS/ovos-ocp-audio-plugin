@@ -2,15 +2,15 @@ from os.path import basename
 from pprint import pformat
 
 from mycroft_bus_client import Message
-from ovos_plugin_manager.templates.audio import AudioBackend
 from ovos_utils.log import LOG
 
 from ovos_plugin_common_play.ocp import OCP, OCPSettings
 from ovos_plugin_common_play.ocp.status import *
 from ovos_plugin_common_play.ocp.utils import extract_metadata
+from ovos_plugin_common_play.ocp.base import OCPAudioPlayerBackend
 
 
-class OCPAudioBackend(AudioBackend):
+class OCPAudioBackend(OCPAudioPlayerBackend):
     """ This plugin makes regular mycroft skills that use the audio service
     go trough the OVOS common play framework, this plugin simply delegates
     the task by emitting bus messages expected by Ovos Common Play API. If
@@ -20,7 +20,6 @@ class OCPAudioBackend(AudioBackend):
         super(OCPAudioBackend, self).__init__(config=config,
                                               bus=bus)
         self.name = name
-        self.tracks = []
         self._track_info = {}
         self.bus.on("gui.player.media.service.set.meta",
                     self.handle_receive_meta)
@@ -61,71 +60,75 @@ class OCPAudioBackend(AudioBackend):
     def supported_uris(self):
         return ['file', 'http', 'https']
 
-    def clear_list(self):
-        self.tracks = []
-        self.bus.emit(Message('ovos.common_play.playlist.clear'))
-
-    def add_list(self, tracks):
-        self.tracks = []
-        for t in tracks:
-            try:
-                # only works for local files
-                # audio only (?)
-                meta = extract_metadata(t)
-            except Exception as e:
-                LOG.exception(e)
-                # TODO let's try to dig for message and see if theres
-                #  anything there, maybe set title / artist to skill_id ?
-                meta = {"uri": t,
-                        "title": basename(t),
-                        "artist": "ovos.common_play.plugin",
-                        "album": "",
-                        "image": "",
-                        "playback": PlaybackType.AUDIO,  # TODO mime type check
-                        "status": TrackState.QUEUED_AUDIO
-                        }
-            meta["skill_id"] = "ovos.common_play.plugin"
-            self.tracks.append(meta)
-
-        self.bus.emit(Message('ovos.common_play.playlist.queue',
-                              {"tracks": self.tracks}))
-
     def play(self, repeat=False):
         """ Play media playback. """
-        if len(self.tracks):
-            self._track_info = self.tracks[0]
+        # self._tracks is populated in base class this is derived from
+        if len(self._tracks):
+            self._track_info = self._tracks[0]
             self.bus.emit(Message('ovos.common_play.play',
                                   {'repeat': repeat,
-                                   "media": self.tracks[0],
-                                   "playlist": self.tracks}))
+                                   "media": self._tracks[0],
+                                   "playlist": self._tracks}))
 
     def stop(self):
-        """ Stop media playback. """
+        self._track_info = {}
         self.bus.emit(Message("ovos.common_play.stop"))
+        if self.ocp:
+            return True
+        return False
 
-    def pause(self):
-        """ Pause media playback. """
-        self.bus.emit(Message("ovos.common_play.pause"))
+    def get_track_length(self):
+        """
+        getting the duration of the audio in milliseconds
+        NOTE: not yet supported by mycroft-core
+        """
+        length = 0
+        msg = Message('ovos.common_play.get_track_length')
+        info = self.bus.wait_for_response(msg, timeout=1)
+        if info:
+            length = info.data.get("length", 0)
+        return length
 
-    def resume(self):
-        """ Resume paused playback. """
-        self.bus.emit(Message("ovos.common_play.resume"))
+    def get_track_position(self):
+        """
+        get current position in milliseconds
+        NOTE: not yet supported by mycroft-core
+        """
+        pos = 0
+        msg = Message('ovos.common_play.get_track_position')
+        info = self.bus.wait_for_response(msg, timeout=1)
+        if info:
+            pos = info.data.get("position", 0)
+        return pos
 
-    def next(self):
-        """ Skip to next track in playlist. """
-        self.bus.emit(Message("ovos.common_play.next"))
+    def set_track_position(self, milliseconds):
+        """
+        go to position in milliseconds
+        NOTE: not yet supported by mycroft-core
+          Args:
+                milliseconds (int): number of milliseconds of final position
+        """
+        msg = Message('ovos.common_play.set_track_position',
+                      {"position": milliseconds})
+        self.bus.emit(msg)
 
-    def previous(self):
-        """ Skip to previous track in playlist. """
-        self.bus.emit(Message("ovos.common_play.previous"))
+    def seek_forward(self, seconds=1):
+        """Skip X seconds.
 
-    def lower_volume(self):
-        if self.config.get("duck", False):
-            self.bus.emit(Message("ovos.common_play.duck"))
+        Arguments:
+            seconds (int): number of seconds to seek, if negative rewind
+        """
+        msg = Message('ovos.common_play.seek', {"seconds": seconds})
+        self.bus.emit(msg)
 
-    def restore_volume(self):
-        if self.config.get("duck", False):
-            self.bus.emit(Message("ovos.common_play.unduck"))
+    def seek_backward(self, seconds=1):
+        """Rewind X seconds.
+
+        Arguments:
+            seconds (int): number of seconds to seek, if negative jump forward.
+        """
+        msg = Message('ovos.common_play.seek', {"seconds": seconds * -1})
+        self.bus.emit(msg)
 
     def track_info(self):
         """
@@ -133,6 +136,8 @@ class OCPAudioBackend(AudioBackend):
             Returns:
                 Dict with track info.
         """
+        if not self._track_info and self.ocp:
+            return self.ocp.player.now_playing.as_dict
         return self._track_info
 
     def shutdown(self):
