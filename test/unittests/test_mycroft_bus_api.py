@@ -3,7 +3,7 @@ import unittest
 from unittest.mock import patch
 
 from mycroft.audio.audioservice import AudioService
-from mycroft.configuration import Configuration
+from mycroft.configuration.config import Configuration
 from ovos_utils.messagebus import FakeBus
 
 from ovos_plugin_common_play.ocp.mycroft_cps import MycroftAudioService
@@ -93,8 +93,7 @@ class TestAudioServiceApi(unittest.TestCase):
         self.api.pause()
         expected = [
             {'type': 'mycroft.audio.service.pause', 'data': {}},
-            {'type': 'ovos.common_play.pause', 'data': {}},
-            {'type': 'gui.player.media.service.pause', 'data': {}}
+            {'type': 'ovos.common_play.pause', 'data': {}}
         ]
         for m in expected:
             self.assertIn(m, self.bus.emitted_msgs)
@@ -104,8 +103,7 @@ class TestAudioServiceApi(unittest.TestCase):
         self.api.resume()
         expected = [
             {'type': 'mycroft.audio.service.resume', 'data': {}},
-            {'type': 'ovos.common_play.resume', 'data': {}},
-            {'type': 'gui.player.media.service.resume', 'data': {}}
+            {'type': 'ovos.common_play.resume', 'data': {}}
         ]
         for m in expected:
             self.assertIn(m, self.bus.emitted_msgs)
