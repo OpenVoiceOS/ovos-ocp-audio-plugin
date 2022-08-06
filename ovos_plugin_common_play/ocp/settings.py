@@ -105,6 +105,15 @@ class OCPSettings(PrivateSettings):
                self.playback_mode == PlaybackMode.FORCE_AUDIOSERVICE
 
     @property
+    def preferred_audio_services(self):
+        """ ordered list of configured audio backends,
+        when OCP selects a audio service for playback this list is checked
+        in order until a available backend is found
+        """
+        return self.get("preferred_audio_services") or \
+               ["vlc", "mplayer", "simple"]
+
+    @property
     def autoplay(self):
         """when media playback ends "click next" """
         return self.get("autoplay", True)

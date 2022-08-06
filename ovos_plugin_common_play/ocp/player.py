@@ -4,6 +4,7 @@ from os.path import join, dirname
 from ovos_utils.gui import is_gui_connected, is_gui_running
 from ovos_utils.log import LOG
 from ovos_utils.messagebus import Message
+from ovos_config import Configuration
 
 from ovos_plugin_common_play.ocp.gui import OCPMediaPlayerGUI
 from ovos_plugin_common_play.ocp.media import Playlist, MediaEntry, NowPlaying
@@ -33,6 +34,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         self.now_playing = NowPlaying()
         self.media = OCPSearch()
         self.audio_service = None
+        self._audio_backend = None
         self.track_history = {}
         super().__init__("ovos_common_play", settings=settings, bus=bus,
                          gui=gui, resources_dir=resources_dir, lang=lang)
@@ -247,6 +249,27 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         self.set_now_playing(track)
         self.play()
 
+    @property
+    def audio_service_player(self):
+        if not self._audio_backend:
+            self._audio_backend = self._get_prefered_audio_backend()
+        return self._audio_backend
+
+    def _get_prefered_audio_backend(self):
+        # NOTE - the bus api tells us what backends are loaded
+        # however it does not provide "type", so we need to get that from config
+        # we still hit the messagebus to account for loading failures,
+        # even if config claims backend is enabled it might not load
+        backends = self.audio_service.available_backends()
+        cfg = Configuration()["Audio"]["backends"]
+        available = [k for k, v in backends.items()
+                     if cfg[k].get("type", "") != "ovos_common_play"]
+        for b in self.settings.preferred_audio_services:
+            if b in available:
+                return b
+        LOG.error("Preferred audio service backend not installed")
+        return "simple"
+
     def play(self):
         # stop any external media players
         self.mpris.stop()
@@ -266,10 +289,9 @@ class OCPMediaPlayer(OVOSAbstractApplication):
                                    PlaybackType.AUDIO_SERVICE]:
             LOG.debug("Requesting playback: PlaybackType.AUDIO")
             if self.active_backend == PlaybackType.AUDIO_SERVICE:
-                # we explicitly want to use simple backend for audio only output
-                # TODO support other backends
-                backend = "simple"
-                self.audio_service.play(self.now_playing.uri, utterance=backend)
+                # we explicitly want to use a audio backend for audio only output
+                self.audio_service.play(self.now_playing.uri,
+                                        utterance=self.audio_service_player)
                 self.bus.emit(Message("ovos.common_play.track.state", {
                     "state": TrackState.PLAYING_AUDIOSERVICE}))
                 self.set_player_state(PlayerState.PLAYING)
