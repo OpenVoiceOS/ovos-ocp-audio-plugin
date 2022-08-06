@@ -90,8 +90,10 @@ class OCPAudioPlayerBackend(AudioBackend):
 
     def ocp_error(self):
         """Emit OCP status events for playback error"""
-        self.bus.emit(Message("ovos.common_play.media.state",
-                              {"state": MediaState.INVALID_MEDIA}))
+        if self._now_playing:
+            self.bus.emit(Message("ovos.common_play.media.state",
+                                  {"state": MediaState.INVALID_MEDIA}))
+            self._now_playing = None
 
     def ocp_stop(self):
         """Emit OCP status events for stop"""
@@ -207,6 +209,7 @@ class OCPAudioPlayerBackend(AudioBackend):
         self._tracks = [_uri2meta(t) for t in tracks]
         self.bus.emit(Message('ovos.common_play.playlist.queue',
                       {'tracks': self._tracks}))
+        self.track_info()  # will trigger update in track data
 
 
 def _uri2meta(uri):

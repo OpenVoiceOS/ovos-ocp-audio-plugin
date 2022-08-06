@@ -167,15 +167,7 @@ class OCPSettings(PrivateSettings):
     @property
     def invidious_host(self):
         """the url to the invidious instance to be used"""
-        instance = self.get("invidious_host")
-        if not instance:
-            try:
-                api_url = "https://api.invidious.io/instances.json?pretty=1&sort_by=type,health"
-                instance = requests.get(api_url).json()[0][0]
-            except:
-                # hosted by a OpenVoiceOS member
-                instance = "https://video.strongthany.cc"
-        return instance
+        return self.get("invidious_host")
 
     @property
     def proxy_invidious(self):

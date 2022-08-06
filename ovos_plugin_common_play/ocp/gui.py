@@ -77,20 +77,12 @@ class OCPMediaPlayerGUI(GUIInterface):
 
     # OCPMediaPlayer interface
     def update_ocp_skills(self):
-        # trigger a presence announcement from all loaded ocp skills
-        self.bus.emit(Message("ovos.common_play.skills.get"))
-        sleep(0.2)
         skills_cards = [
             {"skill_id": skill["skill_id"],
              "title": skill["skill_name"],
              "image": skill["thumbnail"],
              "media_type": skill.get("media_type") or [MediaType.GENERIC]
-        } for skill in self.ocp_skills.values() if skill["featured"]]
-
-        skills_cards = [s for s in skills_cards
-                        if MediaType.ADULT not in s["media_type"] and
-                        MediaType.HENTAI not in s["media_type"]]
-
+        } for skill in self.player.media.get_featured_skills()]
         self["skillCards"] = skills_cards
 
     def update_seekbar_capabilities(self):
