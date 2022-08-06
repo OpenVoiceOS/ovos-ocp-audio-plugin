@@ -55,6 +55,14 @@ class OCPMediaPlayerGUI(GUIInterface):
         return join(self.player.res_dir, "ui", "OVOSWebPlayer.qml")
 
     @property
+    def player_loader_page(self):
+        return join(self.player.res_dir, "ui", "PlayerLoader.qml")
+
+    @property
+    def error_page(self):
+        return join(self.player.res_dir, "ui", "PlayerError.qml")
+
+    @property
     def search_page(self):
         return join(self.player.res_dir, "ui", "Disambiguation.qml")
 
@@ -136,8 +144,8 @@ class OCPMediaPlayerGUI(GUIInterface):
         }
 
     def show_playback_error(self):
-        # TODO error page
-        self.show_text("Playback error")
+        self["playerBackend"] = self.error_page
+        self.show_player()
 
     def show_search_spinner(self):
         self.clear()
@@ -188,14 +196,7 @@ class OCPMediaPlayerGUI(GUIInterface):
             return self.audio_service_page
 
     def _get_pages_to_rm(self):
-        to_remove = [self.search_spinner_page,
-                     self.web_player_page]
-
-        # remove old player pages
-        to_remove += [p for p in (self.video_player_page,
-                                  self.audio_player_page,
-                                  self.audio_service_page)
-                      if p != self._get_player_page()]
+        to_remove = [self.search_spinner_page]
 
         # check if search_results / playlist pages should be displayed
         if self.player.active_backend in [PlaybackType.MPRIS]:
@@ -212,7 +213,8 @@ class OCPMediaPlayerGUI(GUIInterface):
 
     def _get_pages_to_display(self):
         # determine pages to be shown
-        pages = [self._get_player_page()]
+        self["playerBackend"] = self._get_player_page()
+        pages = [self.player_loader_page]
         if len(self.player.disambiguation):
             pages.append(self.search_page)
         if len(self.player.tracks):

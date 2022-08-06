@@ -55,7 +55,7 @@ class MycroftAudioService:
         # at this stage source == skills, lets indicate audio service took over
         sauce = msg.context.get("source")
         if sauce == "skills":
-            msg.context["source"] = "audio_service"
+            msg.context["source"] = "ovos.common_play"
         return msg
 
     def queue(self, tracks=None):

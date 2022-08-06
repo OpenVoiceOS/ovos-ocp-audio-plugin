@@ -267,7 +267,9 @@ class OCPMediaPlayer(OVOSAbstractApplication):
             LOG.debug("Requesting playback: PlaybackType.AUDIO")
             if self.active_backend == PlaybackType.AUDIO_SERVICE:
                 # we explicitly want to use simple backend for audio only output
-                self.audio_service.play(self.now_playing.uri, utterance="simple")
+                # TODO support other backends
+                backend = "simple"
+                self.audio_service.play(self.now_playing.uri, utterance=backend)
                 self.bus.emit(Message("ovos.common_play.track.state", {
                     "state": TrackState.PLAYING_AUDIOSERVICE}))
                 self.set_player_state(PlayerState.PLAYING)
@@ -496,6 +498,13 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         self.media_state = state
         if state == MediaState.END_OF_MEDIA:
             self.handle_playback_ended(message)
+        elif state == MediaState.INVALID_MEDIA:
+            self.handle_invalid_media(message)
+            if self.settings.autoplay:
+                self.play_next()
+
+    def handle_invalid_media(self, message):
+        self.gui.show_playback_error()
 
     def handle_playback_ended(self, message):
         LOG.debug("Playback ended")

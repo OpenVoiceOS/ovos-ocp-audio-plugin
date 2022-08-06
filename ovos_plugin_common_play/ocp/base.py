@@ -66,10 +66,7 @@ class OCPAudioPlayerBackend(AudioBackend):
         super().__init__(config, bus)
         self._now_playing = None  # single uri
         self._tracks = []  # list of dicts for OCP entries
-        self.set_track_start_callback(self._default_callback)
 
-    # ovos-core methods
-    ## these are only called by ovos-core, not mycroft-core
     def load_track(self, uri):
         """ This method is only used by ovos-core
         In ovos audio backends are single-track, playlists are handled by OCP
@@ -82,13 +79,8 @@ class OCPAudioPlayerBackend(AudioBackend):
             "state": TrackState.QUEUED_AUDIOSERVICE
         }))
 
-    def _default_callback(self, name):
-        if name:
-            self.ocp_start()
-        else:
-            self.ocp_stop()
-
     def ocp_start(self):
+        """Emit OCP status events for play"""
         self.bus.emit(Message("ovos.common_play.player.state",
                               {"state": PlayerState.PLAYING}))
         self.bus.emit(Message("ovos.common_play.media.state",
@@ -96,37 +88,28 @@ class OCPAudioPlayerBackend(AudioBackend):
         self.bus.emit(Message("ovos.common_play.track.state",
                               {"state": TrackState.PLAYING_AUDIOSERVICE}))
 
+    def ocp_error(self):
+        """Emit OCP status events for playback error"""
+        self.bus.emit(Message("ovos.common_play.media.state",
+                              {"state": MediaState.INVALID_MEDIA}))
+
     def ocp_stop(self):
-        """Stop playback.
-
-        Stops the current playback.
-
-        Returns:
-            bool: True if playback was stopped, otherwise False
-        """
+        """Emit OCP status events for stop"""
         if self._now_playing:
             self._now_playing = None
             self.bus.emit(Message("ovos.common_play.player.state",
                                   {"state": PlayerState.STOPPED}))
-            self.clear_list()
             self.bus.emit(Message("ovos.common_play.media.state",
                                   {"state": MediaState.END_OF_MEDIA}))
 
     def ocp_pause(self):
-        """Pause playback.
-
-        Stops playback but may be resumed at the exact position the pause
-        occured.
-        """
+        """Emit OCP status events for pause"""
         if self._now_playing:
             self.bus.emit(Message("ovos.common_play.player.state",
                                   {"state": PlayerState.PAUSED}))
 
     def ocp_resume(self):
-        """Resume paused playback.
-
-        Resumes playback after being paused.
-        """
+        """Emit OCP status events for resume"""
         if self._now_playing:
             self.bus.emit(Message("ovos.common_play.player.state",
                                   {"state": PlayerState.PLAYING}))
@@ -138,7 +121,7 @@ class OCPAudioPlayerBackend(AudioBackend):
     # but they will if running under mycroft-core
     # or if some 3rd party is sending bus messages directly
     # this serves as a compat layer sending equivalent OCP messages
-    # see {add PR link here}
+    # see https://github.com/OpenVoiceOS/ovos-core/pull/181
     def next(self):
         """Skip to next track in playlist.
         Track start is handled by OCP
@@ -245,5 +228,5 @@ def _uri2meta(uri):
                 "playback": 2,  # PlaybackType.AUDIO,  # TODO mime type check
                 "status": 33  # TrackState.QUEUED_AUDIO
                 }
-    meta["skill_id"] = "opm.audio_backend"
+    meta["skill_id"] = "ovos.common_play.audio_backend"
     return meta
