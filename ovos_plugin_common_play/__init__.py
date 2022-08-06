@@ -19,24 +19,26 @@ class OCPAudioBackend(OCPAudioPlayerBackend):
     def __init__(self, config, bus=None, name='ovos.common_play'):
         super(OCPAudioBackend, self).__init__(config=config,
                                               bus=bus)
+        self.ocp = None
         self.name = name
         self._track_info = {}
         self.bus.on("gui.player.media.service.set.meta",
                     self.handle_receive_meta)
-        self.create_ocp(config)
+        self.create_ocp(self.config)
 
     def create_ocp(self, config):
-        mode = config.get("mode", "auto")
         ocp_settings = OCPSettings()
         ocp_settings.update(config)
+        ocp_settings["mode"] = config.get("mode", "auto")
+        self.config = ocp_settings
 
         LOG.debug(f"OCP settings:\n {pformat(ocp_settings)}")
 
-        if mode == "external":
+        if self.config["mode"] == "external":
             # flag for external OCP, eg, system service daemon
             # send only bus messages and dont create ocp object
             self.ocp = None
-        elif mode == "auto":
+        elif self.config["mode"] == "auto":
             # if OCP is already running connect to it, else launch it
             if not self.bus.wait_for_response(Message("ovos.common_play.ping"),
                                               "ovos.common_play.pong"):
@@ -69,6 +71,12 @@ class OCPAudioBackend(OCPAudioPlayerBackend):
                                   {'repeat': repeat,
                                    "media": self._tracks[0],
                                    "playlist": self._tracks}))
+
+    def pause(self):
+        self.bus.emit(Message("ovos.common_play.pause"))
+
+    def resume(self):
+        self.bus.emit(Message("ovos.common_play.resume"))
 
     def stop(self):
         self._track_info = {}
@@ -171,7 +179,9 @@ OCPPluginConfig = {
         ## you should only change this if you want to run OCP as a standalone system service
         "mode": "auto",
 
-        # DBUS
+        # MPRIS integrations
+        ## integration is enabled by default, but can be disabled
+        "disable_mpris": False,
         ## dbus type for MPRIS, "session" or "system"
         "dbus_type": "session",
         ## allow OCP to control MPRIS enabled 3rd party applications

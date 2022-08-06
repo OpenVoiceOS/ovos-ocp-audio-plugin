@@ -280,7 +280,12 @@ class OCPSearch(OCPAbstractComponent):
                        self.handle_skill_announce)
 
     def handle_skill_announce(self, message):
-        skill_id = message.data["skill_id"]
+        skill_id = message.data.get("skill_id")
+        if not skill_id:
+            # TODO - how does this happen?
+            #  saw it once but no clue where message came from
+            # i think it's coming from unittests
+            return
         skill_name = message.data.get("skill_name") or skill_id
         img = message.data.get("thumbnail")
         has_featured = bool(message.data.get("featured_tracks"))

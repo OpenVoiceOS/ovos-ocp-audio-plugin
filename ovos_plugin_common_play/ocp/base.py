@@ -238,5 +238,5 @@ def _uri2meta(uri):
                 "playback": 2,  # PlaybackType.AUDIO,  # TODO mime type check
                 "status": 33  # TrackState.QUEUED_AUDIO
                 }
-    meta["skill_id"] = "ovos.common_play.audio_backend"
+    meta["skill_id"] = "mycroft.audio_interface"
     return meta

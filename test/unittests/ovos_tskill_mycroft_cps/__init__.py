@@ -1,9 +1,9 @@
-import re
 import random
-from adapt.intent import IntentBuilder
-from mycroft.skills.core import MycroftSkill, intent_handler
+import re
 from threading import Lock
 
+from adapt.intent import IntentBuilder
+from mycroft.skills.core import MycroftSkill, intent_handler
 
 STATUS_KEYS = ['track', 'artist', 'album', 'image']
 
@@ -11,7 +11,7 @@ STATUS_KEYS = ['track', 'artist', 'album', 'image']
 class PlaybackControlSkill(MycroftSkill):
     def __init__(self):
         super(PlaybackControlSkill, self).__init__('Playback Control Skill')
-        self.query_replies = {}     # cache of received replies
+        self.query_replies = {}  # cache of received replies
         self.query_extensions = {}  # maintains query timeout extensions
         self.has_played = False
         self.lock = Lock()
@@ -62,7 +62,7 @@ class PlaybackControlSkill(MycroftSkill):
         # which will only return the first word of the target phrase
         utt = message.data.get('utterance')
         phrase = re.sub('^.*?' + message.data['Play'], '', utt).strip()
-        self.log.info("Resolving Player for: "+phrase)
+        self.log.info("Resolving Player for: " + phrase)
 
         # Now we place a query on the messsagebus for anyone who wants to
         # attempt to service a 'play.request' message.  E.g.:

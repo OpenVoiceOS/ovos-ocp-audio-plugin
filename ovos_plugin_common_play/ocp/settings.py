@@ -21,7 +21,7 @@ class OCPSettings(PrivateSettings):
     ]
 
     def __init__(self):
-        super(OCPSettings, self).__init__("ovos.common_play")
+        super().__init__("ovos.common_play")
 
     @property
     def dbus_type(self):
@@ -29,6 +29,10 @@ class OCPSettings(PrivateSettings):
         if dbustype.lower().strip() == "system":
             return BusType.SYSTEM
         return BusType.SESSION
+
+    @property
+    def disable_mpris(self):
+        return self.get("disable_mpris", False)
 
     @property
     def playback_mode(self):
