@@ -163,6 +163,14 @@ OCPPluginConfig = {
         "active": True,
         # all values below are optional
 
+        # plugin config
+        ## operational mode refers to the OCP integration
+        ## "external" - OCP is already running elsewhere, connect by bus only
+        ## "native" - launch OCP service from the plugin
+        ## "auto" - if OCP is already running connect to it, else launch it
+        ## you should only change this if you want to run OCP as a standalone system service
+        "mode": "auto",
+
         # DBUS
         ## dbus type for MPRIS, "session" or "system"
         "dbus_type": "session",
@@ -185,6 +193,11 @@ OCPPluginConfig = {
         ##                    do not display or play anything.
         ##                    allows integration with external interfaces
         "playback_mode": 0,
+
+        ## ordered list of audio backend preferences,
+        ## when OCP selects a audio service for playback
+        ## this list is checked in order until a available backend is found
+        "preferred_audio_services": ["vlc", "mplayer", "simple"],
 
         ## when media playback ends "click next"
         "autoplay": True,
