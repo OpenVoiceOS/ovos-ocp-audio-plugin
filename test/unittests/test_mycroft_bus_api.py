@@ -35,26 +35,28 @@ BASE_CONF = {"Audio":
 
 
 class TestAudioServiceApi(unittest.TestCase):
+    bus = FakeBus()
 
     @classmethod
     @patch.dict(Configuration._Configuration__patch, BASE_CONF)
-    def setUpClass(self) -> None:
-        self.bus = FakeBus()
-        self.bus.emitted_msgs = []
+    def setUpClass(cls) -> None:
+        cls.bus.emitted_msgs = []
 
         def get_msg(msg):
             msg = json.loads(msg)
             msg.pop("context")
-            self.bus.emitted_msgs.append(msg)
+            cls.bus.emitted_msgs.append(msg)
 
-        self.bus.on("message", get_msg)
+        cls.bus.on("message", get_msg)
 
-        self.api = MycroftAudioService(self.bus)
-        self.audio = AudioService(self.bus)
+        cls.api = MycroftAudioService(cls.bus)
 
+    @patch.dict(Configuration._Configuration__patch, BASE_CONF)
     def test_ocp_plugin_compat_layer(self):
-        # test play track from single uri
+        audio = AudioService(self.bus)
         self.bus.emitted_msgs = []
+
+        # test play track from single uri
         test_uri = "file://path/to/music.mp3"
         self.api.play([test_uri])
         expected = [
@@ -195,64 +197,55 @@ class TestAudioServiceApi(unittest.TestCase):
         for m in expected:
             self.assertIn(m, self.bus.emitted_msgs)
 
+        audio.shutdown()
+
+    @patch.dict(Configuration._Configuration__patch, BASE_CONF)
     def test_play_mycroft_backend(self):
+        audio = AudioService(self.bus)
         self.bus.emitted_msgs = []
         selected = "mycroft_test"
         tracks = ["file://path/to/music.mp3", "file://path/to/music2.mp3"]
 
         # assert OCP not in use
-        self.assertNotEqual(self.audio.default.ocp.player.state, PlayerState.PLAYING)
+        self.assertNotEqual(audio.default.ocp.player.state, PlayerState.PLAYING)
 
         self.api.play(tracks, repeat=True, utterance=selected)
-        exptected = [
-            {'type': 'mycroft.audio.service.play',
-             'data': {'tracks': ['file://path/to/music.mp3', 'file://path/to/music2.mp3'],
-                      'utterance': selected,
-                      'repeat': True}},
-            {'type': 'ovos.common_play.repeat.set', 'data': {}}
-        ]
-        for m in exptected:
-            self.assertIn(m, self.bus.emitted_msgs)
 
         # correct service selected
-        self.assertEqual(self.audio.current.name, selected)
-        self.assertTrue(self.audio.current.playing)
+        self.assertEqual(audio.current.name, selected)
+        self.assertTrue(audio.current.playing)
 
         # OCP is not aware of internal player state - state events not emitted by mycroft plugins
-        self.assertNotEqual(self.audio.default.ocp.player.state, PlayerState.PLAYING)
+        self.assertNotEqual(audio.default.ocp.player.state, PlayerState.PLAYING)
 
         # but track state is partially accounted for
-        self.assertEqual(self.audio.default.ocp.player.now_playing.uri, tracks[0])
-        self.assertEqual(self.audio.default.ocp.player.now_playing.playback, PlaybackType.AUDIO_SERVICE)
-        self.assertEqual(self.audio.default.ocp.player.now_playing.status, TrackState.QUEUED_AUDIOSERVICE)
-        self.assertEqual(self.audio.default.ocp.player.now_playing.skill_id, "mycroft.audio_interface")
+        self.assertEqual(audio.default.ocp.player.now_playing.uri, tracks[0])
+        self.assertEqual(audio.default.ocp.player.now_playing.playback, PlaybackType.AUDIO_SERVICE)
+        self.assertEqual(audio.default.ocp.player.now_playing.status, TrackState.QUEUED_AUDIOSERVICE)
+        self.assertEqual(audio.default.ocp.player.now_playing.skill_id, "mycroft.audio_interface")
 
-        self.audio.current._track_start_callback("track_name")
-        self.assertEqual(self.audio.default.ocp.player.now_playing.status, TrackState.PLAYING_AUDIOSERVICE)
+        audio.current._track_start_callback("track_name")
+        self.assertEqual(audio.default.ocp.player.now_playing.status, TrackState.PLAYING_AUDIOSERVICE)
 
+        audio.shutdown()
+
+    @patch.dict(Configuration._Configuration__patch, BASE_CONF)
     def test_play_ocp_backend(self):
+        audio = AudioService(self.bus)
         self.bus.emitted_msgs = []
+
         selected = "ovos_test"
         tracks = ["file://path/to/music.mp3", "file://path/to/music2.mp3"]
 
         # assert OCP not in use
-        self.assertNotEqual(self.audio.default.ocp.player.state, PlayerState.PLAYING)
+        self.assertNotEqual(audio.default.ocp.player.state, PlayerState.PLAYING)
 
         # NOTE: this usage is equivalent to what OCP itself
         # does internally to select audio_service, where "utterance" is also used
         self.api.play(tracks, repeat=True, utterance=selected)
-        exptected = [
-            {'type': 'mycroft.audio.service.play',
-             'data': {'tracks': ['file://path/to/music.mp3', 'file://path/to/music2.mp3'],
-                      'utterance': selected,
-                      'repeat': True}},
-            {'type': 'ovos.common_play.repeat.set', 'data': {}}
-        ]
-        for m in exptected:
-            self.assertIn(m, self.bus.emitted_msgs)
 
         # correct service selected
-        self.assertEqual(self.audio.current.name, selected)
+        self.assertEqual(audio.current.name, selected)
 
         # ocp state events emitted
         exptected = [
@@ -276,14 +269,13 @@ class TestAudioServiceApi(unittest.TestCase):
             self.assertIn(m, self.bus.emitted_msgs)
 
         # assert OCP is tracking state
-        self.assertEqual(self.audio.default.ocp.player.state, PlayerState.PLAYING)
-        self.assertEqual(self.audio.default.ocp.player.media_state, MediaState.LOADED_MEDIA)
-        self.assertEqual(self.audio.default.ocp.player.now_playing.uri, tracks[0])
-        self.assertEqual(self.audio.default.ocp.player.now_playing.playback, PlaybackType.AUDIO_SERVICE)
-        self.assertEqual(self.audio.default.ocp.player.now_playing.status, TrackState.PLAYING_AUDIOSERVICE)
+        self.assertEqual(audio.default.ocp.player.state, PlayerState.PLAYING)
+        self.assertEqual(audio.default.ocp.player.media_state, MediaState.LOADED_MEDIA)
+        self.assertEqual(audio.default.ocp.player.now_playing.uri, tracks[0])
+        self.assertEqual(audio.default.ocp.player.now_playing.playback, PlaybackType.AUDIO_SERVICE)
+        self.assertEqual(audio.default.ocp.player.now_playing.status, TrackState.PLAYING_AUDIOSERVICE)
 
-    def tearDown(self) -> None:
-        self.audio.shutdown()
+        audio.shutdown()
 
 
 if __name__ == '__main__':

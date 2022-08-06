@@ -32,30 +32,27 @@ BASE_CONF = {"Audio":
 
 
 class TestExternalOCP(unittest.TestCase):
+    bus = FakeBus()
 
     @classmethod
-    @patch.dict(Configuration._Configuration__patch, BASE_CONF)
-    def setUpClass(self) -> None:
-        self.bus = FakeBus()
-        self.bus.emitted_msgs = []
+    def setUpClass(cls) -> None:
+        cls.bus.emitted_msgs = []
 
         def get_msg(msg):
             msg = json.loads(msg)
             msg.pop("context")
-            self.bus.emitted_msgs.append(msg)
+            cls.bus.emitted_msgs.append(msg)
 
-        self.bus.on("message", get_msg)
+        cls.bus.on("message", get_msg)
 
-        self.audio = AudioService(self.bus)
-
+    @patch.dict(Configuration._Configuration__patch, BASE_CONF)
     def test_external_ocp(self):
+        audio = AudioService(self.bus)
         # assert that ocp is in external mode
-        self.assertEqual(self.audio.default.config["mode"], "external")
+        self.assertEqual(audio.default.config["mode"], "external")
         # assert that OCP is not loaded
-        self.assertTrue(self.audio.default.ocp is None)
-
-    def tearDown(self) -> None:
-        self.audio.shutdown()
+        self.assertTrue(audio.default.ocp is None)
+        audio.shutdown()
 
 
 if __name__ == '__main__':
