@@ -57,6 +57,13 @@ class OCPAbstractComponent:
 class OCPAudioPlayerBackend(AudioBackend):
     """Base class for all OCP audio backend implementations.
 
+    In OVOS audio backends are single-track, playlists are handled by OCP
+    This base class introduces some helper methods for reporting status to OCP
+    and adds a compat layer to all playlist related handlers
+
+    see the VLC plugin for an implementation example
+    https://github.com/OpenVoiceOS/ovos-vlc-plugin
+
        Arguments:
            config (dict): configuration dict for the instance
            bus (MessageBusClient): Mycroft messagebus emitter
