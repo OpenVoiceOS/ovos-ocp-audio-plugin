@@ -183,6 +183,8 @@ class TestCPS(unittest.TestCase):
         for intent in cps_intents:
             self.assertNotIn(intent, intents.registered_intents)
 
+        ocp.shutdown()
+
 
 if __name__ == '__main__':
     unittest.main()
