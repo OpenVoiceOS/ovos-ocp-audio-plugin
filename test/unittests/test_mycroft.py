@@ -1,12 +1,14 @@
 import json
 import unittest
 from os.path import dirname, join
+from unittest.mock import patch
 
 from mycroft.configuration.config import Configuration
 from mycroft.skills.intent_service import IntentService
 from mycroft.skills.skill_loader import SkillLoader
+from ovos_utils.log import LOG
 from ovos_utils.messagebus import FakeBus
-from unittest.mock import patch
+
 import ovos_plugin_common_play
 from ovos_plugin_common_play import OCPAudioBackend
 
