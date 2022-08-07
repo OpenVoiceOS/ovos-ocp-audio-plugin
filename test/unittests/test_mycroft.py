@@ -51,7 +51,6 @@ class TestCPS(unittest.TestCase):
 
         cls.bus.on("message", get_msg)
 
-    @unittest.skip("debug - github actions gets stuck forever here ? works on my machine")
     @patch.dict(Configuration._Configuration__patch, BASE_CONF)
     def test_auto_unload(self):
         intents = IntentService(self.bus)
