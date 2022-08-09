@@ -3,7 +3,7 @@ import unittest
 from unittest.mock import patch
 
 from mycroft.audio.audioservice import AudioService
-from mycroft.configuration import Configuration
+from ovos_config.config import Configuration
 from ovos_utils.messagebus import FakeBus
 
 from ovos_plugin_common_play import OCPAudioBackend, OCP
@@ -36,8 +36,9 @@ BASE_CONF = {"Audio":
 class TestOCPLoad(unittest.TestCase):
 
     @classmethod
-    @patch.dict(Configuration._Configuration__patch, BASE_CONF)
-    def setUpClass(self) -> None:
+    @patch.object(Configuration, 'load_all_configs')
+    def setUpClass(self, mock_get) -> None:
+        mock_get.return_value = BASE_CONF
         self.bus = FakeBus()
         self.bus.emitted_msgs = []
 

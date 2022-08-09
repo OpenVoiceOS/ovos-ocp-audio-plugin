@@ -3,7 +3,7 @@ import unittest
 from unittest.mock import patch
 
 from mycroft.audio.audioservice import AudioService
-from mycroft.configuration import Configuration
+from ovos_config.config import Configuration
 from ovos_utils.messagebus import FakeBus
 
 BASE_CONF = {"Audio":
@@ -45,8 +45,9 @@ class TestExternalOCP(unittest.TestCase):
 
         cls.bus.on("message", get_msg)
 
-    @patch.dict(Configuration._Configuration__patch, BASE_CONF)
-    def test_external_ocp(self):
+    @patch.object(Configuration, 'load_all_configs')
+    def test_external_ocp(self, mock):
+        mock.return_value = BASE_CONF
         audio = AudioService(self.bus)
         # assert that ocp is in external mode
         self.assertEqual(audio.default.config["mode"], "external")
