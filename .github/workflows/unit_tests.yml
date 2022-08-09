@@ -81,7 +81,7 @@ jobs:
           # NOTE: additional pytest invocations should also add the --cov-append flag
           #       or they will overwrite previous invocations' coverage reports
           #       (for an example, see OVOS Skill Manager's workflow)
-          - name: Upload coverage
-            env:
-              CODECOV_TOKEN: ${{secrets.CODECOV_TOKEN}}
-            uses: codecov/codecov-action@v2
+      - name: Upload coverage
+        env:
+          CODECOV_TOKEN: ${{secrets.CODECOV_TOKEN}}
+        uses: codecov/codecov-action@v2
