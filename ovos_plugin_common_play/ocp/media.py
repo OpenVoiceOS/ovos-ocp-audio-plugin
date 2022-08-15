@@ -273,6 +273,10 @@ class NowPlaying(MediaEntry):
                                self.handle_player_metadata_request)
         self._player.add_event('mycroft.audio.service.track_info_reply',
                                self.handle_sync_trackinfo)
+        self._player.add_event('mycroft.audio.service.play',
+                               self.handle_audio_service_play)
+        self._player.add_event('mycroft.audio.playing_track',
+                               self.handle_audio_service_play_start)
 
     def shutdown(self):
         self._player.remove_event("ovos.common_play.track.state")
@@ -406,4 +410,28 @@ class NowPlaying(MediaEntry):
 
     def handle_sync_trackinfo(self, message):
         self.update(message.data)
+
+    def handle_audio_service_play(self, message):
+        tracks = message.data.get("tracks") or []
+        # only present in ovos-core
+        skill_id = message.context.get("skill_id") or 'mycroft.audio_interface'
+        for idx, track in enumerate(tracks):
+            # TODO try to extract metadata from uri (latency ?)
+            if idx == 0:
+                self.update(
+                    {"uri": track,
+                     "title": track.split("/")[-1],
+                     "status": TrackState.QUEUED_AUDIOSERVICE,
+                     'skill_id': skill_id,
+                     "playback": PlaybackType.AUDIO_SERVICE}
+                )
+            else:
+                # TODO sync playlist ?
+                pass
+
+    def handle_audio_service_play_start(self, message):
+        self.update(
+            {"status": TrackState.PLAYING_AUDIOSERVICE,
+             "playback": PlaybackType.AUDIO_SERVICE})
+
 

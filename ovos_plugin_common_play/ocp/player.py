@@ -4,6 +4,7 @@ from os.path import join, dirname
 from ovos_utils.gui import is_gui_connected, is_gui_running
 from ovos_utils.log import LOG
 from ovos_utils.messagebus import Message
+from ovos_config import Configuration
 
 from ovos_plugin_common_play.ocp.gui import OCPMediaPlayerGUI
 from ovos_plugin_common_play.ocp.media import Playlist, MediaEntry, NowPlaying
@@ -11,6 +12,7 @@ from ovos_plugin_common_play.ocp.mpris import MprisPlayerCtl
 from ovos_plugin_common_play.ocp.search import OCPSearch
 from ovos_plugin_common_play.ocp.settings import OCPSettings
 from ovos_plugin_common_play.ocp.status import *
+from ovos_plugin_common_play.ocp.mycroft_cps import MycroftAudioService
 from ovos_workshop import OVOSAbstractApplication
 
 
@@ -22,7 +24,11 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         gui = gui or OCPMediaPlayerGUI()
         # mpris settings
         manage_players = settings.get("manage_external_players", False)
-        self.mpris = MprisPlayerCtl(manage_players=manage_players)
+        if settings.disable_mpris:
+            LOG.info("MPRIS integration is disabled")
+            self.mpris = None
+        else:
+            self.mpris = MprisPlayerCtl(manage_players=manage_players)
 
         self.state = PlayerState.STOPPED
         self.loop_state = LoopState.NONE
@@ -31,6 +37,8 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         self.shuffle = False
         self.now_playing = NowPlaying()
         self.media = OCPSearch()
+        self.audio_service = None
+        self._audio_backend = None
         self.track_history = {}
         super().__init__("ovos_common_play", settings=settings, bus=bus,
                          gui=gui, resources_dir=resources_dir, lang=lang)
@@ -40,7 +48,9 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         self.now_playing.bind(self)
         self.media.bind(self)
         self.gui.bind(self)
-        self.mpris.bind(self)
+        if self.mpris:
+            self.mpris.bind(self)
+        self.audio_service = MycroftAudioService(self.bus)
         self.register_bus_handlers()
 
     def register_bus_handlers(self):
@@ -81,6 +91,16 @@ class OCPMediaPlayer(OVOSAbstractApplication):
                        self.handle_prev_request)
         self.add_event('ovos.common_play.seek',
                        self.handle_seek_request)
+        self.add_event('ovos.common_play.get_track_length',
+                       self.handle_track_length_request)
+        self.add_event('ovos.common_play.set_track_position',
+                       self.handle_set_track_position_request)
+        self.add_event('ovos.common_play.get_track_position',
+                       self.handle_track_position_request)
+        self.add_event('ovos.common_play.track_info',
+                       self.handle_track_info_request)
+        self.add_event('ovos.common_play.list_backends',
+                       self.handle_list_backends_request)
         self.add_event('ovos.common_play.playlist.set',
                        self.handle_playlist_set_request)
         self.add_event('ovos.common_play.playlist.clear',
@@ -91,6 +111,14 @@ class OCPMediaPlayer(OVOSAbstractApplication):
                        self.handle_duck_request)
         self.add_event('ovos.common_play.unduck',
                        self.handle_unduck_request)
+        self.add_event('ovos.common_play.shuffle.set',
+                       self.handle_set_shuffle)
+        self.add_event('ovos.common_play.shuffle.unset',
+                       self.handle_unset_shuffle)
+        self.add_event('ovos.common_play.repeat.set',
+                       self.handle_set_repeat)
+        self.add_event('ovos.common_play.repeat.unset',
+                       self.handle_unset_repeat)
 
     @property
     def active_skill(self):
@@ -142,9 +170,10 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         self.state = state
         state2str = {PlayerState.PLAYING: "Playing", PlayerState.PAUSED: "Paused", PlayerState.STOPPED: "Stopped"}
         self.gui["status"] = state2str[self.state]
-        self.mpris.update_props({"CanPause": self.state == PlayerState.PLAYING,
-                                 "CanPlay": self.state == PlayerState.PAUSED,
-                                 "PlaybackStatus": state2str[state]})
+        if self.mpris:
+            self.mpris.update_props({"CanPause": self.state == PlayerState.PLAYING,
+                                     "CanPlay": self.state == PlayerState.PAUSED,
+                                     "PlaybackStatus": state2str[state]})
         self.bus.emit(Message("ovos.common_play.player.state",
                               {"state": self.state}))
 
@@ -180,10 +209,10 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         # update gui values
         self.gui.update_current_track()
         self.gui.update_playlist()
-
-        self.mpris.update_props(
-            {"Metadata": self.now_playing.mpris_metadata}
-        )
+        if self.mpris:
+            self.mpris.update_props(
+                {"Metadata": self.now_playing.mpris_metadata}
+            )
 
     # stream handling
     def validate_stream(self):
@@ -213,7 +242,8 @@ class OCPMediaPlayer(OVOSAbstractApplication):
 
     # media controls
     def play_media(self, track, disambiguation=None, playlist=None):
-        self.mpris.stop()
+        if self.mpris:
+            self.mpris.stop()
         self.pause()  # make it more responsive
         if disambiguation:
             self.media.search_playlist.replace(disambiguation)
@@ -226,9 +256,31 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         self.set_now_playing(track)
         self.play()
 
+    @property
+    def audio_service_player(self):
+        if not self._audio_backend:
+            self._audio_backend = self._get_prefered_audio_backend()
+        return self._audio_backend
+
+    def _get_prefered_audio_backend(self):
+        # NOTE - the bus api tells us what backends are loaded
+        # however it does not provide "type", so we need to get that from config
+        # we still hit the messagebus to account for loading failures,
+        # even if config claims backend is enabled it might not load
+        backends = self.audio_service.available_backends()
+        cfg = Configuration()["Audio"]["backends"]
+        available = [k for k, v in backends.items()
+                     if cfg[k].get("type", "") != "ovos_common_play"]
+        for b in self.settings.preferred_audio_services:
+            if b in available:
+                return b
+        LOG.error("Preferred audio service backend not installed")
+        return "simple"
+
     def play(self):
         # stop any external media players
-        self.mpris.stop()
+        if self.mpris:
+            self.mpris.stop()
         # validate new stream
         # TODO buffering animation ?
         if not self.validate_stream():
@@ -245,8 +297,9 @@ class OCPMediaPlayer(OVOSAbstractApplication):
                                    PlaybackType.AUDIO_SERVICE]:
             LOG.debug("Requesting playback: PlaybackType.AUDIO")
             if self.active_backend == PlaybackType.AUDIO_SERVICE:
-                # we explicitly want to use simple backend for audio only output
-                self.audio_service.play(self.now_playing.uri, utterance="simple")
+                # we explicitly want to use a audio backend for audio only output
+                self.audio_service.play(self.now_playing.uri,
+                                        utterance=self.audio_service_player)
                 self.bus.emit(Message("ovos.common_play.track.state", {
                     "state": TrackState.PLAYING_AUDIOSERVICE}))
                 self.set_player_state(PlayerState.PLAYING)
@@ -288,9 +341,9 @@ class OCPMediaPlayer(OVOSAbstractApplication):
                 "state": TrackState.PLAYING_WEBVIEW}))
         else:
             raise ValueError("invalid playback request")
-
-        self.mpris.update_props({"CanGoNext": self.can_next})
-        self.mpris.update_props({"CanGoPrevious": self.can_prev})
+        if self.mpris:
+            self.mpris.update_props({"CanGoNext": self.can_next})
+            self.mpris.update_props({"CanGoPrevious": self.can_prev})
 
     def play_shuffle(self):
         LOG.debug("Shuffle == True")
@@ -303,7 +356,8 @@ class OCPMediaPlayer(OVOSAbstractApplication):
 
     def play_next(self):
         if self.active_backend in [PlaybackType.MPRIS]:
-            self.mpris.play_next()
+            if self.mpris:
+                self.mpris.play_next()
             return
         elif self.active_backend in [PlaybackType.SKILL, PlaybackType.UNDEFINED]:
             self.bus.emit(Message(f'ovos.common_play.{self.now_playing.skill_id}.next'))
@@ -336,7 +390,8 @@ class OCPMediaPlayer(OVOSAbstractApplication):
 
     def play_prev(self):
         if self.active_backend in [PlaybackType.MPRIS]:
-            self.mpris.play_prev()
+            if self.mpris:
+                self.mpris.play_prev()
             return
         elif self.active_backend in [PlaybackType.SKILL, PlaybackType.UNDEFINED]:
             self.bus.emit(Message(f'ovos.common_play.{self.now_playing.skill_id}.prev'))
@@ -366,7 +421,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
                                    PlaybackType.UNDEFINED]:
             self.bus.emit(Message(f'ovos.common_play'
                                   f'.{self.active_skill}.pause'))
-        if self.active_backend in [PlaybackType.MPRIS]:
+        if self.active_backend in [PlaybackType.MPRIS] and self.mpris:
             self.mpris.pause()
         self.set_player_state(PlayerState.PAUSED)
 
@@ -385,7 +440,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
                                    PlaybackType.VIDEO]:
             self.bus.emit(Message('gui.player.media.service.resume'))
 
-        if self.active_backend in [PlaybackType.MPRIS]:
+        if self.active_backend in [PlaybackType.MPRIS] and self.mpris:
             self.mpris.resume()
 
         self.set_player_state(PlayerState.PLAYING)
@@ -394,6 +449,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         if self.active_backend in [PlaybackType.AUDIO_SERVICE,
                                    PlaybackType.UNDEFINED]:
             self.audio_service.set_track_position(position / 1000)
+        self.gui["position"] = position
 
     def stop(self):
         # stop any search still happening
@@ -412,7 +468,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
                                    PlaybackType.UNDEFINED]:
             self.stop_gui_player()
             self.set_player_state(PlayerState.STOPPED)
-        #if self.active_backend in [PlaybackType.MPRIS]:
+        #if self.active_backend in [PlaybackType.MPRIS] and self.mpris:
         #    self.mpris.stop()
 
     def stop_gui_player(self):
@@ -434,7 +490,8 @@ class OCPMediaPlayer(OVOSAbstractApplication):
 
     def shutdown(self):
         self.stop()
-        self.mpris.shutdown()
+        if self.mpris:
+            self.mpris.shutdown()
         self.now_playing.shutdown()
         self.gui.shutdown()
         self.media.shutdown()
@@ -459,10 +516,13 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         elif state == PlayerState.STOPPED:
             self.state = PlayerState.STOPPED
 
-        state2str = {PlayerState.PLAYING: "Playing", PlayerState.PAUSED: "Paused", PlayerState.STOPPED: "Stopped"}
-        self.mpris.update_props({"CanPause": state == PlayerState.PLAYING,
-                                 "CanPlay": state == PlayerState.PAUSED,
-                                 "PlaybackStatus": state2str[state]})
+        if self.mpris:
+            state2str = {PlayerState.PLAYING: "Playing",
+                         PlayerState.PAUSED: "Paused",
+                         PlayerState.STOPPED: "Stopped"}
+            self.mpris.update_props({"CanPause": state == PlayerState.PLAYING,
+                                     "CanPlay": state == PlayerState.PAUSED,
+                                     "PlaybackStatus": state2str[state]})
 
     def handle_player_media_update(self, message):
         state = message.data.get("state")
@@ -474,6 +534,13 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         self.media_state = state
         if state == MediaState.END_OF_MEDIA:
             self.handle_playback_ended(message)
+        elif state == MediaState.INVALID_MEDIA:
+            self.handle_invalid_media(message)
+            if self.settings.autoplay:
+                self.play_next()
+
+    def handle_invalid_media(self, message):
+        self.gui.show_playback_error()
 
     def handle_playback_ended(self, message):
         LOG.debug("Playback ended")
@@ -487,6 +554,9 @@ class OCPMediaPlayer(OVOSAbstractApplication):
     # ovos common play bus api requests
     def handle_play_request(self, message):
         LOG.debug("Received external OVOS playback request")
+        repeat = message.data.get("repeat", False)
+        if repeat:
+            self.loop_state = LoopState.REPEAT
 
         if message.data.get("tracks"):
             # backwards compat / old style
@@ -508,17 +578,40 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         self.resume()
 
     def handle_seek_request(self, message):
-        # usually sent by audio service player GUI
-        position = message.data.get("seekValue", "")
-        if position:
-            self.gui["position"] = position
-            self.seek(position)
+        # from bus api
+        miliseconds = message.data.get("seconds", 0) * 1000
+
+        # from audio player GUI
+        position = message.data.get("seekValue")
+        if not position:
+            position = self.now_playing.position or 0
+            if self.active_backend in [PlaybackType.AUDIO_SERVICE,
+                                       PlaybackType.UNDEFINED]:
+                position = self.audio_service.get_track_position() or position
+            position += miliseconds
+        self.seek(position)
 
     def handle_next_request(self, message):
         self.play_next()
 
     def handle_prev_request(self, message):
         self.play_prev()
+
+    def handle_set_shuffle(self, message):
+        self.shuffle = True
+        self.gui.update_seekbar_capabilities()
+
+    def handle_unset_shuffle(self, message):
+        self.shuffle = False
+        self.gui.update_seekbar_capabilities()
+
+    def handle_set_repeat(self, message):
+        self.loop_state = LoopState.REPEAT
+        self.gui.update_seekbar_capabilities()
+
+    def handle_unset_repeat(self, message):
+        self.loop_state = LoopState.NONE
+        self.gui.update_seekbar_capabilities()
 
     # playlist control bus api
     def handle_repeat_toggle_request(self, message):
@@ -558,3 +651,33 @@ class OCPMediaPlayer(OVOSAbstractApplication):
     def handle_unduck_request(self, message):
         if self.state == PlayerState.PAUSED:
             self.resume()
+
+    # track data
+    def handle_track_length_request(self, message):
+        l = self.now_playing.length
+        if self.active_backend == PlaybackType.AUDIO_SERVICE:
+            l = self.audio_service.get_track_length() or l
+        data = {"length": l}
+        self.bus.emit(message.response(data))
+
+    def handle_track_position_request(self, message):
+        pos = self.now_playing.position
+        if self.active_backend == PlaybackType.AUDIO_SERVICE:
+            pos = self.audio_service.get_track_position() or pos
+        data = {"position": pos}
+        self.bus.emit(message.response(data))
+
+    def handle_set_track_position_request(self, message):
+        miliseconds = message.data.get("position")
+        self.seek(miliseconds)
+
+    def handle_track_info_request(self, message):
+        data = self.now_playing.as_dict
+        if self.active_backend == PlaybackType.AUDIO_SERVICE:
+            data = self.audio_service.track_info() or data
+        self.bus.emit(message.response(data))
+
+    # internal info
+    def handle_list_backends_request(self, message):
+        data = self.audio_service.available_backends()
+        self.bus.emit(message.response(data))

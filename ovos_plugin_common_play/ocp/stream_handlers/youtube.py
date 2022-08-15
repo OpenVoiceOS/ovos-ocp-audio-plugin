@@ -1,4 +1,5 @@
 import enum
+import json
 
 import requests
 from ovos_utils.log import LOG
@@ -95,17 +96,41 @@ def get_invidious_stream(url, audio_only=False, ocp_settings=None):
     # self host: https://github.com/iv-org/invidious
 
     settings = ocp_settings or {}
-    host = settings.get("invidious_host") or "https://invidious.jarbasai.online"
-    local = "true" if settings.get("proxy_invidious") else "false"
+    host = settings.get("invidious_host")
+    local = "true" if settings.get("proxy_invidious", True) else "false"
 
     if url.endswith("/live"):
         # TODO invidious backend can not handle lives, what do?
-        return get_ydl_stream(url, ocp_settings=ocp_settings)
+        return get_youtube_live_from_channel_redirect(url, ocp_settings=ocp_settings)
 
     vid_id = url.split("watch?v=")[-1].split("&")[0]
-    api = f"{host}/api/v1/videos/{vid_id}"
-    data = requests.get(api).json()
-    if "error" in data:
+
+    if not host:
+        # hosted by a OpenVoiceOS member
+        hosts = ["https://video.strongthany.cc"]
+        try:
+            api_url = "https://api.invidious.io/instances.json?pretty=1&sort_by=type,health"
+            hosts += ["http://" + h[0] for h in requests.get(api_url).json()]
+        except:
+            pass
+    else:
+        hosts = [host]
+
+    data = {}
+
+    for host in hosts:
+        LOG.debug(f"Trying invidious host: {host}")
+        api = f"{host}/api/v1/videos/{vid_id}"
+        try:
+            r = requests.get(api, timeout=3)
+            # TODO seems like apparently valid json fails to parse sometimes?
+            data = json.loads(r.text)
+        except Exception as e:
+            LOG.error(f"request failed for: {api}  - ({e})")
+        if data and "error" not in data:
+            break
+
+    if not data or "error" in data:
         return {}
 
     if audio_only:
@@ -116,9 +141,10 @@ def get_invidious_stream(url, audio_only=False, ocp_settings=None):
         return get_ydl_stream(f"https://www.youtube.com/watch?v={vid_id}", ocp_settings=ocp_settings)
     else:
         stream = f"{host}/latest_version?id={vid_id}&itag=22&local={local}&subtitles=en"
+
     return {
         "uri": stream,
-        "title": data["title"],
+        "title": data.get("title"),
         "image": host + data['videoThumbnails'][0]["url"],
         "length": data['lengthSeconds']
     }

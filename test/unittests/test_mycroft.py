@@ -1,28 +1,57 @@
 import json
 import unittest
 from os.path import dirname, join
+from unittest.mock import patch
 
+from mycroft.configuration.config import Configuration
 from mycroft.skills.intent_service import IntentService
 from mycroft.skills.skill_loader import SkillLoader
+from ovos_utils.log import LOG
 from ovos_utils.messagebus import FakeBus
 
 import ovos_plugin_common_play
 from ovos_plugin_common_play import OCPAudioBackend
 
+BASE_CONF = {"Audio":
+    {
+        "native_sources": ["debug_cli", "audio"],
+        "default-backend": "OCP",  # only used by mycroft-core
+        "preferred_audio_services": ["ovos_test", "mycroft_test"],
+        "backends": {
+            "OCP": {
+                "type": "ovos_common_play",
+                "active": True,
+                "mode": "auto",
+                "disable_mpris": True
+            },
+            "mycroft_test": {
+                "type": "mycroft_test",
+                "active": True
+            },
+            "ovos_test": {
+                "type": "ovos_test",
+                "active": True
+            }
+        }
+    }
+}
+
 
 class TestCPS(unittest.TestCase):
+    bus = FakeBus()
+
     @classmethod
-    def setUpClass(self) -> None:
-        self.bus = FakeBus()
-        self.bus.emitted_msgs = []
+    def setUpClass(cls) -> None:
+        cls.bus.emitted_msgs = []
 
         def get_msg(msg):
             msg = json.loads(msg)
             msg.pop("context")
-            self.bus.emitted_msgs.append(msg)
+            cls.bus.emitted_msgs.append(msg)
 
-        self.bus.on("message", get_msg)
+        cls.bus.on("message", get_msg)
 
+    @patch.dict(Configuration._Configuration__patch, BASE_CONF)
     def test_auto_unload(self):
         intents = IntentService(self.bus)
         skill = SkillLoader(self.bus, f"{dirname(__file__)}/ovos_tskill_mycroft_cps")
@@ -155,6 +184,8 @@ class TestCPS(unittest.TestCase):
         self.assertIn(detach_msg, self.bus.emitted_msgs)
         for intent in cps_intents:
             self.assertNotIn(intent, intents.registered_intents)
+
+        ocp.shutdown()
 
 
 if __name__ == '__main__':

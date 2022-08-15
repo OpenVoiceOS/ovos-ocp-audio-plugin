@@ -262,6 +262,7 @@ class OCPSearch(OCPAbstractComponent):
         self.search_playlist = Playlist()
         self.old_cps = None
         self.ocp_skills = {}
+        self.featured_skills = {}
         if player:
             self.bind(player)
 
@@ -275,6 +276,29 @@ class OCPSearch(OCPAbstractComponent):
                        self.handle_new_ocp_skill)
         self.add_event("ovos.common_play.skills.detach",
                        self.handle_ocp_skill_detach)
+        self.add_event("ovos.common_play.skills.get",
+                       self.handle_skill_announce)
+
+    def handle_skill_announce(self, message):
+        skill_id = message.data.get("skill_id")
+        if not skill_id:
+            # TODO - how does this happen?
+            #  saw it once but no clue where message came from
+            # i think it's coming from unittests
+            return
+        skill_name = message.data.get("skill_name") or skill_id
+        img = message.data.get("thumbnail")
+        has_featured = bool(message.data.get("featured_tracks"))
+        media_type = message.data.get("media_type") or [MediaType.GENERIC]
+
+        if has_featured and skill_id not in self.featured_skills:
+            LOG.debug(f"Found skill with featured media: {skill_id}")
+            self.featured_skills[skill_id] = {
+                "skill_id": skill_id,
+                "skill_name": skill_name,
+                "thumbnail": img,
+                "media_type": media_type
+            }
 
     def shutdown(self):
         self.remove_event("ovos.common_play.skills.announce")
@@ -289,9 +313,19 @@ class OCPSearch(OCPAbstractComponent):
         skill_id = message.data["skill_id"]
         if skill_id in self.ocp_skills:
             self.ocp_skills.pop(skill_id)
+        if skill_id in self.featured_skills:
+            self.featured_skills.pop(skill_id)
 
-    def get_featured_videos(self):
-        raise NotImplemented
+    def get_featured_skills(self, adult=False):
+        # trigger a presence announcement from all loaded ocp skills
+        self.bus.emit(Message("ovos.common_play.skills.get"))
+        time.sleep(0.2)
+        skills = list(self.featured_skills.values())
+        if adult:
+            return skills
+        return [s for s in skills
+                if MediaType.ADULT not in s["media_type"] and
+                MediaType.HENTAI not in s["media_type"]]
 
     def search(self, phrase, media_type=MediaType.GENERIC):
         # stop any search still happening

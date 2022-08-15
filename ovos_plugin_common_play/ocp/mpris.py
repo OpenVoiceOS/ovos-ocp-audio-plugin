@@ -412,7 +412,10 @@ class MprisPlayerCtl(Thread):
             sleep(1)  # TODO configurable time between checks
 
     def run(self):
-        self.loop.run_until_complete(self.event_loop())
+        try:
+            self.loop.run_until_complete(self.event_loop())
+        except Exception as e:
+            LOG.error(e)
 
     def play_prev(self):
         self.prev_event.set()

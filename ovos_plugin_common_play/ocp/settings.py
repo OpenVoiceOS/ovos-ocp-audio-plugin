@@ -21,7 +21,7 @@ class OCPSettings(PrivateSettings):
     ]
 
     def __init__(self):
-        super(OCPSettings, self).__init__("ovos.common_play")
+        super().__init__("ovos.common_play")
 
     @property
     def dbus_type(self):
@@ -29,6 +29,10 @@ class OCPSettings(PrivateSettings):
         if dbustype.lower().strip() == "system":
             return BusType.SYSTEM
         return BusType.SESSION
+
+    @property
+    def disable_mpris(self):
+        return self.get("disable_mpris", False)
 
     @property
     def playback_mode(self):
@@ -105,6 +109,15 @@ class OCPSettings(PrivateSettings):
                self.playback_mode == PlaybackMode.FORCE_AUDIOSERVICE
 
     @property
+    def preferred_audio_services(self):
+        """ ordered list of configured audio backends,
+        when OCP selects a audio service for playback this list is checked
+        in order until a available backend is found
+        """
+        return self.get("preferred_audio_services") or \
+               ["vlc", "mplayer", "simple"]
+
+    @property
     def autoplay(self):
         """when media playback ends "click next" """
         return self.get("autoplay", True)
@@ -167,15 +180,7 @@ class OCPSettings(PrivateSettings):
     @property
     def invidious_host(self):
         """the url to the invidious instance to be used"""
-        instance = self.get("invidious_host")
-        if not instance:
-            try:
-                api_url = "https://api.invidious.io/instances.json?pretty=1&sort_by=type,health"
-                instance = requests.get(api_url).json()[0][0]
-            except:
-                # hosted by a OpenVoiceOS member
-                instance = "https://video.strongthany.cc"
-        return instance
+        return self.get("invidious_host")
 
     @property
     def proxy_invidious(self):
