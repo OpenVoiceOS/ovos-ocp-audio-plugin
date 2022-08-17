@@ -48,6 +48,7 @@ Mycroft.Delegate {
                 width: parent.width
                 wrapMode: Text.WordWrap
                 anchors.top: parent.top
+                color: Kirigami.Theme.textColor
             }
 
             Item {
@@ -98,8 +99,27 @@ Mycroft.Delegate {
                 KeyNavigation.up: txtFld
 
                 background: Rectangle {
-                    color: answerButton.activeFocus ? "#4169E1" : "#4124AA"
+                    id: answerButtonBackground
+                    color: answerButton.activeFocus ? Kirigami.Theme.highlightColor : Qt.darker(Kirigami.Theme.highlightColor, 1.5)
                     radius: Kirigami.Units.gridUnit
+                }
+
+                SequentialAnimation {
+                    id: answerButtonAnim
+
+                    PropertyAnimation {
+                        target: answerButtonBackground
+                        property: "color"
+                        to: Qt.lighter(Kirigami.Theme.highlightColor, 1.5)
+                        duration: 200
+                    }
+
+                    PropertyAnimation {
+                        target: answerButtonBackground
+                        property: "color"
+                        to: answerButton.activeFocus ? Kirigami.Theme.highlightColor : Qt.darker(Kirigami.Theme.highlightColor, 1.5)
+                        duration: 200
+                    }
                 }
 
                 contentItem: Item {
@@ -112,6 +132,10 @@ Mycroft.Delegate {
 
                 onClicked: {
                     triggerGuiEvent("search", { "utterance": txtFldInternal.text})
+                }
+
+                onPressed: {
+                    answerButtonAnim.running = true;
                 }
 
                 Keys.onReturnPressed: {

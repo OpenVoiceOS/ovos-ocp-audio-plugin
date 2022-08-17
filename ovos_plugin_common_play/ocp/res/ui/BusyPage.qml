@@ -6,20 +6,20 @@ import Mycroft 1.0 as Mycroft
 
 Mycroft.Delegate {
     id: root
-    skillBackgroundColorOverlay: "black"
+    skillBackgroundColorOverlay: Kirigami.Theme.backgroundColor
     property var indicatorText: sessionData.footer_text ? sessionData.footer_text : "Loading"
     leftPadding: 0
     bottomPadding: 0
     topPadding: 0
     rightPadding: 0
-    
+
     Rectangle {
         id: viewBusyOverlay
         z: 300
         anchors.fill: parent
         visible: root.visible
         enabled: visible
-        color: "black"
+        color: Kirigami.Theme.backgroundColor
 
         BusyIndicator {
             id: viewBusyIndicator
@@ -33,7 +33,7 @@ Mycroft.Delegate {
                 visible: viewBusyOverlay.visible
                 enabled: viewBusyOverlay.visible
                 anchors.top: parent.bottom
-                color: "white"
+                color: Kirigami.Theme.textColor
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: indicatorText
             }
