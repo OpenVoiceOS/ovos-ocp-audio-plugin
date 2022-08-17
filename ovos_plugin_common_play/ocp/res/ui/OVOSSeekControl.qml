@@ -69,7 +69,8 @@ Item {
     Rectangle {
         width: parent.width
         height: parent.height
-        color: Qt.rgba(0, 0, 0, 0.8)
+        property color tempColor: Qt.darker(Kirigami.Theme.backgroundColor, 2)
+        color: Qt.rgba(tempColor.r, tempColor.g, tempColor.b, 0.8)
         y: opened ? 0 : parent.height
 
         Rectangle {
@@ -77,7 +78,7 @@ Item {
             anchors.left: parent.left
             anchors.right: parent.right
             height: Mycroft.Units.gridUnit / 4
-            color: "#37d6fa"
+            color: Kirigami.Theme.highlightColor
         }
 
         ColumnLayout {
@@ -100,10 +101,10 @@ Item {
                     z: 1000
 
                     background: Rectangle {
-                        color: "#1a1a1a"
+                        color: Kirigami.Theme.backgroundColor
                         radius: 5
                         border.width: 1.25
-                        border.color: Qt.rgba(1, 1, 1, 0.25)
+                        border.color: Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, 0.25)
                     }
 
                     contentItem: Kirigami.Icon {
@@ -111,7 +112,12 @@ Item {
                         anchors.margins: Mycroft.Units.gridUnit
 
                         source: currentState === MediaPlayer.PlayingState ? Qt.resolvedUrl("images/media-playback-pause.svg") : Qt.resolvedUrl("images/media-playback-start.svg")
-                        color: "white"
+
+                        ColorOverlay {
+                            source: parent
+                            anchors.fill: parent
+                            color: Kirigami.Theme.textColor
+                        }
                     }
 
                     onClicked: {
@@ -137,10 +143,10 @@ Item {
                     z: 1000
 
                     background: Rectangle {
-                        color: "#1a1a1a"
+                        color: Kirigami.Theme.backgroundColor
                         radius: 5
                         border.width: 1.25
-                        border.color: Qt.rgba(1, 1, 1, 0.25)
+                        border.color: Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, 0.25)
                     }
 
                     contentItem: Kirigami.Icon {
@@ -148,7 +154,12 @@ Item {
                         anchors.margins: Mycroft.Units.gridUnit
 
                         source: Qt.resolvedUrl("images/media-skip-backward.svg")
-                        color: "white"
+
+                        ColorOverlay {
+                            source: parent
+                            anchors.fill: parent
+                            color: Kirigami.Theme.textColor
+                        }
                     }
 
                     onClicked: {
@@ -175,10 +186,10 @@ Item {
                     z: 1000
 
                     background: Rectangle {
-                        color: "#1a1a1a"
+                        color: Kirigami.Theme.backgroundColor
                         radius: 5
                         border.width: 1.25
-                        border.color: Qt.rgba(1, 1, 1, 0.25)
+                        border.color: Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, 0.25)
                     }
 
                     contentItem: Kirigami.Icon {
@@ -186,7 +197,13 @@ Item {
                         anchors.margins: Mycroft.Units.gridUnit
 
                         source: Qt.resolvedUrl("images/media-skip-forward.svg")
-                        color: "white"
+
+
+                        ColorOverlay {
+                            source: parent
+                            anchors.fill: parent
+                            color: Kirigami.Theme.textColor
+                        }
                     }
 
                     onClicked: {
@@ -247,8 +264,8 @@ Item {
                             anchors.verticalCenter: parent.verticalCenter
                             implicitWidth: Kirigami.Units.iconSizes.small + Kirigami.Units.smallSpacing
                             implicitHeight: parent.height / 2
-                            color: Qt.rgba(0.2, 0.2, 0.2, 1)
-                            border.color: "#21bea6"
+                            color: Kirigami.Theme.backgroundColor
+                            border.color: Kirigami.Theme.highlightColor
                         }
                     }
 
@@ -261,7 +278,7 @@ Item {
                                 right: parent.right
                             }
                             height: Math.round(Kirigami.Units.gridUnit/3)
-                            color: "#37d6fa"
+                            color: Qt.lighter(Kirigami.Theme.highlightColor, 1.5)
 
                             Rectangle {
                                 anchors {
@@ -271,8 +288,8 @@ Item {
                                 }
                                 gradient: Gradient {
                                     orientation: Gradient.Horizontal
-                                    GradientStop { position: 0.0; color: "#21bea6" }
-                                    GradientStop { position: 1.0; color: "#2194be" }
+                                    GradientStop { position: 0.0; color: Kirigami.Theme.highlightColor }
+                                    GradientStop { position: 1.0; color: Qt.darker(Kirigami.Theme.highlightColor, 1.5) }
                                 }
                                 width: slider.position * (parent.width - slider.handle.width/2) + slider.handle.width/2
                             }
@@ -287,7 +304,7 @@ Item {
                             horizontalAlignment: Text.AlignLeft
                             verticalAlignment: Text.AlignVCenter
                             text: formatedPosition(playPosition)
-                            color: "white"
+                            color: Kirigami.Theme.textColor
                         }
 
                         Controls.Label {
@@ -299,7 +316,7 @@ Item {
                             horizontalAlignment: Text.AlignRight
                             verticalAlignment: Text.AlignVCenter
                             text: formatedDuration(duration)
-                            color: "white"
+                            color: Kirigami.Theme.textColor
                         }
                     }
                     KeyNavigation.up: video
@@ -339,10 +356,10 @@ Item {
                     z: 1000
 
                     background: Rectangle {
-                        color: "#1a1a1a"
+                        color: Kirigami.Theme.backgroundColor
                         radius: 5
                         border.width: 1.25
-                        border.color: Qt.rgba(1, 1, 1, 0.25)
+                        border.color: Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, 0.25)
                     }
 
                     contentItem: Kirigami.Icon {
@@ -350,7 +367,12 @@ Item {
                         anchors.margins: Mycroft.Units.gridUnit
 
                         source: Qt.resolvedUrl("images/back.svg")
-                        color: "white"
+
+                        ColorOverlay {
+                            source: parent
+                            anchors.fill: parent
+                            color: Kirigami.Theme.textColor
+                        }
                     }
 
                     onClicked: {

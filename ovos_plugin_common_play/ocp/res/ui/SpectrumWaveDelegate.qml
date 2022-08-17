@@ -20,8 +20,8 @@ Rectangle {
     property var spectrumLocalData
 
     opacity: root.currentState === MediaPlayer.PlayingState ? 1 : 0
-    property color spectrumWavePrimaryColor: Qt.rgba(33/255, 190/255, 166/255, 0.5)
-    property color spectrumWaveSecondayColor: Qt.rgba(33/255, 148/255, 190/255, 0.5)
+    property color spectrumWavePrimaryColor: Kirigami.Theme.highlightColor // Qt.rgba(33/255, 190/255, 166/255, 0.5)
+    property color spectrumWaveSecondayColor: Kirigami.Theme.textColor // Qt.rgba(33/255, 148/255, 190/255, 0.5)
     y: 9
 
     function returnRandomFromList() {
@@ -245,12 +245,12 @@ Rectangle {
                 easing.type: Easing.Linear
             }
         }
-        
+
         Behavior on opacity {
             NumberAnimation{
                 duration: 1500 * spectrumLocalData[12] + parent.height
                 easing.type: Easing.Linear
             }
         }
-    }    
+    }
 }

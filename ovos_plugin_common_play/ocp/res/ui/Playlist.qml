@@ -31,7 +31,7 @@ Mycroft.Delegate {
     fillWidth: true
 
     skillBackgroundSource: sessionData.bg_image
-    
+
     onPlaylistModelChanged: {
         playlistListView.forceLayout()
     }
@@ -40,7 +40,7 @@ Mycroft.Delegate {
         parent.parent.parent.currentIndex--
         parent.parent.parent.currentItem.contentItem.forceActiveFocus()
     }
-    
+
     function formatedDuration(millis){
         var minutes = Math.floor(millis / 60000);
         var seconds = ((millis % 60000) / 1000).toFixed(0);
@@ -55,16 +55,17 @@ Mycroft.Delegate {
         Kirigami.Heading {
             id: watchItemList
             text: "Now Playing"
+            color: Kirigami.Theme.textColor
             level: 2
         }
-        
+
         Kirigami.Separator {
             id: sept2
             Layout.fillWidth: true
             Layout.preferredHeight: 1
             z: 100
         }
-        
+
         ListView {
             id: playlistListView
             keyNavigationEnabled: true
@@ -79,14 +80,14 @@ Mycroft.Delegate {
             clip: true
             highlightRangeMode: ListView.StrictlyEnforceRange
             snapMode: ListView.SnapToItem
-            
+
             delegate: Controls.ItemDelegate {
                 width: parent.width
                 height: Kirigami.Units.gridUnit * 5
-                
+
                 background: Rectangle {
                     Kirigami.Theme.colorSet: Kirigami.Theme.Button
-                    color: Qt.rgba(0.2, 0.2, 0.2, 1)
+                    color: Kirigami.Theme.backgroundColor
                     layer.enabled: true
                     layer.effect: DropShadow {
                         horizontalOffset: 1
@@ -94,7 +95,7 @@ Mycroft.Delegate {
                     }
                 }
 
-                
+
                 contentItem: Item {
                     width: parent.width
                     height: parent.height
@@ -116,36 +117,36 @@ Mycroft.Delegate {
 
                         ColumnLayout {
                             Layout.fillWidth: true
-                            
+
                             Controls.Label {
                                 id: videoLabel
                                 Layout.fillWidth: true
                                 text: modelData.track
                                 wrapMode: Text.WordWrap
-                                color: "white"
+                                color: Kirigami.Theme.textColor
                             }
                             Controls.Label {
                                 id: artistLabel
                                 Layout.fillWidth: true
                                 text: modelData.album
                                 opacity: 0.8
-                                color: "white"
+                                color: Kirigami.Theme.textColor
                             }
                         }
-                        
+
                         Controls.Label {
                             id: durationTime
                             Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-                            color: "white"
+                            color: Kirigami.Theme.textColor
                             opacity: 0.8
                             text: formatedDuration(modelData.duration)
                         }
-                        
+
                         Kirigami.Separator {
                             Layout.fillHeight: true
                             Layout.preferredWidth: 1
                         }
-                        
+
                         Image {
                             id: songSource
                             Layout.preferredHeight: Kirigami.Units.iconSizes.huge + Kirigami.Units.largeSpacing
@@ -156,14 +157,14 @@ Mycroft.Delegate {
                         }
                     }
                 }
-                
+
                 onClicked: {
                     triggerGuiEvent("playlist.play", {"playlistData": modelData})
                 }
             }
         }
     }
-    
+
     Component.onCompleted: {
         playlistListView.forceActiveFocus()
     }
