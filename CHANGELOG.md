@@ -2,7 +2,15 @@
 
 ## [Unreleased](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/HEAD)
 
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.2a7...HEAD)
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.2a8...HEAD)
+
+**Merged pull requests:**
+
+- Follow system theme [\#17](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/17) ([AIIX](https://github.com/AIIX))
+
+## [V0.0.2a8](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.2a8) (2022-08-15)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.2a7...V0.0.2a8)
 
 **Implemented enhancements:**
 
