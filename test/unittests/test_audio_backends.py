@@ -17,7 +17,7 @@ BASE_CONF = {"Audio":
             "OCP": {
                 "type": "ovos_common_play",
                 "active": True,
-                "mode": "auto",
+                "mode": "local",
                 "disable_mpris": True
             },
             "mycroft_test": {
@@ -55,8 +55,8 @@ class TestOCPLoad(unittest.TestCase):
         # assert that OCP is the selected default backend
         self.assertTrue(isinstance(self.audio.default, OCPAudioBackend))
 
-        # assert that OCP is in "auto" mode
-        self.assertEqual(self.audio.default.config["mode"], "auto")
+        # assert that OCP is in "local" mode
+        self.assertEqual(self.audio.default.config["mode"], "local")
 
         # assert that OCP is loaded
         self.assertTrue(self.audio.default.ocp is not None)
