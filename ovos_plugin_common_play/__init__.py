@@ -37,24 +37,26 @@ class OCPAudioBackend(OCPAudioPlayerBackend):
         if self.config["mode"] == "external":
             # flag for external OCP, eg, system service daemon
             # send only bus messages and dont create ocp object
-            self.ocp = None
-        elif self.config["mode"] == "auto":
-            # if OCP is already running connect to it, else launch it
-            if not self.bus.wait_for_response(Message("ovos.common_play.ping"),
-                                              "ovos.common_play.pong"):
-                try:
-                    self.ocp = OCP(bus=self.bus, settings=ocp_settings)
-                except Exception as e:
-                    # otherwise stack trace is swallowed by plugin loader
-                    LOG.exception(e)
-                    raise
-        else:
+            LOG.info("Running OCP in external mode")
+            return
+
+        # if OCP is already running connect to it, else launch it
+        if self.config["mode"] == "auto":
+            if self.bus.wait_for_response(Message("ovos.common_play.ping"), "ovos.common_play.pong"):
+                LOG.info("Detected OCP instance already connected to messagebus")
+                return
+
+        if self.ocp is None:
             try:
                 self.ocp = OCP(bus=self.bus, settings=ocp_settings)
             except Exception as e:
-                # otherwise stack trace is swallowed by plugin loader
+                # LOG here otherwise stack trace is swallowed by plugin loader
+                LOG.error(f"Failed to launch OCP: {e}")
                 LOG.exception(e)
                 raise
+
+        if self.ocp is None:
+            LOG.error("Failed to launch OCP: unknown error")
 
     def handle_receive_meta(self, message):
         self._track_info = message.data
