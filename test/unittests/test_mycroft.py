@@ -6,34 +6,37 @@ from unittest.mock import patch
 from mycroft.configuration.config import Configuration
 from mycroft.skills.intent_service import IntentService
 from mycroft.skills.skill_loader import SkillLoader
-from ovos_utils.log import LOG
 from ovos_utils.messagebus import FakeBus
 
 import ovos_plugin_common_play
 from ovos_plugin_common_play import OCPAudioBackend
 
-BASE_CONF = {"Audio":
-    {
-        "native_sources": ["debug_cli", "audio"],
-        "default-backend": "OCP",  # only used by mycroft-core
-        "preferred_audio_services": ["ovos_test", "mycroft_test"],
-        "backends": {
-            "OCP": {
-                "type": "ovos_common_play",
-                "active": True,
-                "mode": "auto",
-                "disable_mpris": True
-            },
-            "mycroft_test": {
-                "type": "mycroft_test",
-                "active": True
-            },
-            "ovos_test": {
-                "type": "ovos_test",
-                "active": True
+BASE_CONF = {
+    "padatious": {
+        "regex_only": True
+    },
+    "Audio":
+        {
+            "native_sources": ["debug_cli", "audio"],
+            "default-backend": "OCP",  # only used by mycroft-core
+            "preferred_audio_services": ["ovos_test", "mycroft_test"],
+            "backends": {
+                "OCP": {
+                    "type": "ovos_common_play",
+                    "active": True,
+                    "mode": "auto",
+                    "disable_mpris": True
+                },
+                "mycroft_test": {
+                    "type": "mycroft_test",
+                    "active": True
+                },
+                "ovos_test": {
+                    "type": "ovos_test",
+                    "active": True
+                }
             }
         }
-    }
 }
 
 
@@ -186,6 +189,8 @@ class TestCPS(unittest.TestCase):
             self.assertNotIn(intent, intents.registered_intents)
 
         ocp.shutdown()
+        del skill
+        del intents
 
 
 if __name__ == '__main__':
