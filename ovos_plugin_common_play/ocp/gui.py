@@ -153,6 +153,7 @@ class OCPMediaPlayerGUI(GUIInterface):
                      self.audio_service_page]
         self.remove_pages([p for p in to_remove if p in self.pages])
         sleep(0.2)
+        # TODO - do something in skills page if no entries
         self.show_pages([self.search_screen_page, self.skills_page],
                         index=0, override_idle=True,
                         override_animations=True)

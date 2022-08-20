@@ -272,26 +272,26 @@ class OCPSearch(OCPAbstractComponent):
             self.settings.backwards_compatibility else None
         if self.old_cps:
             self.old_cps.bind(player)
-        self.add_event("ovos.common_play.skills.announce",
-                       self.handle_new_ocp_skill)
         self.add_event("ovos.common_play.skills.detach",
                        self.handle_ocp_skill_detach)
-        self.add_event("ovos.common_play.skills.get",
+        self.add_event("ovos.common_play.announce",
                        self.handle_skill_announce)
+
+    def shutdown(self):
+        self.remove_event("ovos.common_play.announce")
+        self.remove_event("ovos.common_play.skills.detach")
 
     def handle_skill_announce(self, message):
         skill_id = message.data.get("skill_id")
-        if not skill_id:
-            # TODO - how does this happen?
-            #  saw it once but no clue where message came from
-            # i think it's coming from unittests
-            return
         skill_name = message.data.get("skill_name") or skill_id
         img = message.data.get("thumbnail")
         has_featured = bool(message.data.get("featured_tracks"))
         media_type = message.data.get("media_type") or [MediaType.GENERIC]
 
-        if has_featured and skill_id not in self.featured_skills:
+        if skill_id not in self.ocp_skills:
+            self.ocp_skills[skill_id] = []
+
+        if has_featured:
             LOG.debug(f"Found skill with featured media: {skill_id}")
             self.featured_skills[skill_id] = {
                 "skill_id": skill_id,
@@ -299,15 +299,6 @@ class OCPSearch(OCPAbstractComponent):
                 "thumbnail": img,
                 "media_type": media_type
             }
-
-    def shutdown(self):
-        self.remove_event("ovos.common_play.skills.announce")
-        self.remove_event("ovos.common_play.skills.detach")
-
-    def handle_new_ocp_skill(self, message):
-        skill_id = message.data["skill_id"]
-        if skill_id not in self.ocp_skills:
-            self.ocp_skills[skill_id] = []
 
     def handle_ocp_skill_detach(self, message):
         skill_id = message.data["skill_id"]

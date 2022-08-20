@@ -65,26 +65,8 @@ class OCP(OVOSAbstractApplication):
     def handle_ping(self, message):
         self.bus.emit(message.reply("ovos.common_play.pong"))
 
-    def handle_skill_announce(self, message):
-        skill_id = message.data["skill_id"]
-        skill_name = message.data.get("skill_name") or skill_id
-        img = message.data.get("thumbnail")
-        has_featured = bool(message.data.get("featured_tracks"))
-        media_type = message.data.get("media_type") or [MediaType.GENERIC]
-
-        if skill_id not in self.gui.ocp_skills:
-            LOG.debug(f"Found OCP Skill: {skill_id}")
-            self.gui.ocp_skills[skill_id] = {
-                "skill_id": skill_id,
-                "skill_name": skill_name,
-                "thumbnail": img,
-                "featured": has_featured,
-                "media_type": media_type
-            }
-
     def register_ocp_api_events(self):
         self.add_event("ovos.common_play.ping", self.handle_ping)
-        self.add_event('ovos.common_play.announce', self.handle_skill_announce)
         self.add_event('ovos.common_play.home', self.handle_home)
         # bus api shared with intents
         self.add_event("ovos.common_play.search", self.handle_play)
