@@ -15,63 +15,65 @@
  *
  */
 
-import QtQuick 2.9
-import QtQuick.Controls 2.3 as Controls
-import QtQuick.Layouts 1.3
-import org.kde.kirigami 2.8 as Kirigami
+import QtQuick 2.12
+import QtQuick.Controls 2.12 as Controls
+import QtQuick.Layouts 1.4
+import org.kde.kirigami 2.11 as Kirigami
 import QtGraphicalEffects 1.0
 import Mycroft 1.0 as Mycroft
 
-
-Mycroft.Delegate {
-    id: delegate
-
+Item {
+    id: playListViewPage
+    anchors.fill: parent
     property var playlistModel: sessionData.playlistModel
     property Component emptyHighlighter: Item{}
-    fillWidth: true
 
-    skillBackgroundSource: sessionData.bg_image
-    
+    onFocusChanged: {
+        if (focus) {
+            resultsListView.forceActiveFocus()
+        }
+    }
+
     onPlaylistModelChanged: {
-        playlistListView.forceLayout()
+        resultsListView.model = playlistModel.data
+        resultsListView.forceLayout()
     }
 
-    Keys.onBackPressed: {
-        parent.parent.parent.currentIndex--
-        parent.parent.parent.currentItem.contentItem.forceActiveFocus()
-    }
-    
     function formatedDuration(millis){
         var minutes = Math.floor(millis / 60000);
         var seconds = ((millis % 60000) / 1000).toFixed(0);
         return minutes + ":" + (seconds < 10 ? '0' : '') + seconds;
     }
 
+    Keys.onBackPressed: {
+        parent.parent.parent.currentIndex--
+        parent.parent.parent.currentItem.contentItem.forceActiveFocus()
+    }
+
     ColumnLayout {
-        id: playlistPlayerColumn
+        id: playlistViewColumn
         anchors.fill: parent
         spacing: Kirigami.Units.smallSpacing
 
         Kirigami.Heading {
-            id: watchItemList
             text: "Now Playing"
+            color: Kirigami.Theme.textColor
             level: 2
         }
-        
+
         Kirigami.Separator {
             id: sept2
             Layout.fillWidth: true
             Layout.preferredHeight: 1
             z: 100
         }
-        
+
         ListView {
-            id: playlistListView
+            id: resultsListView
             keyNavigationEnabled: true
-            model: playlistModel.data
+            model: playlistModel ? playlistModel.data : []
             focus: false
             interactive: true
-            bottomMargin: delegate.controlBarItem.height + Kirigami.Units.largeSpacing
             Layout.fillWidth: true
             Layout.fillHeight: true
             spacing: Kirigami.Units.largeSpacing
@@ -79,14 +81,18 @@ Mycroft.Delegate {
             clip: true
             highlightRangeMode: ListView.StrictlyEnforceRange
             snapMode: ListView.SnapToItem
-            
+            KeyNavigation.down: playlistButtonTangle
+
             delegate: Controls.ItemDelegate {
-                width: parent.width
+                id: delegateItemCard
+                width: resultsListView.width
                 height: Kirigami.Units.gridUnit * 5
-                
+
                 background: Rectangle {
                     Kirigami.Theme.colorSet: Kirigami.Theme.Button
-                    color: Qt.rgba(0.2, 0.2, 0.2, 1)
+                    color: Kirigami.Theme.backgroundColor
+                    border.color: delegateItemCard.activeFocus ? Kirigami.Theme.highlightColor : "transparent"
+                    border.width: delegateItemCard.activeFocus ? 2 : 0
                     layer.enabled: true
                     layer.effect: DropShadow {
                         horizontalOffset: 1
@@ -94,10 +100,7 @@ Mycroft.Delegate {
                     }
                 }
 
-                
                 contentItem: Item {
-                    width: parent.width
-                    height: parent.height
 
                     RowLayout {
                         id: delegateItem
@@ -116,36 +119,36 @@ Mycroft.Delegate {
 
                         ColumnLayout {
                             Layout.fillWidth: true
-                            
+
                             Controls.Label {
                                 id: videoLabel
                                 Layout.fillWidth: true
                                 text: modelData.track
                                 wrapMode: Text.WordWrap
-                                color: "white"
+                                color: Kirigami.Theme.textColor
                             }
                             Controls.Label {
                                 id: artistLabel
                                 Layout.fillWidth: true
                                 text: modelData.album
                                 opacity: 0.8
-                                color: "white"
+                                color: Kirigami.Theme.textColor
                             }
                         }
-                        
+
                         Controls.Label {
                             id: durationTime
                             Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-                            color: "white"
+                            color: Kirigami.Theme.textColor
                             opacity: 0.8
                             text: formatedDuration(modelData.duration)
                         }
-                        
+
                         Kirigami.Separator {
                             Layout.fillHeight: true
                             Layout.preferredWidth: 1
                         }
-                        
+
                         Image {
                             id: songSource
                             Layout.preferredHeight: Kirigami.Units.iconSizes.huge + Kirigami.Units.largeSpacing
@@ -156,15 +159,15 @@ Mycroft.Delegate {
                         }
                     }
                 }
-                
+
+                Keys.onReturnPressed: {
+                    clicked()
+                }
+
                 onClicked: {
                     triggerGuiEvent("playlist.play", {"playlistData": modelData})
                 }
             }
         }
-    }
-    
-    Component.onCompleted: {
-        playlistListView.forceActiveFocus()
     }
 }

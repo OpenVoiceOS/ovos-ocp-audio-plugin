@@ -7,16 +7,10 @@ import QtQuick.Layouts 1.12
 import QtGraphicalEffects 1.0
 import QtQuick.Templates 2.12 as T
 import QtMultimedia 5.12
+import "../code/helper.js" as HelperJS
 
-Mycroft.Delegate {
+Item {
     id: root
-    fillWidth: true
-    skillBackgroundSource: sessionData.bg_image
-    skillBackgroundColorOverlay: Qt.rgba(0, 0, 0, 0.85)
-    leftPadding: 0
-    topPadding: 0
-    bottomPadding: 0
-    rightPadding: 0
 
     readonly property var audioService: Mycroft.MediaService
 
@@ -50,26 +44,24 @@ Mycroft.Delegate {
     //Spectrum Related Properties
     property var spectrum: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
     property var soundModelLength: audioService.spectrum.length
-    property color spectrumColorNormal: sessionData.spectrumColor ? sessionData.spectrumColor :  Qt.rgba(1, 1, 1, 0.7)
-    property color spectrumColorMid: sessionData.spectrumColor ? sessionData.spectrumColor : spectrumColorNormal
-    property color spectrumColorPeak: sessionData.spectrumColor ? sessionData.spectrumColor : "#2d5dbd"
-    property real spectrumScale: 4
+    property color spectrumColorNormal: Kirigami.Theme.highlightColor
+    property color spectrumColorMid: Kirigami.Theme.highlightColor
+    property color spectrumColorPeak: Kirigami.Theme.textColor
+    property real spectrumScale: 3
     property bool spectrumVisible: true
     readonly property real spectrumHeight: (rep.parent.height / normalize(spectrumScale))
-
-    //Support custom colors for text / seekbar background / seekbar forground
-    property color textColor: sessionData.textColor ? sessionData.textColor : "white"
-    property color seekBackgroundColor: sessionData.seekBackgroundColor ? sessionData.seekBackgroundColor : "#bdbebf"
-    property color seekForgroundColor: sessionData.seekForegroundColor
 
     onSourceChanged: {
         console.log(source)
         play()
     }
 
-    Component.onCompleted: {
-        root.forceActiveFocus()
+    onFocusChanged: {
+        if (focus) {
+            repeatButton.forceActiveFocus()   
+        }
     }
+
     KeyNavigation.down: sliderBar
 
     Connections {
@@ -211,7 +203,7 @@ Mycroft.Delegate {
     }
 
     Rectangle {
-        color: Qt.rgba(0, 0, 0, 0.5)
+        color: Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, 0.5)
         radius: 5
         anchors.fill: parent
         anchors.margins: Mycroft.Units.gridUnit * 2
@@ -279,7 +271,7 @@ Mycroft.Delegate {
                         verticalAlignment: Text.AlignVCenter
                         elide: Text.ElideRight
                         font.capitalization: Font.Capitalize
-                        color: "white"
+                        color: Kirigami.Theme.textColor
                         visible: true
                         enabled: true
                     }
@@ -297,7 +289,7 @@ Mycroft.Delegate {
                         verticalAlignment: Text.AlignVCenter
                         elide: Text.ElideRight
                         font.capitalization: Font.Capitalize
-                        color: "white"
+                        color: Kirigami.Theme.textColor
                         visible: true
                         enabled: true
                     }
@@ -311,7 +303,7 @@ Mycroft.Delegate {
             anchors.left: parent.left
             anchors.right: parent.right
             height: parent.height * 0.30
-            color: Qt.rgba(0, 0, 0, 0.2)
+            color: Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, 0.5)
 
             RowLayout {
                 anchors.top: parent.top
@@ -321,6 +313,7 @@ Mycroft.Delegate {
                 anchors.leftMargin: Mycroft.Units.gridUnit * 2
                 anchors.rightMargin: Mycroft.Units.gridUnit * 2
                 height: parent.height
+                z: 2
 
                 Label {
                     id: playerPosLabelBottom
@@ -331,7 +324,7 @@ Mycroft.Delegate {
                     horizontalAlignment: Text.AlignLeft
                     verticalAlignment: Text.AlignVCenter
                     text: playerPosition ? formatedPosition(playerPosition) : ""
-                    color: "white"
+                    color: Kirigami.Theme.textColor
                 }
 
                 Label {
@@ -342,7 +335,7 @@ Mycroft.Delegate {
                     horizontalAlignment: Text.AlignRight
                     verticalAlignment: Text.AlignVCenter
                     text: playerDuration ? formatedDuration(playerDuration) : ""
-                    color: "white"
+                    color: Kirigami.Theme.textColor
                 }
             }
 
@@ -438,22 +431,22 @@ Mycroft.Delegate {
                     anchors.verticalCenter: parent.verticalCenter
                     implicitWidth: Kirigami.Units.iconSizes.small + Kirigami.Units.smallSpacing
                     implicitHeight: parent.height
-                    color: Qt.rgba(0.2, 0.2, 0.2, 1)
-                    border.color: sliderBar.activeFocus ? "#a70f1b" : "#21bea6"
+                    color: Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, 1)
+                    border.color: Kirigami.Theme.highlightColor
                 }
             }
 
 
             background: Rectangle {
-                color: "#37d6fa"
+                color: Qt.lighter(Kirigami.Theme.highlightColor, 1.5)
 
                 Rectangle {
                     width: sliderBar.visualPosition * parent.width
                     height: parent.height
                     gradient: Gradient {
                         orientation: Gradient.Horizontal
-                        GradientStop { position: 0.0; color: "#21bea6" }
-                        GradientStop { position: 1.0; color: "#2194be" }
+                        GradientStop { position: 0.0; color: Kirigami.Theme.highlightColor }
+                        GradientStop { position: 1.0; color: Qt.darker(Kirigami.Theme.highlightColor, 1.5) }
                     }
                 }
             }
@@ -465,7 +458,7 @@ Mycroft.Delegate {
             anchors.left: parent.left
             anchors.right: parent.right
             height: horizontalMode ? parent.height * 0.25 : parent.height * 0.20
-            color: Qt.rgba(0, 0, 0, 0.7)
+            color: Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, 0.7)
 
             Item {
                 id: gridBar
@@ -486,21 +479,49 @@ Mycroft.Delegate {
                          clicked()
                     }
 
+                    Keys.onLeftPressed: {
+                        mainLoaderView.movePageLeft()
+                    }
+
+                    SequentialAnimation {
+                        id: repeatButtonAnim
+                        PropertyAnimation {
+                            target: repeatButtonBackground
+                            property: "color"
+                            to: HelperJS.isLight(Kirigami.Theme.backgroundColor) ? Qt.darker(Kirigami.Theme.backgroundColor, 1.5) : Qt.lighter(Kirigami.Theme.backgroundColor, 1.5)
+                            duration: 200
+                        }
+                        PropertyAnimation {
+                            target: repeatButtonBackground
+                            property: "color"
+                            to: HelperJS.isLight(Kirigami.Theme.backgroundColor) ? Qt.lighter(Kirigami.Theme.backgroundColor, 1.5) : Qt.darker(Kirigami.Theme.backgroundColor, 1.5)
+                            duration: 200
+                        }
+                    }
+
                     onClicked: {
+                        repeatButtonAnim.running = true;
                         repeat()
                     }
 
                     contentItem: Kirigami.Icon {
                         anchors.fill: parent
                         anchors.margins: Mycroft.Units.gridUnit
-                        source: root.loopStatus === "RepeatTrack" ? Qt.resolvedUrl("images/media-playlist-repeat-track.svg") : Qt.resolvedUrl("images/media-playlist-repeat.svg")
-                        color: root.loopStatus === "None" ? "grey" : "white"
+                        source: root.loopStatus === "RepeatTrack" ? Qt.resolvedUrl("../images/media-playlist-repeat-track.svg") : Qt.resolvedUrl("../images/media-playlist-repeat.svg")
+                        
+                        ColorOverlay {
+                            source: parent
+                            anchors.fill: parent
+                            color: root.loopStatus === "None" ? Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.4) : Kirigami.Theme.textColor
+                        }
                     }
 
                     background: Rectangle {
+                        id: repeatButtonBackground
                         radius: 5
-                        color:  Qt.rgba(0.2, 0.2, 0.2, 5)
-                        border.color: repeatButton.activeFocus ? "#a70f1b" : "transparent"
+                        color:  HelperJS.isLight(Kirigami.Theme.backgroundColor) ? Qt.lighter(Kirigami.Theme.backgroundColor, 1.5) : Qt.darker(Kirigami.Theme.backgroundColor, 1.5)
+                        border.color: repeatButton.activeFocus ? Kirigami.Theme.highlightColor : "transparent"
+                        border.width: repeatButton.activeFocus ? 2 : 0
                     }
                 }
 
@@ -518,7 +539,24 @@ Mycroft.Delegate {
                          clicked()
                     }
 
+                    SequentialAnimation {
+                        id: prevButtonAnim
+                        PropertyAnimation {
+                            target: prevButtonBackground
+                            property: "color"
+                            to: HelperJS.isLight(Kirigami.Theme.backgroundColor) ? Qt.darker(Kirigami.Theme.backgroundColor, 1.5) : Qt.lighter(Kirigami.Theme.backgroundColor, 1.5)
+                            duration: 200
+                        }
+                        PropertyAnimation {
+                            target: prevButtonBackground
+                            property: "color"
+                            to: HelperJS.isLight(Kirigami.Theme.backgroundColor) ? Qt.lighter(Kirigami.Theme.backgroundColor, 1.5) : Qt.darker(Kirigami.Theme.backgroundColor, 1.5)
+                            duration: 200
+                        }
+                    }
+
                     onClicked: {
+                        prevButtonAnim.running = true;
                         previous()
                     }
 
@@ -526,14 +564,21 @@ Mycroft.Delegate {
                         anchors.fill: parent
                         anchors.margins: Mycroft.Units.gridUnit
 
-                        source: Qt.resolvedUrl("images/media-skip-backward.svg")
-                        color: root.canPrev === true ? "white" : "grey"
+                        source: Qt.resolvedUrl("../images/media-skip-backward.svg")
+                        
+                        ColorOverlay {
+                            source: parent
+                            anchors.fill: parent
+                            color: root.canPrev === true ? Kirigami.Theme.textColor : Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.4)
+                        }
                     }
 
                     background: Rectangle {
+                        id: prevButtonBackground
                         radius: 5
-                        color:  Qt.rgba(0.2, 0.2, 0.2, 5)
-                        border.color: prevButton.activeFocus ? "#a70f1b" : "transparent"
+                        color:  HelperJS.isLight(Kirigami.Theme.backgroundColor) ? Qt.lighter(Kirigami.Theme.backgroundColor, 1.5) : Qt.darker(Kirigami.Theme.backgroundColor, 1.5)
+                        border.color: prevButton.activeFocus ? Kirigami.Theme.highlightColor : "transparent"
+                        border.width: prevButton.activeFocus ? 2 : 0
                     }
                 }
 
@@ -551,21 +596,44 @@ Mycroft.Delegate {
                          clicked()
                     }
 
+                    SequentialAnimation {
+                        id: playButtonAnim
+                        PropertyAnimation {
+                            target: playButtonBackground
+                            property: "color"
+                            to: HelperJS.isLight(Kirigami.Theme.backgroundColor) ? Qt.darker(Kirigami.Theme.backgroundColor, 1.5) : Qt.lighter(Kirigami.Theme.backgroundColor, 1.5)
+                            duration: 200
+                        }
+                        PropertyAnimation {
+                            target: playButtonBackground
+                            property: "color"
+                            to: HelperJS.isLight(Kirigami.Theme.backgroundColor) ? Qt.lighter(Kirigami.Theme.backgroundColor, 1.5) : Qt.darker(Kirigami.Theme.backgroundColor, 1.5)
+                            duration: 200
+                        }
+                    }
+
                     onClicked: {
-                            root.currentState === MediaPlayer.PlayingState ? root.pause() : root.currentState === MediaPlayer.PausedState ? root.resume() : root.play()
+                        playButtonAnim.running = true;
+                        root.currentState === MediaPlayer.PlayingState ? root.pause() : root.currentState === MediaPlayer.PausedState ? root.resume() : root.play()
                     }
 
                     contentItem: Kirigami.Icon {
                         anchors.fill: parent
                         anchors.margins: Mycroft.Units.gridUnit
-                        source: root.currentState === MediaPlayer.PlayingState ? Qt.resolvedUrl("images/media-playback-pause.svg") : Qt.resolvedUrl("images/media-playback-start.svg")
-                        color: root.canResume === true ? "white" : "grey"
+                        source: root.currentState === MediaPlayer.PlayingState ? Qt.resolvedUrl("../images/media-playback-pause.svg") : Qt.resolvedUrl("../images/media-playback-start.svg")
+                        ColorOverlay {
+                            source: parent
+                            anchors.fill: parent
+                            color: root.canResume === true ? Kirigami.Theme.textColor : Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.4)
+                        }
                     }
 
                     background: Rectangle {
+                        id: playButtonBackground
                         radius: 5
-                        color:  Qt.rgba(0.2, 0.2, 0.2, 5)
-                        border.color: playButton.activeFocus ? "#a70f1b" : "transparent"
+                        color: HelperJS.isLight(Kirigami.Theme.backgroundColor) ? Qt.lighter(Kirigami.Theme.backgroundColor, 1.5) : Qt.darker(Kirigami.Theme.backgroundColor, 1.5)
+                        border.color: playButton.activeFocus ? Kirigami.Theme.highlightColor : "transparent"
+                        border.width: playButton.activeFocus ? 2 : 0
                     }
                 }
 
@@ -583,21 +651,44 @@ Mycroft.Delegate {
                          clicked()
                     }
 
+                    SequentialAnimation {
+                        id: nextButtonAnim
+                        PropertyAnimation {
+                            target: nextButtonBackground
+                            property: "color"
+                            to: HelperJS.isLight(Kirigami.Theme.backgroundColor) ? Qt.darker(Kirigami.Theme.backgroundColor, 1.5) : Qt.lighter(Kirigami.Theme.backgroundColor, 1.5)
+                            duration: 200
+                        }
+                        PropertyAnimation {
+                            target: nextButtonBackground
+                            property: "color"
+                            to: HelperJS.isLight(Kirigami.Theme.backgroundColor) ? Qt.lighter(Kirigami.Theme.backgroundColor, 1.5) : Qt.darker(Kirigami.Theme.backgroundColor, 1.5)
+                            duration: 200
+                        }
+                    }
+
                     onClicked: {
+                        nextButtonAnim.running = true;
                         next()
                     }
 
                     contentItem: Kirigami.Icon {
                         anchors.fill: parent
                         anchors.margins: Mycroft.Units.gridUnit
-                        source: Qt.resolvedUrl("images/media-skip-forward.svg")
-                        color: root.canNext === true ? "white" : "grey"
+                        source: Qt.resolvedUrl("../images/media-skip-forward.svg")
+                        ColorOverlay {
+                            source: parent
+                            anchors.fill: parent
+                            color: root.canNext === true ? Kirigami.Theme.textColor : Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.4)
+                        }
                     }
 
                     background: Rectangle {
+                        id: nextButtonBackground
                         radius: 5
-                        color:  Qt.rgba(0.2, 0.2, 0.2, 5)
-                        border.color: nextButton.activeFocus ? "#a70f1b" : "transparent"
+                        color: HelperJS.isLight(Kirigami.Theme.backgroundColor) ? Qt.lighter(Kirigami.Theme.backgroundColor, 1.5) : Qt.darker(Kirigami.Theme.backgroundColor, 1.5)
+                        border.color: nextButton.activeFocus ? Kirigami.Theme.highlightColor : "transparent"
+                        border.width: nextButton.activeFocus ? 2 : 0
                     }
                 }
 
@@ -614,21 +705,48 @@ Mycroft.Delegate {
                          clicked()
                     }
 
+                    Keys.onRightPressed: {
+                        mainLoaderView.movePageRight()
+                    }
+
+                    SequentialAnimation {
+                        id: shuffleButtonAnim
+                        PropertyAnimation {
+                            target: shuffleButtonBackground
+                            property: "color"
+                            to: HelperJS.isLight(Kirigami.Theme.backgroundColor) ? Qt.darker(Kirigami.Theme.backgroundColor, 1.5) : Qt.lighter(Kirigami.Theme.backgroundColor, 1.5)
+                            duration: 200
+                        }
+                        PropertyAnimation {
+                            target: shuffleButtonBackground
+                            property: "color"
+                            to: HelperJS.isLight(Kirigami.Theme.backgroundColor) ? Qt.lighter(Kirigami.Theme.backgroundColor, 1.5) : Qt.darker(Kirigami.Theme.backgroundColor, 1.5)
+                            duration: 200
+                        }
+                    }
+
                     onClicked: {
+                        shuffleButtonAnim.running = true;
                         shuffle()
                     }
 
                     contentItem: Kirigami.Icon {
                         anchors.fill: parent
                         anchors.margins: Mycroft.Units.gridUnit
-                        source: Qt.resolvedUrl("images/media-playlist-shuffle.svg")
-                        color: root.shuffleStatus === false ? "grey" : "white"
+                        source: Qt.resolvedUrl("../images/media-playlist-shuffle.svg")
+                        ColorOverlay {
+                            source: parent
+                            anchors.fill: parent
+                            color: root.shuffleStatus === false ? Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.4) : Kirigami.Theme.textColor
+                        }
                     }
 
                     background: Rectangle {
+                        id: shuffleButtonBackground
                         radius: 5
-                        color:  Qt.rgba(0.2, 0.2, 0.2, 5)
-                        border.color: shuffleButton.activeFocus ? "#a70f1b" : "transparent"
+                        color: HelperJS.isLight(Kirigami.Theme.backgroundColor) ? Qt.lighter(Kirigami.Theme.backgroundColor, 1.5) : Qt.darker(Kirigami.Theme.backgroundColor, 1.5)
+                        border.color: shuffleButton.activeFocus ? Kirigami.Theme.highlightColor : "transparent"
+                        border.width: shuffleButton.activeFocus ? 2 : 0
                     }
                 }
             }

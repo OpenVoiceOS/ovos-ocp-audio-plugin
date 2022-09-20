@@ -73,7 +73,7 @@ class OCP(OVOSAbstractApplication):
 
     def handle_home(self):
         # homescreen / launch from .desktop
-        self.gui.show_home()
+        self.gui.show_home(app_mode=True)
 
     def register_ocp_intents(self, message=None):
         if not self._intents_event.is_set():
@@ -181,7 +181,7 @@ class OCP(OVOSAbstractApplication):
 
     # playback control intents
     def handle_open(self, message):
-        self.gui.show_home()
+        self.gui.show_home(app_mode=True)
 
     def handle_next(self, message):
         self.player.play_next()
@@ -218,7 +218,7 @@ class OCP(OVOSAbstractApplication):
             if not phrase:
                 # TODO some dialog ?
                 self.player.stop()
-                self.gui.show_home()
+                self.gui.show_home(app_mode=True)
                 return
 
         # classify the query media type
@@ -241,13 +241,35 @@ class OCP(OVOSAbstractApplication):
         self.player.reset()
 
         if not results:
+            if self.gui:
+                if self.gui.active_extension == "smartspeaker":
+                    self.gui.display_notification("Sorry, no matches found", style="warning")
+            
             self.speak_dialog("cant.play",
                               data={"phrase": phrase,
                                     "media_type": media_type})
-            self.gui.show_home()
+            
+            if self.gui:
+                if "smartspeaker" not in self.gui.active_extension:
+                    if not self.gui.persist_home_display:
+                        self.gui.remove_homescreen()
+                    else:
+                        self.gui.remove_search_spinner()
+                else:
+                    self.gui.clear_notification()
+
         else:
+            if self.gui:
+                if self.gui.active_extension == "smartspeaker":
+                    self.gui.display_notification("Found a match", style="success")
+            
             best = self.player.media.select_best(results)
             self.player.play_media(best, results)
+
+            if self.gui:
+                if self.gui.active_extension == "smartspeaker":
+                    self.gui.clear_notification()
+            
             self.enclosure.mouth_reset()  # TODO display music icon in mk1
             self.set_context("Playing")
 

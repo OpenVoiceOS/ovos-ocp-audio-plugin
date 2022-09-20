@@ -17,37 +17,55 @@
  */
 
 import QtQuick.Layouts 1.4
-import QtQuick 2.8
-import QtQuick.Controls 2.2
+import QtQuick 2.12
+import QtQuick.Controls 2.12
 import org.kde.kirigami 2.10 as Kirigami
-
 import Mycroft 1.0 as Mycroft
 
-Mycroft.Delegate {
+Item {
     id: root
-    skillBackgroundSource: "https://source.unsplash.com/1920x1080/?+music"
-    property bool compactMode: parent.height >= 550 ? 0 : 1
-    fillWidth: compactMode ? 1 : 0
+    property bool compactMode: height < 600 ? 1 : 0
 
-    Component.onCompleted: {
-        txtFld.forceActiveFocus()
+    onFocusChanged: {
+        if (focus) {
+            txtFld.forceActiveFocus()
+        }
     }
 
-    Item {
+    ColumnLayout {
         anchors.fill: parent
+        spacing: Mycroft.Units.gridUnit * 0.5
 
         Item {
-            width: parent.width
-            height: parent.height / 2
-            anchors.verticalCenter: compactMode ? undefined : parent.verticalCenter
-            anchors.top: compactMode ? parent.top : undefined
+            id: topAreaSearchPage
+            Layout.fillWidth: true
+            Layout.preferredHeight: compactMode ?  Mycroft.Units.gridUnit * 0.5 : Mycroft.Units.gridUnit * 3
+        }
 
-            Kirigami.Heading {
+        Item {
+            id: middleAreaSearchPage
+            Layout.fillWidth: true
+            Layout.preferredHeight: heads.height + sep.height + txtFld.height + answerButton.height
+            Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
+
+            Rectangle {
                 id: heads
-                text: "Find Something To Play"
-                width: parent.width
-                wrapMode: Text.WordWrap
                 anchors.top: parent.top
+                width: Mycroft.Units.gridUnit * 20
+                height: compactMode ? Mycroft.Units.gridUnit * 3 :  Mycroft.Units.gridUnit * 4
+                color: Kirigami.Theme.backgroundColor
+                radius: Mycroft.Units.gridUnit * 0.5
+                
+                Label {
+                    text: "Find Something To Play"                    
+                    anchors.fill: parent
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                    elide: Text.ElideRight                   
+                    wrapMode: Text.WordWrap
+                    color: Kirigami.Theme.textColor
+                    font.pixelSize: parent.height * 0.4
+                }
             }
 
             Item {
@@ -61,10 +79,10 @@ Mycroft.Delegate {
                 id: txtFld
                 anchors.top: sep.bottom
                 width: parent.width
-                height: compactMode ? Kirigami.Units.gridUnit * 3 : Kirigami.Units.gridUnit * 6
+                height: compactMode ? Kirigami.Units.gridUnit * 3 : Kirigami.Units.gridUnit * 5
                 color: "transparent"
                 border.width: 2
-                radius: Kirigami.Units.gridUnit
+                radius: Mycroft.Units.gridUnit * 0.5
                 border.color: txtFld.activeFocus ? Kirigami.Theme.linkColor : "transparent"
                 KeyNavigation.down: answerButton
                 focus: true
@@ -76,9 +94,12 @@ Mycroft.Delegate {
                 TextField {
                     id: txtFldInternal
                     anchors.fill: parent
-                    anchors.margins: Kirigami.Units.gridUnit
+                    anchors.margins: Kirigami.Units.gridUnit / 3
                     KeyNavigation.down: answerButton
                     placeholderText: "Search for music, podcasts, movies ..."
+                    font.pixelSize: parent.height * 0.3
+                    font.bold: true
+
                     onAccepted: {
                         triggerGuiEvent("search", { "utterance": txtFldInternal.text})
                     }
@@ -93,13 +114,33 @@ Mycroft.Delegate {
                 anchors.left: parent.left
                 anchors.right: parent.right
                 anchors.top: txtFld.bottom
-                anchors.margins: Kirigami.Units.gridUnit
-                height: !compactMode ? Kirigami.Units.gridUnit * 4 : Kirigami.Units.gridUnit * 2
+                anchors.margins: compactMode ? Mycroft.Units.gridUnit / 2 : Mycroft.Units.gridUnit
+                height: compactMode ? Mycroft.Units.gridUnit * 3 : Mycroft.Units.gridUnit * 4
                 KeyNavigation.up: txtFld
+                KeyNavigation.down: homepageButtonTangle
 
                 background: Rectangle {
-                    color: answerButton.activeFocus ? "#4169E1" : "#4124AA"
-                    radius: Kirigami.Units.gridUnit
+                    id: answerButtonBackground
+                    color: answerButton.activeFocus ? Kirigami.Theme.highlightColor : Qt.darker(Kirigami.Theme.highlightColor, 1.5)
+                    radius: Mycroft.Units.gridUnit
+                }
+
+                SequentialAnimation {
+                    id: answerButtonAnim
+
+                    PropertyAnimation {
+                        target: answerButtonBackground
+                        property: "color"
+                        to: Qt.lighter(Kirigami.Theme.highlightColor, 1.5)
+                        duration: 200
+                    }
+
+                    PropertyAnimation {
+                        target: answerButtonBackground
+                        property: "color"
+                        to: answerButton.activeFocus ? Kirigami.Theme.highlightColor : Qt.darker(Kirigami.Theme.highlightColor, 1.5)
+                        duration: 200
+                    }
                 }
 
                 contentItem: Item {
@@ -114,10 +155,20 @@ Mycroft.Delegate {
                     triggerGuiEvent("search", { "utterance": txtFldInternal.text})
                 }
 
+                onPressed: {
+                    answerButtonAnim.running = true;
+                }
+
                 Keys.onReturnPressed: {
                     clicked()
                 }
             }
+        }
+
+        Item {
+            id: bottomAreaSearchPage
+            Layout.fillWidth: true            
+            Layout.fillHeight: true
         }
     }
 }

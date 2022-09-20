@@ -26,11 +26,18 @@ import QtGraphicalEffects 1.0
 import Mycroft 1.0 as Mycroft
 import "." as Local
 
-Mycroft.Delegate {
+Item {
     id: root
-    skillBackgroundSource: sessionData.bg_image
-
     readonly property var videoService: Mycroft.MediaService
+    property Component controlBar
+
+    readonly property Item controlBarItem: {
+        if (controlBar) {
+            return controlBar.createObject(root, {"z": 9999});
+        } else {
+            return null;
+        }
+    }
 
     property var videoSource
     property var videoStatus
@@ -48,15 +55,6 @@ Mycroft.Delegate {
     //Mediaplayer Related Properties To Be Set By Probe MediaPlayer
     property var playerDuration
     property var playerPosition
-
-    fillWidth: true
-    background: Rectangle {
-        color: "black"
-    }
-    leftPadding: 0
-    topPadding: 0
-    rightPadding: 0
-    bottomPadding: 0
 
     Keys.onDownPressed: {
         controlBarItem.opened = true
@@ -215,6 +213,7 @@ Mycroft.Delegate {
             id: video
             anchors.fill: parent
             source: videoService
+            z: 5
 
             Keys.onReturnPressed: {
                 video.playbackState == MediaPlayer.PlayingState ? video.pause() : video.play()

@@ -9,16 +9,8 @@ import QtQuick.Templates 2.12 as T
 import QtMultimedia 5.12
 import "code/helper.js" as HelperJS
 
-Mycroft.Delegate {
+Item {
     id: root
-    fillWidth: true
-    skillBackgroundSource: sessionData.bg_image
-    skillBackgroundColorOverlay: Qt.rgba(0, 0, 0, 0.85)
-    leftPadding: 0
-    topPadding: 0
-    bottomPadding: 0
-    rightPadding: 0
-
     readonly property var audioService: Mycroft.MediaService
 
     property var source
