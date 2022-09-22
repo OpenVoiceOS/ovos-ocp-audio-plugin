@@ -244,7 +244,8 @@ class OCPMediaPlayer(OVOSAbstractApplication):
     def play_media(self, track, disambiguation=None, playlist=None):
         if self.mpris:
             self.mpris.stop()
-        self.pause()  # make it more responsive
+        if self.state == PlayerState.PLAYING:
+            self.pause()  # make it more responsive
         if disambiguation:
             self.media.search_playlist.replace(disambiguation)
             self.media.search_playlist.sort_by_conf()

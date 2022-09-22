@@ -28,6 +28,12 @@ Item {
     property var disambiguationModel: sessionData.searchModel
     property Component emptyHighlighter: Item{}
 
+    onFocusChanged: {
+        if (focus) {
+            disambiguationListView.forceActiveFocus()
+        }
+    }
+
     onDisambiguationModelChanged: {
         disambiguationListView.forceLayout()
     }
@@ -71,14 +77,18 @@ Item {
             clip: true
             highlightRangeMode: ListView.StrictlyEnforceRange
             snapMode: ListView.SnapToItem
+            KeyNavigation.down: playlistButtonTangle
 
             delegate: Controls.ItemDelegate {
+                id: delegateItemCardTwo
                 width: parent.width
                 height: Kirigami.Units.gridUnit * 5
 
                 background: Rectangle {
                     Kirigami.Theme.colorSet: Kirigami.Theme.Button
                     color: Kirigami.Theme.backgroundColor
+                    border.color: delegateItemCardTwo.activeFocus ? Kirigami.Theme.highlightColor : "transparent"
+                    border.width: delegateItemCardTwo.activeFocus ? 2 : 0
                     layer.enabled: true
                     layer.effect: DropShadow {
                         horizontalOffset: 1
@@ -149,15 +159,15 @@ Item {
                     }
                 }
 
+                Keys.onReturnPressed: {
+                    clicked()
+                }
+
                 onClicked: {
                     triggerGuiEvent("search.play",
                     {"playlistData": modelData})
                 }
             }
         }
-    }
-
-    Component.onCompleted: {
-        disambiguationListView.forceActiveFocus()
     }
 }

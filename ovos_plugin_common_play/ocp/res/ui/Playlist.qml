@@ -15,30 +15,22 @@
  *
  */
 
-import QtQuick 2.9
-import QtQuick.Controls 2.3 as Controls
-import QtQuick.Layouts 1.3
-import org.kde.kirigami 2.8 as Kirigami
+import QtQuick 2.12
+import QtQuick.Controls 2.12 as Controls
+import QtQuick.Layouts 1.4
+import org.kde.kirigami 2.11 as Kirigami
 import QtGraphicalEffects 1.0
 import Mycroft 1.0 as Mycroft
 
-
-Mycroft.Delegate {
-    id: delegate
-
+Item {
+    id: playListViewPage
+    anchors.fill: parent
     property var playlistModel: sessionData.playlistModel
     property Component emptyHighlighter: Item{}
-    fillWidth: true
-
-    skillBackgroundSource: sessionData.bg_image
 
     onPlaylistModelChanged: {
-        playlistListView.forceLayout()
-    }
-
-    Keys.onBackPressed: {
-        parent.parent.parent.currentIndex--
-        parent.parent.parent.currentItem.contentItem.forceActiveFocus()
+        resultsListView.model = playlistModel.data
+        resultsListView.forceLayout()
     }
 
     function formatedDuration(millis){
@@ -48,12 +40,11 @@ Mycroft.Delegate {
     }
 
     ColumnLayout {
-        id: playlistPlayerColumn
+        id: playlistViewColumn
         anchors.fill: parent
         spacing: Kirigami.Units.smallSpacing
 
         Kirigami.Heading {
-            id: watchItemList
             text: "Now Playing"
             color: Kirigami.Theme.textColor
             level: 2
@@ -67,12 +58,11 @@ Mycroft.Delegate {
         }
 
         ListView {
-            id: playlistListView
+            id: resultsListView
             keyNavigationEnabled: true
-            model: playlistModel.data
+            model: playlistModel ? playlistModel.data : []
             focus: false
             interactive: true
-            bottomMargin: delegate.controlBarItem.height + Kirigami.Units.largeSpacing
             Layout.fillWidth: true
             Layout.fillHeight: true
             spacing: Kirigami.Units.largeSpacing
@@ -82,7 +72,7 @@ Mycroft.Delegate {
             snapMode: ListView.SnapToItem
 
             delegate: Controls.ItemDelegate {
-                width: parent.width
+                width: resultsListView.width
                 height: Kirigami.Units.gridUnit * 5
 
                 background: Rectangle {
@@ -95,10 +85,7 @@ Mycroft.Delegate {
                     }
                 }
 
-
                 contentItem: Item {
-                    width: parent.width
-                    height: parent.height
 
                     RowLayout {
                         id: delegateItem
@@ -166,6 +153,6 @@ Mycroft.Delegate {
     }
 
     Component.onCompleted: {
-        playlistListView.forceActiveFocus()
+        resultsListView.forceActiveFocus()
     }
 }

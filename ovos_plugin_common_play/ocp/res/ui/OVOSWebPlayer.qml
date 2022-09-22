@@ -7,11 +7,9 @@ import org.kde.kirigami 2.4 as Kirigami
 import Mycroft 1.0 as Mycroft
 
 
-Mycroft.Delegate {
+Item {
     id: root
-    fillWidth: true
     property var pageUrl: sessionData.uri
-    skillBackgroundSource: "black"
 
     onPageUrlChanged: {
         console.log("opening webview from mediacenter")

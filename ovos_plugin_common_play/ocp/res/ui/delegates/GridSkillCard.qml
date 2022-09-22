@@ -14,19 +14,19 @@ ItemDelegate {
     }
 
     property int borderSize: Kirigami.Units.smallSpacing
-    property int baseRadius: 3
+    property int baseRadius: 4
 
     z: isCurrent ? 2 : 0
     
-    leftPadding: Kirigami.Units.largeSpacing * 2
-    topPadding: Kirigami.Units.largeSpacing * 2
-    rightPadding: Kirigami.Units.largeSpacing * 2
-    bottomPadding: Kirigami.Units.largeSpacing * 2
+    leftPadding: Mycroft.Units.largeSpacing
+    topPadding: Mycroft.Units.largeSpacing
+    rightPadding: Mycroft.Units.largeSpacing
+    bottomPadding: Mycroft.Units.largeSpacing
 
-    leftInset: Kirigami.Units.largeSpacing
-    topInset: Kirigami.Units.largeSpacing
-    rightInset: Kirigami.Units.largeSpacing
-    bottomInset: Kirigami.Units.largeSpacing
+    leftInset: Mycroft.Units.largeSpacing
+    topInset: Mycroft.Units.largeSpacing
+    rightInset: Mycroft.Units.largeSpacing
+    bottomInset: Mycroft.Units.largeSpacing
     
     implicitHeight: skillsListView.cellHeight
     
@@ -117,10 +117,12 @@ ItemDelegate {
         Kirigami.Heading {
             id: skillLabel
             Layout.fillWidth: true
-            Layout.alignment: Qt.AlignLeft | Qt.AlignTop
+            Layout.fillHeight: true
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
             wrapMode: Text.Wrap
             level: 3
-            maximumLineCount: 1
+            maximumLineCount: 2
             elide: Text.ElideRight
             color: Kirigami.Theme.textColor
             Component.onCompleted: {

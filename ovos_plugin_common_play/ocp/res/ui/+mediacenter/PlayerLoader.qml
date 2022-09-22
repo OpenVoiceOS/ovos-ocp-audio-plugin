@@ -15,11 +15,27 @@ Mycroft.Delegate {
     rightPadding: 0
     property var backgroundAllowedPlayers: ["OVOSAudioPlayer.qml", "OVOSSyncPlayer.qml"]
 
+    function movePageRight(){
+        parent.parent.parent.currentIndex++
+        parent.parent.parent.currentItem.contentItem.forceActiveFocus()
+    }
+
+    function movePageLeft(){
+        parent.parent.parent.currentIndex--
+        parent.parent.parent.currentItem.contentItem.forceActiveFocus()
+    }
+
     onGuiEvent: {
         switch (eventName) {
             case "ocp.gui.player.loader.clear":
                 rootLoader.source = ""
                 break
+        }
+    }
+
+    onFocusChanged: {
+        if(focus) {
+            rootLoader.item.forceActiveFocus()
         }
     }
 
@@ -44,6 +60,12 @@ Mycroft.Delegate {
             mainLoaderView.skillBackgroundSource = null
         }
 
-        rootLoader.setSource(sessionData.playerBackend)
-    }    
+        // If the full url is: file:///home/mycroft/.local/share/mycroft/skills/ovos-skill-mpd-player/ui/Player.qml
+        // insert a +mediacenter to get: file:///home/mycroft/.local/share/mycroft/skills/ovos-skill-mpd-player/ui/+mediacenter/Player.qml on sessionData.playerBackend
+        var player_path = sessionData.playerBackend
+        var mediacenter_player_path = player_path.replace("ui/", "ui/+mediacenter/")
+        console.log("Loading player: " + mediacenter_player_path)
+        rootLoader.setSource(mediacenter_player_path)
+        rootLoader.item.forceActiveFocus()
+    }
 }
