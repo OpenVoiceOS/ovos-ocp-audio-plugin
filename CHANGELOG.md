@@ -2,7 +2,15 @@
 
 ## [Unreleased](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/HEAD)
 
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.2...HEAD)
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.3a1...HEAD)
+
+**Implemented enhancements:**
+
+- Refactor GUI Usage and Interface Changes [\#23](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/23) ([AIIX](https://github.com/AIIX))
+
+## [V0.0.3a1](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.3a1) (2022-08-20)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.2...V0.0.3a1)
 
 **Fixed bugs:**
 
