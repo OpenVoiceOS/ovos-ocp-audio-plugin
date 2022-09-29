@@ -1,5 +1,6 @@
 import random
 from os.path import join, dirname
+from time import sleep
 
 from ovos_utils.gui import is_gui_connected, is_gui_running
 from ovos_utils.log import LOG
@@ -306,10 +307,12 @@ class OCPMediaPlayer(OVOSAbstractApplication):
                 self.set_player_state(PlayerState.PLAYING)
             elif is_gui_running():
                 # handle audio natively in mycroft-gui
+                sleep(2) # wait for gui page to start or this is sent before page
                 self.bus.emit(Message("gui.player.media.service.play", {
                     "track": self.now_playing.uri,
                     "mime": self.now_playing.mimetype,
                     "repeat": False}))
+                sleep(0.2) # wait for the above message to be processed
                 self.bus.emit(Message("ovos.common_play.track.state", {
                     "state": TrackState.PLAYING_AUDIO}))
         elif self.active_backend == PlaybackType.SKILL:
