@@ -2,7 +2,15 @@
 
 ## [Unreleased](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/HEAD)
 
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.3a1...HEAD)
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.3a2...HEAD)
+
+**Merged pull requests:**
+
+- wait for player to show before play is actually sent [\#24](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/24) ([AIIX](https://github.com/AIIX))
+
+## [V0.0.3a2](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.3a2) (2022-09-22)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.3a1...V0.0.3a2)
 
 **Implemented enhancements:**
 
