@@ -2,7 +2,15 @@
 
 ## [Unreleased](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/HEAD)
 
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.3a2...HEAD)
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.3a3...HEAD)
+
+**Merged pull requests:**
+
+- fix button color issue [\#25](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/25) ([AIIX](https://github.com/AIIX))
+
+## [V0.0.3a3](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.3a3) (2022-09-29)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.3a2...V0.0.3a3)
 
 **Merged pull requests:**
 
