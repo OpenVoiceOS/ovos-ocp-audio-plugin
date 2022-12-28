@@ -90,7 +90,7 @@ class OCP(OVOSAbstractApplication):
                                   for e in intents)
 
             if missing:
-                LOG.info("OCP intents missing, registering")
+                LOG.info(f"OCP intents missing, registering for {self}")
                 self.register_intent("play.intent", self.handle_play)
                 self.register_intent("read.intent", self.handle_read)
                 self.register_intent("open.intent", self.handle_open)
@@ -208,7 +208,7 @@ class OCP(OVOSAbstractApplication):
     def handle_play(self, message):
         utterance = message.data["utterance"]
         phrase = message.data.get("query", "") or utterance
-        LOG.debug(f"Handle request: {phrase}")
+        LOG.debug(f"Handle {message.msg_type} request: {phrase}")
         num = message.data.get("number", "")
         if num:
             phrase += " " + num
