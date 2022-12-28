@@ -11,7 +11,7 @@ from ovos_utils.messagebus import Message
 from ovos_workshop import OVOSAbstractApplication
 from padacioso import IntentContainer
 from ovos_utils.intents.intent_service_interface import IntentQueryApi
-from threading import Event
+from threading import Event, RLock
 
 
 class OCP(OVOSAbstractApplication):
@@ -48,6 +48,7 @@ class OCP(OVOSAbstractApplication):
         super().__init__(skill_id="ovos.common_play", resources_dir=res_dir,
                          bus=bus, lang=lang, settings=settings, gui=gui)
         self._intents_event = Event()
+        self._intent_registration_lock = RLock()
         self.player = OCPMediaPlayer(bus=self.bus,
                                      lang=self.lang,
                                      settings=self.settings,
@@ -76,29 +77,31 @@ class OCP(OVOSAbstractApplication):
         self.gui.show_home(app_mode=True)
 
     def register_ocp_intents(self, message=None):
-        if not self._intents_event.is_set():
-            missing = True
-        else:
-            # check list of registered intents
-            # if needed register ocp intents again
-            # this accounts for restarts etc
-            i = IntentQueryApi(self.bus)
-            intents = i.get_padatious_manifest()
-            missing = not any(e.startswith("ovos.common_play:") for e in intents)
+        with self._intent_registration_lock:
+            if not self._intents_event.is_set():
+                missing = True
+            else:
+                # check list of registered intents
+                # if needed register ocp intents again
+                # this accounts for restarts etc
+                i = IntentQueryApi(self.bus)
+                intents = i.get_padatious_manifest()
+                missing = not any(e.startswith("ovos.common_play:")
+                                  for e in intents)
 
-        if missing:
-            LOG.info("OCP intents missing, registering")
-            self.register_intent("play.intent", self.handle_play)
-            self.register_intent("read.intent", self.handle_read)
-            self.register_intent("open.intent", self.handle_open)
-            self.register_intent("next.intent", self.handle_next)
-            self.register_intent("prev.intent", self.handle_prev)
-            self.register_intent("pause.intent", self.handle_pause)
-            self.register_intent("resume.intent", self.handle_resume)
-            self._intents_event.set()
+            if missing:
+                LOG.info("OCP intents missing, registering")
+                self.register_intent("play.intent", self.handle_play)
+                self.register_intent("read.intent", self.handle_read)
+                self.register_intent("open.intent", self.handle_open)
+                self.register_intent("next.intent", self.handle_next)
+                self.register_intent("prev.intent", self.handle_prev)
+                self.register_intent("pause.intent", self.handle_pause)
+                self.register_intent("resume.intent", self.handle_resume)
+                self._intents_event.set()
 
-        # trigger a presence announcement from all loaded ocp skills
-        self.bus.emit(Message("ovos.common_play.skills.get"))
+            # trigger a presence announcement from all loaded ocp skills
+            self.bus.emit(Message("ovos.common_play.skills.get"))
 
     def register_media_intents(self):
         """
@@ -205,6 +208,7 @@ class OCP(OVOSAbstractApplication):
     def handle_play(self, message):
         utterance = message.data["utterance"]
         phrase = message.data.get("query", "") or utterance
+        LOG.debug(f"Handle request: {phrase}")
         num = message.data.get("number", "")
         if num:
             phrase += " " + num
