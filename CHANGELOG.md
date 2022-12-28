@@ -2,7 +2,15 @@
 
 ## [Unreleased](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/HEAD)
 
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.3a3...HEAD)
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.3a4...HEAD)
+
+**Merged pull requests:**
+
+- Add application view timeout configuration option and handling [\#26](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/26) ([AIIX](https://github.com/AIIX))
+
+## [V0.0.3a4](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.3a4) (2022-11-14)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.3a3...V0.0.3a4)
 
 **Merged pull requests:**
 
