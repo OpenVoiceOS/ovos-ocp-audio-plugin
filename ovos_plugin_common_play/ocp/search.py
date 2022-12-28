@@ -304,6 +304,7 @@ class OCPSearch(OCPAbstractComponent):
         media_type = message.data.get("media_type") or [MediaType.GENERIC]
 
         if skill_id not in self.ocp_skills:
+            LOG.debug(f"Registered {skill_id}")
             self.ocp_skills[skill_id] = []
 
         if has_featured:
