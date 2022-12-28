@@ -200,7 +200,7 @@ class OCPQuery:
 
             # remove filtered results
             message.data["results"] = [r for r in results if r is not None]
-            LOG.debug(f'got {len(message.data["results"])} results')
+            LOG.debug(f'got {len(message.data["results"])} results from {skill_id}')
             self.query_replies.append(message.data)
 
             # abort searching if we gathered enough results
@@ -245,7 +245,6 @@ class OCPQuery:
 
     def handle_skill_search_end(self, message):
         skill_id = message.data["skill_id"]
-        LOG.debug(f"{message.data['skill_id']} finished search")
         if skill_id in self.active_skills:
             self.active_skills.remove(skill_id)
 

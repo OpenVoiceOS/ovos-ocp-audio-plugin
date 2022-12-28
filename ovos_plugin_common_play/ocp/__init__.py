@@ -307,10 +307,11 @@ class OCP(OVOSAbstractApplication):
         phrase = phrase or utterance
         for r in self.player.media.search(phrase, media_type=media_type):
             results += r["results"]
-
+        LOG.debug(f"Got {len(results)} results")
         # ignore very low score matches
         results = [r for r in results
                    if r["match_confidence"] >= self.settings.min_score]
+        LOG.debug(f"Got {len(results)} usable results")
 
         # check if user said "play XXX audio only"
         if audio_only:
@@ -336,6 +337,7 @@ class OCP(OVOSAbstractApplication):
             # filter video only streams
             results = [r for r in results
                        if r["playback"] == PlaybackType.AUDIO]
+        LOG.debug(f"Returning {len(results)} results")
         return results
 
     def _should_resume(self, phrase):
