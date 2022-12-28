@@ -86,8 +86,9 @@ class OCP(OVOSAbstractApplication):
                 # this accounts for restarts etc
                 i = IntentQueryApi(self.bus)
                 intents = i.get_padatious_manifest()
-                missing = not any(e.startswith("ovos.common_play:")
+                missing = not any(e.startswith(f"{self.skill_id}:")
                                   for e in intents)
+                LOG.debug(f'Missing intents in {intents}')
 
             if missing:
                 LOG.info(f"OCP intents missing, registering for {self}")
