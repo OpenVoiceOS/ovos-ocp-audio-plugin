@@ -1,16 +1,10 @@
+import mimetypes
 import shutil
 import tempfile
 from os import makedirs
 from os.path import basename, expanduser, isfile, join, dirname
 
 from ovos_plugin_common_play.ocp.status import TrackState, PlaybackType
-import mimetypes
-
-from ovos_plugin_common_play.ocp.stream_handlers.bandcamp import *
-from ovos_plugin_common_play.ocp.stream_handlers.deezer import *
-from ovos_plugin_common_play.ocp.stream_handlers.rssfeeds import *
-from ovos_plugin_common_play.ocp.stream_handlers.youtube import *
-from ovos_plugin_common_play.ocp.stream_handlers.playlists import *
 
 ocp_plugins = StreamHandler()
 

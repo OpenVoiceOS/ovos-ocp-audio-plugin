@@ -9,7 +9,7 @@ from ovos_plugin_common_play.ocp.mycroft_cps import \
     MycroftCommonPlayInterface
 from ovos_plugin_common_play.ocp.settings import OCPSettings
 from ovos_plugin_common_play.ocp.status import *
-from ovos_plugin_common_play.ocp.stream_handlers import available_extractors
+from ovos_plugin_common_play.ocp.utils import available_extractors
 from ovos_utils.gui import is_gui_connected, is_gui_running
 from ovos_utils.log import LOG
 from ovos_utils.messagebus import Message, get_mycroft_bus

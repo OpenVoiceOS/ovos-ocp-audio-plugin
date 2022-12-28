@@ -2,8 +2,6 @@ import requests
 
 from ovos_plugin_common_play.ocp.status import MediaType, PlaybackMode
 from ovos_utils.skills.settings import PrivateSettings
-from ovos_plugin_common_play.ocp.stream_handlers import YoutubeBackend, \
-    BandcampBackend, YdlBackend, YoutubeLiveBackend
 from dbus_next.constants import BusType
 
 
@@ -171,11 +169,10 @@ class OCPSettings(PrivateSettings):
         """class YoutubeBackend(str, enum.Enum):
         YDL = "youtube-dl"
         PYTUBE = "pytube"
-        PAFY = "pafy"
         WEBVIEW = "webview" (WIP AND BROKEN)
         INVIDIOUS = "invidious" <- default (no dependencies)
         """
-        return self.get("youtube_backend") or YoutubeBackend.INVIDIOUS
+        return self.get("youtube_backend") or "invidious"
 
     @property
     def invidious_host(self):
@@ -195,13 +192,12 @@ class OCPSettings(PrivateSettings):
     def yt_chlive_backend(self):
         """class YoutubeLiveBackend(str, enum.Enum):
         PYTUBE = "pytube"
-        YT_SEARCHER = "youtube_searcher"
         REDIRECT = "redirect"  <- default
             # uses youtube auto redirect https://www.youtube.com/{channel_name}/live
         YDL = "youtube-dl"
             # same as above, but always uses YoutubeBackend.YDL internally
         """
-        return self.get("youtube_live_backend") or YoutubeLiveBackend.REDIRECT
+        return self.get("youtube_live_backend") or "redirect"
 
     @property
     def ydl_backend(self):
@@ -210,7 +206,7 @@ class OCPSettings(PrivateSettings):
         YDLC = "youtube-dlc"
         YDLP = "yt-dlp" <- default
         """
-        return self.get("ydl_backend") or YdlBackend.YDLP
+        return self.get("ydl_backend") or "yt-dlp"
 
     @property
     def bandcamp_backend(self):
@@ -218,5 +214,5 @@ class OCPSettings(PrivateSettings):
         YDL = "youtube-dl"
         PYBANDCAMP = "pybandcamp"  <- default
         """
-        return self.get("bandcamp_backend") or BandcampBackend.PYBANDCAMP
+        return self.get("bandcamp_backend") or "pybandcamp"
 
