@@ -226,7 +226,6 @@ class OCP(OVOSAbstractApplication):
 
         # search common play skills
         results = self._search(phrase, utterance, media_type)
-
         self._do_play(phrase, results, media_type)
 
     # "read XXX" - non "play XXX" audio book intent
@@ -239,7 +238,7 @@ class OCP(OVOSAbstractApplication):
 
     def _do_play(self, phrase, results, media_type=MediaType.GENERIC):
         self.player.reset()
-
+        LOG.debug(f"Playing results for: {phrase} | {results}")
         if not results:
             if self.gui:
                 if self.gui.active_extension == "smartspeaker":

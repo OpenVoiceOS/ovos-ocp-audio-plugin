@@ -200,6 +200,7 @@ class OCPQuery:
 
             # remove filtered results
             message.data["results"] = [r for r in results if r is not None]
+            LOG.debug(f'got results: {message.data["results"]}')
             self.query_replies.append(message.data)
 
             # abort searching if we gathered enough results
@@ -265,6 +266,7 @@ class OCPQuery:
                         "skills!\nselecting best result"
 
             self.searching = False
+        LOG.debug(f'got results: {message.data}')
         if self.gui:
             self.gui.update_search_results()
 
@@ -370,6 +372,7 @@ class OCPSearch(OCPAbstractComponent):
 
         if self.gui:
             self.gui.update_search_results()
+        LOG.debug(f'Returning search results: {query.results}')
         return query.results
 
     def search_skill(self, skill_id, phrase,
