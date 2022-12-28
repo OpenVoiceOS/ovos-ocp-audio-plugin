@@ -61,8 +61,7 @@ setup(
     author_email='jarbasai@mailfence.com',
     license='Apache-2.0',
     packages=['ovos_plugin_common_play',
-              'ovos_plugin_common_play.ocp',
-              'ovos_plugin_common_play.ocp.stream_handlers'],
+              'ovos_plugin_common_play.ocp'],
     install_requires=required("requirements/requirements.txt"),
     package_data={'': package_files('ovos_plugin_common_play')},
     extras_require={
