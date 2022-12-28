@@ -2,6 +2,7 @@ from os.path import join, dirname
 from time import sleep, time
 from mycroft_bus_client.message import Message
 from ovos_utils.gui import GUIInterface
+from ovos_utils.events import EventSchedulerInterface
 from ovos_utils.log import LOG
 from ovos_config import Configuration
 
@@ -21,6 +22,7 @@ class OCPMediaPlayerGUI(GUIInterface):
         self.notification_timeout = None
         self.search_mode_is_app = False
         self.persist_home_display = False
+        self.event_scheduler_interface = None
 
     def bind(self, player):
         self.player = player
@@ -33,6 +35,7 @@ class OCPMediaPlayerGUI(GUIInterface):
                               self.handle_play_from_search)
         self.player.add_event('ovos.common_play.skill.play',
                               self.handle_play_skill_featured_media)
+        self.event_scheduler_interface = EventSchedulerInterface(name="ovos.common_play", bus=self.bus)
 
     @property
     def home_screen_page(self):
@@ -170,6 +173,9 @@ class OCPMediaPlayerGUI(GUIInterface):
         player_status = self.player.state
         state2str = {PlayerState.PLAYING: "Playing", PlayerState.PAUSED: "Paused", PlayerState.STOPPED: "Stopped"}
         self["status"] = state2str[player_status]
+        self["app_view_timeout_enabled"] = self.player.app_view_timeout_enabled
+        self["app_view_timeout"] = self.player.app_view_timeout_value
+        self["app_view_timeout_mode"] = self.player.app_view_timeout_mode
 
         LOG.debug(f"manage_display: page_requested: {page_requested}")
         LOG.debug(f"manage_display: player_status: {player_status}")
@@ -211,9 +217,24 @@ class OCPMediaPlayerGUI(GUIInterface):
             else:
                 self.show_page(self.disambiguation_playlists_page, override_idle=True, override_animations=True)
 
-        if self.player.enable_app_view_timeout and page_requested == "player":
-            self.player.event_scheduler_interface.schedule_event(
-                self.timeout_app_view, 30, data=None, name="ocp_app_view_timer")
+        if (self.player.app_view_timeout_enabled and page_requested == "player"
+                and self.player.app_view_timeout_mode == "all"):
+            self.schedule_app_view_timeout()
+
+    def cancel_app_view_timeout(self, restart=False):
+        self.event_scheduler_interface.cancel_scheduled_event("ocp_app_view_timer")
+        if restart:
+            self.schedule_app_view_timeout()
+
+    def schedule_app_view_pause_timeout(self):
+        if (self.player.app_view_timeout_enabled
+            and self.player.app_view_timeout_mode == "pause"
+                and self.player.state == PlayerState.PAUSED):
+            self.schedule_app_view_timeout()
+
+    def schedule_app_view_timeout(self):
+        self.event_scheduler_interface.schedule_event(
+            self.timeout_app_view, self.player.app_view_timeout_value, data=None, name="ocp_app_view_timer")
 
     def timeout_app_view(self):
         self.bus.emit(Message("homescreen.manager.show_active"))
@@ -233,9 +254,9 @@ class OCPMediaPlayerGUI(GUIInterface):
         else:
             self.persist_home_display = False
 
-        if self.player.state == PlayerState.PLAYING and self.player.enable_app_view_timeout:
-            self.player.event_scheduler_interface.schedule_event(
-                self.timeout_app_view, self.player.app_view_timeout, data=None, name="ocp_app_view_timer")
+        if (self.player.state == PlayerState.PLAYING and self.player.app_view_timeout_enabled
+                and self.player.app_view_timeout_mode == "all"):
+            self.schedule_app_view_timeout()
 
     def release(self):
         self.clear()

@@ -158,7 +158,7 @@ Item {
 
                 ConfigSwitchDelegate {
                     id: timeoutConfigButton
-                    checked: sessionData.enable_app_view_timeout ? sessionData.enable_app_view_timeout : false
+                    checked: sessionData.app_view_timeout_enabled ? sessionData.app_view_timeout_enabled : false
                     text: timeoutConfigButton.checked ? qsTr("Enabled") : qsTr("Disabled")
                     guiEvent: "ovos.common_play.gui.enable_app_timeout"
                     guiEventData: {"enabled": timeoutConfigButton.checked}
@@ -169,11 +169,50 @@ Item {
                 id: setTimeoutConfigDelegateItem
                 label: qsTr("Set Player Timeout")
                 description: qsTr("Timeout for player to be automatically hidden")
+                enabled: timeoutConfigButton.checked
+                opacity: timeoutConfigButton.checked ? 1 : 0.5
 
                 ConfigSliderDelegate {
                     id: configSliderTimeout
+                    value: sessionData.app_view_timeout ? sessionData.app_view_timeout : 30
                     guiEvent: "ovos.common_play.gui.set_app_timeout"
                     guiEventData: {"timeout": configSliderTimeout.value}
+                }
+            }
+
+            ConfigDelegateLayoutItem {
+                id: setTimeoutModeConfigDelegateItem
+                label: qsTr("Select Timeout Mode")
+                description: qsTr("All: Timeout always | Pause: Timeout on pause")
+                enabled: timeoutConfigButton.checked
+                opacity: timeoutConfigButton.checked ? 1 : 0.5
+
+                ConfigOptionDelegate {
+                    id: configTimeoutMode
+                    property string selectedMode: sessionData.app_view_timeout_mode ? sessionData.app_view_timeout_mode : "all"
+                    model: ListModel {
+                        id: model
+                        ListElement { text: "All"; value: "all" }
+                        ListElement { text: "Pause"; value: "pause" }
+                    }
+                    textRole: "text"
+                    valueRole: "value"
+
+                    currentIndex: 0
+                    guiEvent: "ovos.common_play.gui.timeout.mode"
+                    guiEventData: {"mode": model.get(currentIndex).value}
+
+                    onSelectedModeChanged: {
+                        if(selectedMode == "all") {
+                            currentIndex = 0
+                        } else if(selectedMode == "pause") {
+                            currentIndex = 1
+                        }
+                    }
+
+                    onCurrentValueChanged: {
+                        Mycroft.MycroftController.sendRequest(guiEvent, guiEventData)
+                    }
                 }
             }
 
@@ -232,7 +271,7 @@ Item {
 
                 background: Rectangle {
                     id: ocpConfigurationButtonBackground
-                    color: Kirigami.Theme.backgroundColor
+                    color: Qt.darker(Kirigami.Theme.highlightColor, 1.25)
                     radius: Mycroft.Units.gridUnit * 0.5
                 }
 
@@ -242,14 +281,14 @@ Item {
                     PropertyAnimation {
                         target: ocpConfigurationButtonBackground
                         property: "color"
-                        to: Qt.lighter(Kirigami.Theme.backgroundColor, 1.5)
+                        to: Qt.lighter(Kirigami.Theme.highlightColor, 1.25)
                         duration: 200
                     }
 
                     PropertyAnimation {
                         target: ocpConfigurationButtonBackground
                         property: "color"
-                        to: ocpConfigurationButton.activeFocus ? Kirigami.Theme.backgroundColor : Qt.darker(Kirigami.Theme.backgroundColor, 1.5)
+                        to: Qt.darker(Kirigami.Theme.highlightColor, 1.25)
                         duration: 200
                     }
                 }
@@ -323,7 +362,7 @@ Item {
 
                 background: Rectangle {
                     id: answerButtonBackground
-                    color: answerButton.activeFocus ? Kirigami.Theme.highlightColor : Qt.darker(Kirigami.Theme.highlightColor, 1.5)
+                    color: answerButton.activeFocus ? Kirigami.Theme.highlightColor : Qt.darker(Kirigami.Theme.highlightColor, 1.25)
                     radius: Mycroft.Units.gridUnit
                 }
 
@@ -333,14 +372,14 @@ Item {
                     PropertyAnimation {
                         target: answerButtonBackground
                         property: "color"
-                        to: Qt.lighter(Kirigami.Theme.highlightColor, 1.5)
+                        to: Qt.lighter(Kirigami.Theme.highlightColor, 1.25)
                         duration: 200
                     }
 
                     PropertyAnimation {
                         target: answerButtonBackground
                         property: "color"
-                        to: answerButton.activeFocus ? Kirigami.Theme.highlightColor : Qt.darker(Kirigami.Theme.highlightColor, 1.5)
+                        to: answerButton.activeFocus ? Kirigami.Theme.highlightColor : Qt.darker(Kirigami.Theme.highlightColor, 1.25)
                         duration: 200
                     }
                 }

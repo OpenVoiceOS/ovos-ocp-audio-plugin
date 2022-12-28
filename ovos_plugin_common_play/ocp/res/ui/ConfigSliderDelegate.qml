@@ -15,7 +15,6 @@ Slider {
     from: 15
     to: 60
     stepSize: 15
-    value: 30
     snapMode: Slider.SnapAlways
     
     property var guiEvent: null

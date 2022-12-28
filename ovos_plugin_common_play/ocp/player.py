@@ -5,7 +5,6 @@ from time import sleep
 from ovos_utils.gui import is_gui_connected, is_gui_running
 from ovos_utils.log import LOG
 from ovos_utils.messagebus import Message
-from ovos_utils.events import EventSchedulerInterface
 from ovos_config import Configuration
 
 from ovos_plugin_common_play.ocp.gui import OCPMediaPlayerGUI
@@ -42,9 +41,6 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         self.audio_service = None
         self._audio_backend = None
         self.track_history = {}
-        self.event_scheduler_interface = EventSchedulerInterface(name="ovos.common_play", bus=bus)
-        self.enable_app_view_timeout = settings.get("enable_app_view_timeout", False)
-        self.app_view_timeout = settings.get("app_view_timeout", 30)
         super().__init__("ovos_common_play", settings=settings, bus=bus,
                          gui=gui, resources_dir=resources_dir, lang=lang)
 
@@ -130,6 +126,8 @@ class OCPMediaPlayer(OVOSAbstractApplication):
                        self.handle_enable_app_timeout)
         self.add_event('ovos.common_play.gui.set_app_timeout',
                        self.handle_set_app_timeout)
+        self.add_event('ovos.common_play.gui.timeout.mode', 
+                       self.handle_set_app_timeout_mode)
 
     @property
     def active_skill(self):
@@ -527,6 +525,9 @@ class OCPMediaPlayer(OVOSAbstractApplication):
             self.state = PlayerState.PLAYING
         elif state == PlayerState.PAUSED:
             self.state = PlayerState.PAUSED
+            if self.app_view_timeout_enabled and self.app_view_timeout_mode == "pause":
+                self.gui.cancel_app_view_timeout()
+                self.gui.schedule_app_view_pause_timeout()
         elif state == PlayerState.STOPPED:
             self.state = PlayerState.STOPPED
 
@@ -697,12 +698,33 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         self.bus.emit(message.response(data))
 
     # app timeout
+    @property    
+    def app_view_timeout_enabled(self):
+        return self.settings.get("app_view_timeout_enabled", False)
+
+    @property
+    def app_view_timeout_value(self):
+        return self.settings.get("app_view_timeout", 30)
+
+    @property
+    def app_view_timeout_mode(self):
+        return self.settings.get("app_view_timeout_mode", "all")
+
     def handle_enable_app_timeout(self, message):
-        self.settings["enable_app_view_timeout"] = message.data.get("enabled", False)
+        self.settings["app_view_timeout_enabled"] = message.data.get("enabled", False)
         self.settings.store()
-        self.enable_app_view_timeout = self.settings["enable_app_view_timeout"]
-    
+        if not self.app_view_timeout_enabled:
+            self.gui.cancel_app_view_timeout()
+
     def handle_set_app_timeout(self, message):
+        # timeout in seconds: 15 | 30 | 45 | 60
         self.settings["app_view_timeout"] = message.data.get("timeout", 30)
         self.settings.store()
-        self.app_view_timeout = self.settings["app_view_timeout"]
+        self.gui.cancel_app_view_timeout(restart=True)
+
+    def handle_set_app_timeout_mode(self, message):
+        # timeout modes: all | pause
+        self.settings["app_view_timeout_mode"] = message.data.get("mode", "all")
+        self.settings.store()
+        self.gui["app_view_timeout_mode"] = self.settings.get("app_view_timeout_mode", "all")
+        self.gui.cancel_app_view_timeout()
