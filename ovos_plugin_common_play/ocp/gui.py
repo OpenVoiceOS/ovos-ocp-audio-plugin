@@ -210,7 +210,14 @@ class OCPMediaPlayerGUI(GUIInterface):
                 self.show_page(self.disambiguation_playlists_page, override_idle=timeout, override_animations=True)
             else:
                 self.show_page(self.disambiguation_playlists_page, override_idle=True, override_animations=True)
-                
+
+        if self.player.enable_app_view_timeout and page_requested == "player":
+            self.player.event_scheduler_interface.schedule_event(
+                self.timeout_app_view, 30, data=None, name="ocp_app_view_timer")
+
+    def timeout_app_view(self):
+        self.bus.emit(Message("homescreen.manager.show_active"))
+
     def unload_player_loader(self):
         self.send_event("ocp.gui.player.loader.clear")
 
