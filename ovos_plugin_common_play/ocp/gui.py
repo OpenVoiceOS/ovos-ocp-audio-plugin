@@ -224,14 +224,18 @@ class OCPMediaPlayerGUI(GUIInterface):
     def show_home(self, app_mode=True):
         self.update_ocp_skills()
         self.clear_notification()
-        
+
         sleep(0.2)
         self.manage_display("home")
-        
+
         if app_mode:
             self.persist_home_display = True
         else:
-            self.persist_home_display = False       
+            self.persist_home_display = False
+
+        if self.player.state == PlayerState.PLAYING and self.player.enable_app_view_timeout:
+            self.player.event_scheduler_interface.schedule_event(
+                self.timeout_app_view, 30, data=None, name="ocp_app_view_timer")
 
     def release(self):
         self.clear()
