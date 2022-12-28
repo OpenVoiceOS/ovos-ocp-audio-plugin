@@ -5,6 +5,7 @@ from os import makedirs
 from os.path import basename, expanduser, isfile, join, dirname
 
 from ovos_plugin_common_play.ocp.status import TrackState, PlaybackType
+from ovos_plugin_manager.ocp import StreamHandler
 
 ocp_plugins = StreamHandler()
 
