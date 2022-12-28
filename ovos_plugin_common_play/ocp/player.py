@@ -44,6 +44,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         self.track_history = {}
         self.event_scheduler_interface = EventSchedulerInterface(name="ovos.common_play", bus=bus)
         self.enable_app_view_timeout = settings.get("enable_app_view_timeout", False)
+        self.app_view_timeout = settings.get("app_view_timeout", 30)
         super().__init__("ovos_common_play", settings=settings, bus=bus,
                          gui=gui, resources_dir=resources_dir, lang=lang)
 
@@ -127,6 +128,8 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         # GUI Configuration Events
         self.add_event('ovos.common_play.gui.enable_app_timeout',
                        self.handle_enable_app_timeout)
+        self.add_event('ovos.common_play.gui.set_app_timeout',
+                       self.handle_set_app_timeout)
 
     @property
     def active_skill(self):
@@ -698,3 +701,8 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         self.settings["enable_app_view_timeout"] = message.data.get("enabled", False)
         self.settings.store()
         self.enable_app_view_timeout = self.settings["enable_app_view_timeout"]
+    
+    def handle_set_app_timeout(self, message):
+        self.settings["app_view_timeout"] = message.data.get("timeout", 30)
+        self.settings.store()
+        self.app_view_timeout = self.settings["app_view_timeout"]

@@ -151,15 +151,30 @@ Item {
                 Layout.preferredHeight: 1
             }
 
-            ConfigButtonDelegate {
-                id: timeoutConfigButton
-                label: qsTr("Player Timeout")
-                description: qsTr("Player will be automatically hidden after 30 seconds")
-                checked: sessionData.enable_app_view_timeout ? sessionData.enable_app_view_timeout : false
-                switchLabel: timeoutConfigButton.checked ? qsTr("Enabled") : qsTr("Disabled")
-                guiEvent: "ovos.common_play.gui.enable_app_timeout"
-                guiEventData: {"enabled": timeoutConfigButton.checked}
-                switchColor: timeoutConfigButton.checked ? "green" : "red"
+            ConfigDelegateLayoutItem {
+                id: enableTimeoutConfigDelegateItem
+                label: qsTr("Enable Player Timeout")
+                description: qsTr("Player will be automatically hidden after ") + configSliderTimeout.value + qsTr(" seconds")
+
+                ConfigSwitchDelegate {
+                    id: timeoutConfigButton
+                    checked: sessionData.enable_app_view_timeout ? sessionData.enable_app_view_timeout : false
+                    text: timeoutConfigButton.checked ? qsTr("Enabled") : qsTr("Disabled")
+                    guiEvent: "ovos.common_play.gui.enable_app_timeout"
+                    guiEventData: {"enabled": timeoutConfigButton.checked}
+                }
+            }
+
+            ConfigDelegateLayoutItem {
+                id: setTimeoutConfigDelegateItem
+                label: qsTr("Set Player Timeout")
+                description: qsTr("Timeout for player to be automatically hidden")
+
+                ConfigSliderDelegate {
+                    id: configSliderTimeout
+                    guiEvent: "ovos.common_play.gui.set_app_timeout"
+                    guiEventData: {"timeout": configSliderTimeout.value}
+                }
             }
 
             Item {

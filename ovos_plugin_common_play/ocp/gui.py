@@ -235,7 +235,7 @@ class OCPMediaPlayerGUI(GUIInterface):
 
         if self.player.state == PlayerState.PLAYING and self.player.enable_app_view_timeout:
             self.player.event_scheduler_interface.schedule_event(
-                self.timeout_app_view, 30, data=None, name="ocp_app_view_timer")
+                self.timeout_app_view, self.player.app_view_timeout, data=None, name="ocp_app_view_timer")
 
     def release(self):
         self.clear()
