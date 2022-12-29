@@ -1,7 +1,7 @@
 from ovos_plugin_common_play.ocp.settings import OCPSettings
 from ovos_plugin_common_play.ocp.status import MediaState, PlayerState, TrackState
 from ovos_plugin_manager.templates.audio import AudioBackend
-from ovos_plugin_common_play.ocp.utils import extract_metadata
+from ovos_ocp_files_plugin.plugin import OCPFilesMetadataExtractor
 from ovos_utils.log import LOG
 from os.path import basename
 from mycroft_bus_client.message import Message
@@ -225,7 +225,7 @@ def _uri2meta(uri):
     try:
         # only works for local files
         # audio only (?)
-        meta = extract_metadata(uri)
+        meta = OCPFilesMetadataExtractor.extract_metadata(uri)
     except Exception as e:
         LOG.exception(e)
         # TODO let's try to dig for message and see if theres
