@@ -11,7 +11,7 @@ from ovos_utils.messagebus import Message
 from ovos_workshop import OVOSAbstractApplication
 from padacioso import IntentContainer
 from ovos_utils.intents.intent_service_interface import IntentQueryApi
-from threading import Event, RLock
+from threading import Event, Lock
 
 
 class OCP(OVOSAbstractApplication):
@@ -48,7 +48,7 @@ class OCP(OVOSAbstractApplication):
         super().__init__(skill_id="ovos.common_play", resources_dir=res_dir,
                          bus=bus, lang=lang, settings=settings, gui=gui)
         self._intents_event = Event()
-        self._intent_registration_lock = RLock()
+        self._intent_registration_lock = Lock()
         self.player = OCPMediaPlayer(bus=self.bus,
                                      lang=self.lang,
                                      settings=self.settings,
@@ -80,6 +80,7 @@ class OCP(OVOSAbstractApplication):
         with self._intent_registration_lock:
             if not self._intents_event.is_set():
                 missing = True
+                LOG.debug("Intents register event not set")
             else:
                 # check list of registered intents
                 # if needed register ocp intents again
