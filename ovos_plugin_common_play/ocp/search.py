@@ -431,3 +431,185 @@ class OCPSearch(OCPAbstractComponent):
         self.search_playlist.replace(playlist)
         if self.gui:
             self.gui.update_search_results()
+
+
+class SearchResult(dict):
+    def __init__(self, title, uri, skill_id="ovos.common_play",
+                 match_confidence=0, image=None, bg_image=None, skill_icon=None,
+                 media_type=MediaType.AUDIO, playback=PlaybackType.UNDEFINED,
+                 status=TrackState.DISAMBIGUATION
+                 **kwargs):
+        super().__init__(**kwargs)
+        self.title = title
+        self.uri = uri
+        self.match_confidence = match_confidence
+        self.media_type = media_type
+        self.playback = playback
+        self.skill_id = skill_id
+        self.skill_icon = skill_icon
+        self.image = image or skill_icon
+        self.bg_image = bg_image or image
+
+    @property
+    def title(self):
+        return self.get("title", "")
+
+    @title.setter
+    def title(self, val):
+        self["title"] = val
+
+    @property
+    def uri(self):
+        return self.get("uri", "")
+
+    @uri.setter
+    def uri(self, val):
+        self["uri"] = val
+
+    @property
+    def skill_id(self):
+        return self.get("skill_id")
+
+    @skill_id.setter
+    def skill_id(self, val):
+        self["skill_id"] = val
+
+    @property
+    def match_confidence(self):
+        return self.get("match_confidence", 0)
+
+    @match_confidence.setter
+    def match_confidence(self, val):
+        self["match_confidence"] = val
+
+    @property
+    def media_type(self):
+        return self.get("media_type", MediaType.AUDIO)
+
+    @media_type.setter
+    def media_type(self, val):
+        self["media_type"] = val
+
+    @property
+    def playback(self):
+        return self.get("playback", PlaybackType.AUDIO)
+
+    @playback.setter
+    def playback(self, val):
+        self["playback"] = val
+
+    @property
+    def skill_icon(self):
+        return self.get("skill_icon")
+
+    @skill_icon.setter
+    def skill_icon(self, val):
+        self["skill_icon"] = val
+
+    @property
+    def image(self):
+        return self.get("image", self.skill_icon)
+
+    @image.setter
+    def image(self, val):
+        self["image"] = val
+
+    @property
+    def bg_image(self):
+        return self.get("bg_image", self.image)
+
+    @bg_image.setter
+    def bg_image(self, val):
+        self["bg_image"] = val
+
+
+class PlaylistResult(dict):
+    def __init__(self, title, playlist, skill_id="ovos.common_play",
+                 match_confidence=0, image=None, bg_image=None, skill_icon=None,
+                 media_type=MediaType.AUDIO, playback=PlaybackType.AUDIO,
+                 **kwargs):
+        super().__init__(**kwargs)
+        self.title = title
+        self.playlist = playlist
+        self.match_confidence = match_confidence
+        self.media_type = media_type
+        self.playback = playback
+        self.skill_id = skill_id
+        self.skill_icon = skill_icon
+        self.image = image or skill_icon
+        self.bg_image = bg_image or image
+
+    @property
+    def title(self):
+        return self.get("title", "")
+
+    @title.setter
+    def title(self, val):
+        self["title"] = val
+
+    @property
+    def playlist(self):
+        return self.get("playlist", [])
+
+    @playlist.setter
+    def playlist(self, val):
+        self["playlist"] = val
+
+    @property
+    def skill_id(self):
+        return self.get("skill_id")
+
+    @skill_id.setter
+    def skill_id(self, val):
+        self["skill_id"] = val
+
+    @property
+    def match_confidence(self):
+        return self.get("match_confidence", 0)
+
+    @match_confidence.setter
+    def match_confidence(self, val):
+        self["match_confidence"] = val
+
+    @property
+    def media_type(self):
+        return self.get("media_type", MediaType.AUDIO)
+
+    @media_type.setter
+    def media_type(self, val):
+        self["media_type"] = val
+
+    @property
+    def playback(self):
+        return self.get("playback", PlaybackType.AUDIO)
+
+    @playback.setter
+    def playback(self, val):
+        self["playback"] = val
+
+    @property
+    def skill_icon(self):
+        return self.get("skill_icon")
+
+    @skill_icon.setter
+    def skill_icon(self, val):
+        self["skill_icon"] = val
+
+    @property
+    def image(self):
+        return self.get("image", self.skill_icon)
+
+    @image.setter
+    def image(self, val):
+        self["image"] = val
+
+    @property
+    def bg_image(self):
+        return self.get("bg_image", self.image)
+
+    @bg_image.setter
+    def bg_image(self, val):
+        self["bg_image"] = val
+
+
+
