@@ -245,6 +245,7 @@ class OCPQuery:
 
     def handle_skill_search_end(self, message):
         skill_id = message.data["skill_id"]
+        LOG.debug(f"{message.data['skill_id']} finished search")
         if skill_id in self.active_skills:
             self.active_skills.remove(skill_id)
 
@@ -265,7 +266,6 @@ class OCPQuery:
                         "skills!\nselecting best result"
 
             self.searching = False
-        LOG.debug(f'got results for skill: {message.data.get("skill_id")}')
         if self.gui:
             self.gui.update_search_results()
 
