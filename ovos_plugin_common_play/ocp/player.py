@@ -188,6 +188,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
 
     def set_now_playing(self, track):
         """ Currently playing media """
+        LOG.debug(f"Playing: {track}")
         if (isinstance(track, dict) and track.get("uri")) or \
                 (isinstance(track, MediaEntry) and track.uri):
             # single track entry (dict)
@@ -307,6 +308,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
                                    PlaybackType.AUDIO_SERVICE]:
             LOG.debug("Requesting playback: PlaybackType.AUDIO")
             if self.active_backend == PlaybackType.AUDIO_SERVICE:
+                LOG.debug("Handling playback via audio_service")
                 # we explicitly want to use a audio backend for audio only output
                 self.audio_service.play(self.now_playing.uri,
                                         utterance=self.audio_service_player)
@@ -314,13 +316,14 @@ class OCPMediaPlayer(OVOSAbstractApplication):
                     "state": TrackState.PLAYING_AUDIOSERVICE}))
                 self.set_player_state(PlayerState.PLAYING)
             elif is_gui_running():
+                LOG.debug("Handling playback via gui")
                 # handle audio natively in mycroft-gui
-                sleep(2) # wait for gui page to start or this is sent before page
+                sleep(2)  # wait for gui page to start or this is sent before page
                 self.bus.emit(Message("gui.player.media.service.play", {
                     "track": self.now_playing.uri,
                     "mime": self.now_playing.mimetype,
                     "repeat": False}))
-                sleep(0.2) # wait for the above message to be processed
+                sleep(0.2)  # wait for the above message to be processed
                 self.bus.emit(Message("ovos.common_play.track.state", {
                     "state": TrackState.PLAYING_AUDIO}))
         elif self.active_backend == PlaybackType.SKILL:
