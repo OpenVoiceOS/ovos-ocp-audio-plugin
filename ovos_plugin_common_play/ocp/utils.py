@@ -2,23 +2,17 @@ import shutil
 import tempfile
 from os import makedirs
 from os.path import basename, expanduser, isfile, join, dirname
-
+import ovos_audio_metadata
 from ovos_plugin_common_play.ocp.status import TrackState, PlaybackType
 
 
 def extract_metadata(uri):
-    try:
-        import audio_metadata
-    except ImportError:  # common conflicts with attrs version.... replace ASAP
-        audio_metadata = None
-
     meta = {"uri": uri,
             "title": basename(uri),
             "playback": PlaybackType.AUDIO,
             "status": TrackState.DISAMBIGUATION}
-    if not audio_metadata:
-        return meta
-    m = audio_metadata.load(uri.replace("file://", ""))
+
+    m = ovos_audio_metadata.load(uri.replace("file://", ""))
     if m.tags:
         if m.tags.get("title"):
             meta["title"] = m.tags.title[0]
