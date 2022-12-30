@@ -200,6 +200,7 @@ class OCPQuery:
 
             # remove filtered results
             message.data["results"] = [r for r in results if r is not None]
+            LOG.debug(f'got {len(message.data["results"])} results from {skill_id}')
             self.query_replies.append(message.data)
 
             # abort searching if we gathered enough results
@@ -302,6 +303,7 @@ class OCPSearch(OCPAbstractComponent):
         media_type = message.data.get("media_type") or [MediaType.GENERIC]
 
         if skill_id not in self.ocp_skills:
+            LOG.debug(f"Registered {skill_id}")
             self.ocp_skills[skill_id] = []
 
         if has_featured:
@@ -370,6 +372,7 @@ class OCPSearch(OCPAbstractComponent):
 
         if self.gui:
             self.gui.update_search_results()
+        LOG.debug(f'Returning {len(query.results)} search results')
         return query.results
 
     def search_skill(self, skill_id, phrase,

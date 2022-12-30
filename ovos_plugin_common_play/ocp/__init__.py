@@ -11,7 +11,7 @@ from ovos_utils.messagebus import Message
 from ovos_workshop import OVOSAbstractApplication
 from padacioso import IntentContainer
 from ovos_utils.intents.intent_service_interface import IntentQueryApi
-from threading import Event
+from threading import Event, Lock
 
 
 class OCP(OVOSAbstractApplication):
@@ -48,6 +48,7 @@ class OCP(OVOSAbstractApplication):
         super().__init__(skill_id="ovos.common_play", resources_dir=res_dir,
                          bus=bus, lang=lang, settings=settings, gui=gui)
         self._intents_event = Event()
+        self._intent_registration_lock = Lock()
         self.player = OCPMediaPlayer(bus=self.bus,
                                      lang=self.lang,
                                      settings=self.settings,
@@ -76,29 +77,33 @@ class OCP(OVOSAbstractApplication):
         self.gui.show_home(app_mode=True)
 
     def register_ocp_intents(self, message=None):
-        if not self._intents_event.is_set():
-            missing = True
-        else:
-            # check list of registered intents
-            # if needed register ocp intents again
-            # this accounts for restarts etc
-            i = IntentQueryApi(self.bus)
-            intents = i.get_padatious_manifest()
-            missing = not any(e.startswith("ovos.common_play:") for e in intents)
+        with self._intent_registration_lock:
+            if not self._intents_event.is_set():
+                missing = True
+                LOG.debug("Intents register event not set")
+            else:
+                # check list of registered intents
+                # if needed register ocp intents again
+                # this accounts for restarts etc
+                i = IntentQueryApi(self.bus)
+                intents = i.get_padatious_manifest()
+                missing = not any((e.startswith(f"{self.skill_id}:")
+                                  for e in intents))
+                LOG.debug(f'missing={missing} | {intents}')
 
-        if missing:
-            LOG.info("OCP intents missing, registering")
-            self.register_intent("play.intent", self.handle_play)
-            self.register_intent("read.intent", self.handle_read)
-            self.register_intent("open.intent", self.handle_open)
-            self.register_intent("next.intent", self.handle_next)
-            self.register_intent("prev.intent", self.handle_prev)
-            self.register_intent("pause.intent", self.handle_pause)
-            self.register_intent("resume.intent", self.handle_resume)
-            self._intents_event.set()
+            if missing:
+                LOG.info(f"OCP intents missing, registering for {self}")
+                self.register_intent("play.intent", self.handle_play)
+                self.register_intent("read.intent", self.handle_read)
+                self.register_intent("open.intent", self.handle_open)
+                self.register_intent("next.intent", self.handle_next)
+                self.register_intent("prev.intent", self.handle_prev)
+                self.register_intent("pause.intent", self.handle_pause)
+                self.register_intent("resume.intent", self.handle_resume)
+                self._intents_event.set()
 
-        # trigger a presence announcement from all loaded ocp skills
-        self.bus.emit(Message("ovos.common_play.skills.get"))
+            # trigger a presence announcement from all loaded ocp skills
+            self.bus.emit(Message("ovos.common_play.skills.get"))
 
     def register_media_intents(self):
         """
@@ -205,6 +210,7 @@ class OCP(OVOSAbstractApplication):
     def handle_play(self, message):
         utterance = message.data["utterance"]
         phrase = message.data.get("query", "") or utterance
+        LOG.debug(f"Handle {message.msg_type} request: {phrase}")
         num = message.data.get("number", "")
         if num:
             phrase += " " + num
@@ -226,7 +232,6 @@ class OCP(OVOSAbstractApplication):
 
         # search common play skills
         results = self._search(phrase, utterance, media_type)
-
         self._do_play(phrase, results, media_type)
 
     # "read XXX" - non "play XXX" audio book intent
@@ -239,7 +244,7 @@ class OCP(OVOSAbstractApplication):
 
     def _do_play(self, phrase, results, media_type=MediaType.GENERIC):
         self.player.reset()
-
+        LOG.debug(f"Playing results for: {phrase} | {results}")
         if not results:
             if self.gui:
                 if self.gui.active_extension == "smartspeaker":
@@ -303,10 +308,11 @@ class OCP(OVOSAbstractApplication):
         phrase = phrase or utterance
         for r in self.player.media.search(phrase, media_type=media_type):
             results += r["results"]
-
+        LOG.debug(f"Got {len(results)} results")
         # ignore very low score matches
         results = [r for r in results
                    if r["match_confidence"] >= self.settings.min_score]
+        LOG.debug(f"Got {len(results)} usable results")
 
         # check if user said "play XXX audio only"
         if audio_only:
@@ -332,6 +338,7 @@ class OCP(OVOSAbstractApplication):
             # filter video only streams
             results = [r for r in results
                        if r["playback"] == PlaybackType.AUDIO]
+        LOG.debug(f"Returning {len(results)} results")
         return results
 
     def _should_resume(self, phrase):

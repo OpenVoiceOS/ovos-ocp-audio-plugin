@@ -77,7 +77,7 @@ def is_bandcamp_available():
 
 
 def available_extractors():
-    ext = ["/", "http"]
+    ext = ["/", "http://", "https://", "file://"]
     if is_deezer_available():
         ext.append("deezer//")
     if is_rss_available():
