@@ -17,7 +17,7 @@ from ovos_utils.messagebus import Message, get_mycroft_bus
 
 class OCPQuery:
     def __init__(self, query, ocp_search=None, media_type=MediaType.GENERIC, bus=None):
-        LOG.debug(f"Created {media_type} query: {query}")
+        LOG.debug(f"Created {media_type.name} query: {query}")
         self.query = query
         self.media_type = media_type
         self.ocp_search = ocp_search
@@ -92,11 +92,11 @@ class OCPQuery:
     def register_events(self):
         LOG.debug("Registering Search Bus Events")
         self.bus.on("ovos.common_play.skill.search_start",
-                    self.handle_skill_search_start)  # 4x
+                    self.handle_skill_search_start)
         self.bus.on("ovos.common_play.skill.search_end",
-                    self.handle_skill_search_end)  # 4x
+                    self.handle_skill_search_end)
         self.bus.on("ovos.common_play.query.response",
-                    self.handle_skill_response)  # 8x
+                    self.handle_skill_response)
 
     def remove_events(self):
         LOG.debug("Removing Search Bus Events")
