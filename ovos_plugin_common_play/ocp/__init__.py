@@ -57,7 +57,15 @@ class OCP(OVOSAbstractApplication):
         self.media_intents = IntentContainer()
         self.register_ocp_api_events()
         self.register_media_intents()
-        self.replace_mycroft_cps()
+
+        self.add_event("mycroft.ready", self.replace_mycroft_cps, once=True)
+        skills_ready = self.bus.wait_for_response(
+            Message("mycroft.skills.is_ready",
+                    context={"source": [self.skill_id],
+                             "destination": ["skills"]}))
+        if skills_ready and skills_ready.data.get("status"):
+            self.remove_event("mycroft.ready")
+            self.replace_mycroft_cps(skills_ready)
         try:
             create_desktop_file()
         except:  # permission errors and stuff
