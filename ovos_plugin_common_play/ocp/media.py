@@ -267,6 +267,10 @@ class NowPlaying(MediaEntry):
         self._player = player
         self._player.add_event("ovos.common_play.track.state",
                                self.handle_track_state_change)
+        self._player.add_event("ovos.common_play.media.state",
+                               self.handle_media_state_change)
+        self._player.add_event("ovos.common_play.play",
+                               self.handle_external_play)
         self._player.add_event("ovos.common_play.playback_time",
                                self.handle_sync_seekbar)
         self._player.add_event('gui.player.media.service.get.meta',
@@ -283,6 +287,21 @@ class NowPlaying(MediaEntry):
         self._player.remove_event("ovos.common_play.playback_time")
         self._player.remove_event('gui.player.media.service.get.meta')
         self._player.remove_event('mycroft.audio_only.service.track_info_reply')
+
+    def reset(self):
+        self.title = ""
+        self.artist = None
+        self.skill_icon = None
+        self.skill_id = None
+        self.position = 0
+        self.length = None
+        self.is_cps = False
+        self.cps_data = {}
+        self.data = {}
+        self.phrase = None
+        self.javascript = ""
+        self.playback = PlaybackType.UNDEFINED
+        self.status = TrackState.DISAMBIGUATION
 
     def update(self, entry, skipkeys=None, newonly=False):
         super().update(entry, skipkeys, newonly)
@@ -368,6 +387,18 @@ class NowPlaying(MediaEntry):
         self.update(meta, newonly=True)
 
     # events from gui_player/audio_service
+    def handle_external_play(self, message):
+        # update metadata unconditionally
+        # otherwise previous song keys might bleed into new track
+        if message.data.get("tracks"):
+            # backwards compat / old style
+            playlist = message.data["tracks"]
+            media = playlist[0]
+        else:
+            media = message.data.get("media", {})
+        if media:
+            self.update(media, newonly=False)
+
     def handle_player_metadata_request(self, message):
         self.bus.emit(message.reply("gui.player.media.service.set.meta",
                                     {"title": self.title,
@@ -402,6 +433,12 @@ class NowPlaying(MediaEntry):
                         TrackState.QUEUED_AUDIOSERVICE]:
             # audio service is handling playback and this is in playlist
             pass
+
+    def handle_media_state_change(self, message):
+        status = message.data["state"]
+        if status == MediaState.END_OF_MEDIA:
+            # playback ended, allow next track to change metadata again
+            self.reset()
 
     def handle_sync_seekbar(self, message):
         """ event sent by ovos audio backend plugins """
