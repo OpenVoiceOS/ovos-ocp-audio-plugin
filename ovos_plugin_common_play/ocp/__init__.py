@@ -101,7 +101,7 @@ class OCP(OVOSAbstractApplication):
 
             if missing:
                 LOG.info(f"OCP intents missing, registering for {self}")
-                self.register_intent("play.intent", self.handle_play)  # 2x?
+                self.register_intent("play.intent", self.handle_play)
                 self.register_intent("read.intent", self.handle_read)
                 self.register_intent("open.intent", self.handle_open)
                 self.register_intent("next.intent", self.handle_next)
