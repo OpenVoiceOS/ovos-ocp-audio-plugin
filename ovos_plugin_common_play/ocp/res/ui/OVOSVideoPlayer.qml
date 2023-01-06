@@ -26,10 +26,11 @@ import QtGraphicalEffects 1.0
 import Mycroft 1.0 as Mycroft
 import "." as Local
 
-Item {
+Rectangle {
     id: root
     readonly property var videoService: Mycroft.MediaService
     property Component controlBar
+    color: "black"
 
     readonly property Item controlBarItem: {
         if (controlBar) {
