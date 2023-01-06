@@ -2,7 +2,15 @@
 
 ## [Unreleased](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/HEAD)
 
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.3a5...HEAD)
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.3a6...HEAD)
+
+**Merged pull requests:**
+
+- set video bg to black always [\#33](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/33) ([AIIX](https://github.com/AIIX))
+
+## [V0.0.3a6](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.3a6) (2022-12-30)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.3a5...V0.0.3a6)
 
 **Merged pull requests:**
 
