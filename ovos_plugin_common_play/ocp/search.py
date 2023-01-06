@@ -1,4 +1,6 @@
 import random
+from threading import RLock
+
 import time
 
 from ovos_plugin_common_play.ocp.base import OCPAbstractComponent
@@ -15,6 +17,7 @@ from ovos_utils.messagebus import Message, get_mycroft_bus
 
 class OCPQuery:
     def __init__(self, query, ocp_search=None, media_type=MediaType.GENERIC, bus=None):
+        LOG.debug(f"Created {media_type.name} query: {query}")
         self.query = query
         self.media_type = media_type
         self.ocp_search = ocp_search
@@ -87,14 +90,16 @@ class OCPQuery:
         return [s for s in self.query_replies if s.get("results")]
 
     def register_events(self):
+        LOG.debug("Registering Search Bus Events")
         self.bus.on("ovos.common_play.skill.search_start",
-                                  self.handle_skill_search_start)
+                    self.handle_skill_search_start)
         self.bus.on("ovos.common_play.skill.search_end",
-                                  self.handle_skill_search_end)
+                    self.handle_skill_search_end)
         self.bus.on("ovos.common_play.query.response",
-                                  self.handle_skill_response)
+                    self.handle_skill_response)
 
     def remove_events(self):
+        LOG.debug("Removing Search Bus Events")
         self.bus.remove_all_listeners("ovos.common_play.skill.search_start")
         self.bus.remove_all_listeners("ovos.common_play.skill.search_end")
         self.bus.remove_all_listeners("ovos.common_play.query.response")
@@ -277,6 +282,7 @@ class OCPSearch(OCPAbstractComponent):
         self.old_cps = None
         self.ocp_skills = {}
         self.featured_skills = {}
+        self.search_lock = RLock()
         if player:
             self.bind(player)
 
@@ -334,41 +340,43 @@ class OCPSearch(OCPAbstractComponent):
                 MediaType.HENTAI not in s["media_type"]]
 
     def search(self, phrase, media_type=MediaType.GENERIC):
-        # stop any search still happening
-        self.bus.emit(Message("ovos.common_play.search.stop"))
-        if self.gui:
-            if self.gui.active_extension == "smartspeaker":
-                self.gui.display_notification("Searching...Your query is being processed")
-            else:
-                if self.gui.persist_home_display:
-                    self.gui.show_search_spinner(persist_home=True)
+        with self.search_lock:
+            # stop any search still happening
+            self.bus.emit(Message("ovos.common_play.search.stop"))
+            if self.gui:
+                if self.gui.active_extension == "smartspeaker":
+                    self.gui.display_notification("Searching...Your query is being processed")
                 else:
-                    self.gui.show_search_spinner(persist_home=False)
-        self.clear()
+                    if self.gui.persist_home_display:
+                        self.gui.show_search_spinner(persist_home=True)
+                    else:
+                        self.gui.show_search_spinner(persist_home=False)
+            self.clear()
 
-        query = OCPQuery(query=phrase, media_type=media_type, ocp_search=self)
-        query.send()
-
-        # old common play will send the messages expected by the official
-        # mycroft stack, but skills are known to over match, dont support
-        # match type, and the GUI can be different for every skill, it may also
-        # cause issues with status tracking and mess up playlists. An
-        # imperfect compatibility layer has been implemented at skill and
-        # audioservice level
-        if self.old_cps:
-            self.old_cps.send_query(phrase, media_type)
-
-        query.wait()
-
-        # fallback to generic search type
-        if not query.results and \
-                self.settings.search_fallback and \
-                media_type != MediaType.GENERIC:
-            LOG.debug("OVOSCommonPlay falling back to MediaType.GENERIC")
-            query.media_type = MediaType.GENERIC
-            query.reset()
+            query = OCPQuery(query=phrase, media_type=media_type, ocp_search=self,
+                             bus=self.bus)
             query.send()
+
+            # old common play will send the messages expected by the official
+            # mycroft stack, but skills are known to over match, dont support
+            # match type, and the GUI can be different for every skill, it may also
+            # cause issues with status tracking and mess up playlists. An
+            # imperfect compatibility layer has been implemented at skill and
+            # audioservice level
+            if self.old_cps:
+                self.old_cps.send_query(phrase, media_type)
+
             query.wait()
+
+            # fallback to generic search type
+            if not query.results and \
+                    self.settings.search_fallback and \
+                    media_type != MediaType.GENERIC:
+                LOG.debug("OVOSCommonPlay falling back to MediaType.GENERIC")
+                query.media_type = MediaType.GENERIC
+                query.reset()
+                query.send()
+                query.wait()
 
         if self.gui:
             self.gui.update_search_results()

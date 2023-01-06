@@ -3,6 +3,8 @@ import unittest
 from os.path import dirname, join
 from unittest.mock import patch
 
+from mycroft_bus_client import Message
+
 from mycroft.configuration.config import Configuration
 from mycroft.skills.intent_service import IntentService
 from mycroft.skills.skill_loader import SkillLoader
@@ -122,7 +124,7 @@ class TestCPS(unittest.TestCase):
         self.bus.emitted_msgs = []
         cfg = {}
         ocp = OCPAudioBackend(cfg, self.bus)
-
+        self.bus.emit(Message("mycroft.ready"))
         # assert that mycroft common play was deregistered
         disable_msgs = [
             {'type': 'skillmanager.deactivate',

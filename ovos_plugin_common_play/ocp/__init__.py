@@ -57,7 +57,15 @@ class OCP(OVOSAbstractApplication):
         self.media_intents = IntentContainer()
         self.register_ocp_api_events()
         self.register_media_intents()
-        self.replace_mycroft_cps()
+
+        self.add_event("mycroft.ready", self.replace_mycroft_cps, once=True)
+        skills_ready = self.bus.wait_for_response(
+            Message("mycroft.skills.is_ready",
+                    context={"source": [self.skill_id],
+                             "destination": ["skills"]}))
+        if skills_ready and skills_ready.data.get("status"):
+            self.remove_event("mycroft.ready")
+            self.replace_mycroft_cps(skills_ready)
         try:
             create_desktop_file()
         except:  # permission errors and stuff
@@ -127,6 +135,12 @@ class OCP(OVOSAbstractApplication):
             self.media_intents.add_intent(intent_name, samples)
 
     def replace_mycroft_cps(self, message=None):
+        """
+        Deactivates any Mycroft playback-control skills and ensures OCP intents
+        are registered. Registers a listener so this method is called any time
+        `mycroft.ready` is emitted.
+        @param message: `mycroft.ready` message triggering this check
+        """
         mycroft_cps_ids = [
             # disable mycroft cps, ocp replaces it and intents conflict
             "skill-playback-control.mycroftai",  # the convention
@@ -150,10 +164,13 @@ class OCP(OVOSAbstractApplication):
                 self.bus.emit(Message('skillmanager.deactivate',
                                       {"skill": skill_id}))
 
-        self.add_event("mycroft.skills.loaded", unload_mycroft_cps)
+        if ("mycroft.skills.loaded", unload_mycroft_cps) not in self.events:
+            self.add_event("mycroft.skills.loaded", unload_mycroft_cps)
 
         # if skills service (re)loads (re)register OCP
-        self.bus.once("mycroft.ready",  self.replace_mycroft_cps)
+        if ("mycroft.ready", self.replace_mycroft_cps) in self.events:
+            LOG.warning("Method already registered!")
+        self.add_event("mycroft.ready",  self.replace_mycroft_cps, once=True)
 
     def default_shutdown(self):
         self.player.shutdown()
@@ -244,7 +261,7 @@ class OCP(OVOSAbstractApplication):
 
     def _do_play(self, phrase, results, media_type=MediaType.GENERIC):
         self.player.reset()
-        LOG.debug(f"Playing results for: {phrase} | {results}")
+        LOG.debug(f"Playing {len(results)} results for: {phrase}")
         if not results:
             if self.gui:
                 if self.gui.active_extension == "smartspeaker":
