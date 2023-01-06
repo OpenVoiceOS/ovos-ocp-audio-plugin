@@ -2,7 +2,15 @@
 
 ## [Unreleased](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/HEAD)
 
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.3a6...HEAD)
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.3a7...HEAD)
+
+**Merged pull requests:**
+
+- Prevent duplicate messagebus events [\#32](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/32) ([NeonDaniel](https://github.com/NeonDaniel))
+
+## [V0.0.3a7](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.3a7) (2023-01-06)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.3a6...V0.0.3a7)
 
 **Merged pull requests:**
 
