@@ -16,15 +16,14 @@
  *
  */
 
-import QtMultimedia 5.12
 import QtQuick.Layouts 1.4
 import QtQuick 2.12
 import QtQuick.Controls 2.12 as Controls
 import org.kde.kirigami 2.10 as Kirigami
 import QtQuick.Templates 2.12 as Templates
 import QtGraphicalEffects 1.0
-
 import Mycroft 1.0 as Mycroft
+import QtAV 1.7
 
 Item {
     id: seekControl
@@ -111,7 +110,7 @@ Item {
                         anchors.fill: parent
                         anchors.margins: Mycroft.Units.gridUnit
 
-                        source: currentState === MediaPlayer.PlayingState ? Qt.resolvedUrl("images/media-playback-pause.svg") : Qt.resolvedUrl("images/media-playback-start.svg")
+                        source: avVideo.playbackState == MediaPlayer.PlayingState ? Qt.resolvedUrl("images/media-playback-pause.svg") : Qt.resolvedUrl("images/media-playback-start.svg")
 
                         ColorOverlay {
                             source: parent
@@ -121,7 +120,7 @@ Item {
                     }
 
                     onClicked: {
-                        currentState === MediaPlayer.PlayingState ? videoControl.pause() : videoControl.currentState === MediaPlayer.PausedState ? videoControl.resume() : videoControl.play()
+                        avVideo.playbackState == MediaPlayer.PlayingState ? videoControl.pause() : videoControl.currentState == MediaPlayer.PausedState ? videoControl.resume() : videoControl.play()
                         hideTimer.restart();
                     }
                     KeyNavigation.up: video

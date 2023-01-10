@@ -25,6 +25,7 @@ import QtQuick.Window 2.3
 import QtGraphicalEffects 1.0
 import Mycroft 1.0 as Mycroft
 import "." as Local
+import QtAV 1.7
 
 Rectangle {
     id: root
@@ -51,7 +52,7 @@ Rectangle {
     property bool busyIndicate: false
 
     //Player Button Control Actions
-    property var currentState: videoService.playbackState
+    property var currentState: avVideo.playbackState
 
     //Mediaplayer Related Properties To Be Set By Probe MediaPlayer
     property var playerDuration
@@ -70,23 +71,23 @@ Rectangle {
     }
 
     function play(){
-        videoService.playURL(videoSource)
+        avVideo.source = videoSource
     }
 
     function pause(){
-        videoService.playerPause()
+        avVideo.pause()
     }
 
     function stop(){
-        videoService.playerStop()
+        avVideo.stop()
     }
 
     function resume(){
-        videoService.playerContinue()
+        avVideo.play()
     }
 
     function seek(val){
-        videoService.playerSeek(val)
+        avVideo.seek(val)
     }
 
     function next(){
@@ -166,13 +167,14 @@ Rectangle {
 
     controlBar: Local.OVOSSeekControl {
         id: seekControl
+
         anchors {
             bottom: parent.bottom
         }
         title: videoTitle
         videoControl: root
-        duration: root.playerDuration
-        playPosition: root.playerPosition
+        duration: avVideo.duration
+        playPosition: avVideo.position
         onSeekPositionChanged: seek(seekPosition);
         z: 1000
     }
@@ -210,17 +212,18 @@ Rectangle {
             }
         }
 
-        VideoOutput {
-            id: video
+        Video {
+            id: avVideo
             anchors.fill: parent
-            source: videoService
-            z: 5
+            autoLoad: true
+            autoPlay: true
 
             Keys.onReturnPressed: {
-                video.playbackState == MediaPlayer.PlayingState ? video.pause() : video.play()
+                avVideo.playbackState == MediaPlayer.PlayingState ? avVideo.pause() : avVideo.play()
             }
 
             Keys.onDownPressed: {
+                console.log("down pressed")
                 controlBarItem.opened = true
                 controlBarItem.forceActiveFocus()
             }
@@ -228,10 +231,34 @@ Rectangle {
             MouseArea {
                 anchors.fill: parent
                 onClicked: {
+                    console.log("clicked in video")
                     controlBarItem.opened = !controlBarItem.opened
                 }
             }
         }
+
+        // VideoOutput {
+        //     id: video
+        //     anchors.fill: parent
+        //     source: videoService
+        //     z: 5
+        //
+        //     Keys.onReturnPressed: {
+        //         video.playbackState == MediaPlayer.PlayingState ? video.pause() : video.play()
+        //     }
+        //
+        //     Keys.onDownPressed: {
+        //         controlBarItem.opened = true
+        //         controlBarItem.forceActiveFocus()
+        //     }
+        //
+        //     MouseArea {
+        //         anchors.fill: parent
+        //         onClicked: {
+        //             controlBarItem.opened = !controlBarItem.opened
+        //         }
+        //     }
+        // }
     }
 }
 
