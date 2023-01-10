@@ -1,5 +1,6 @@
-ovos-plugin-manager
+ovos-plugin-manager>=0.0.21a6
 padacioso~=0.1.1
 ovos_workshop~=0.0,>=0.0.7a9
 ovos_audio_plugin_simple
 dbus-next
+ovos-ocp-files-plugin>=0.13.0a1

@@ -1,0 +1,5 @@
+ovos-ocp-youtube-plugin>=0.0.1a1
+ovos-ocp-deezer-plugin>=0.0.1a1
+ovos-ocp-rss-plugin>=0.0.1a1
+ovos-ocp-bandcamp-plugin>=0.0.1a1
+ovos-ocp-m3u-plugin>=0.0.1a1
