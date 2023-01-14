@@ -25,6 +25,7 @@ class OCPMediaPlayerGUI(GUIInterface):
         self.search_mode_is_app = False
         self.persist_home_display = False
         self.event_scheduler_interface = None
+        self.video_player_interface = None
 
     def bind(self, player):
         self.player = player
@@ -58,7 +59,10 @@ class OCPMediaPlayerGUI(GUIInterface):
 
     @property
     def video_player_page(self):
-        return join(self.player.res_dir, "ui", "OVOSVideoPlayer.qml")
+        if self.video_player_interface = "qtav":
+            return join(self.player.res_dir, "ui", "OVOSVideoPlayerQtAv.qml")
+        else:
+            return join(self.player.res_dir, "ui", "OVOSVideoPlayer.qml")
 
     @property
     def web_player_page(self):
