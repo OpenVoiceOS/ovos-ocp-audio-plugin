@@ -18,7 +18,10 @@ class MediaEntry:
                  **kwargs):
         self.match_confidence = match_confidence
         self.title = title
-        self.uri = f'file://{uri}' if uri.startswith('/') else uri
+        if uri:
+            self.uri = f'file://{uri}' if uri.startswith('/') else uri
+        else:
+            self.uri = None
         self.artist = artist
         self.skill_id = skill_id
         self.status = status
