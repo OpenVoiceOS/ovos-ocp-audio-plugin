@@ -1,15 +1,22 @@
+import enum
 from os.path import join, dirname
 
 from ovos_plugin_common_play.ocp import OCP_ID
 from time import sleep
 from mycroft_bus_client.message import Message
-from ovos_utils.gui import GUIInterface
-from ovos_utils.events import EventSchedulerInterface
-from ovos_utils.log import LOG
 from ovos_config import Configuration
+from ovos_utils.events import EventSchedulerInterface
+from ovos_utils.gui import GUIInterface
+from ovos_utils.log import LOG
 
 from ovos_plugin_common_play.ocp.status import *
 from threading import Timer
+
+
+class VideoPlayerBackend(str, enum.Enum):
+    AUTO = "auto"
+    QTAV = "qtav"
+    NATIVE = "native"
 
 
 class OCPMediaPlayerGUI(GUIInterface):
@@ -25,7 +32,6 @@ class OCPMediaPlayerGUI(GUIInterface):
         self.search_mode_is_app = False
         self.persist_home_display = False
         self.event_scheduler_interface = None
-        self.video_player_interface = None
 
     def bind(self, player):
         self.player = player
@@ -38,8 +44,12 @@ class OCPMediaPlayerGUI(GUIInterface):
                               self.handle_play_from_search)
         self.player.add_event('ovos.common_play.skill.play',
                               self.handle_play_skill_featured_media)
-        self.event_scheduler_interface = EventSchedulerInterface(name=OCP_ID,
-                                                                 bus=self.bus)
+        self.event_scheduler_interface = EventSchedulerInterface(name="ovos.common_play", bus=self.bus)
+
+    @property
+    def video_backend(self):
+        return self.player.settings.get("video_player_backend") or \
+               VideoPlayerBackend.AUTO
 
     @property
     def home_screen_page(self):
@@ -59,7 +69,10 @@ class OCPMediaPlayerGUI(GUIInterface):
 
     @property
     def video_player_page(self):
-        if self.video_player_interface = "qtav":
+        if self.video_backend == VideoPlayerBackend.AUTO:
+            # TODO - detect if qtav is available, if yes use it
+            pass
+        if self.video_backend == VideoPlayerBackend.QTAV:
             return join(self.player.res_dir, "ui", "OVOSVideoPlayerQtAv.qml")
         else:
             return join(self.player.res_dir, "ui", "OVOSVideoPlayer.qml")
