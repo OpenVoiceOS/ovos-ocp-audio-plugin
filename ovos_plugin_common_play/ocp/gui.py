@@ -72,12 +72,21 @@ class OCPMediaPlayerGUI(GUIInterface):
     def video_player_page(self):
         qtav = join(self.player.res_dir, "ui", "OVOSVideoPlayerQtAv.qml")
         native = join(self.player.res_dir, "ui", "OVOSVideoPlayer.qml")
+        has_qtav = is_qtav_available()
+        if has_qtav:
+            LOG.info("QtAV detected")
+
         if self.video_backend == VideoPlayerBackend.AUTO:
             # detect if qtav is available, if yes use it
-            if is_qtav_available():
+            if has_qtav:
+                LOG.debug("defaulting to OVOSVideoPlayerQtAv")
                 return qtav
+            LOG.debug("defaulting to native OVOSVideoPlayer")
         elif self.video_backend == VideoPlayerBackend.QTAV:
+            LOG.debug("OVOSVideoPlayerQtAv explicitly configured")
             return qtav
+        elif self.video_backend == VideoPlayerBackend.NATIVE:
+            LOG.debug("native OVOSVideoPlayer explicitly configured")
 
         return native
 
