@@ -1,12 +1,18 @@
 import mimetypes
 import shutil
 from os import makedirs
-from os.path import expanduser, isfile, join, dirname
+from os.path import expanduser, isfile, join, dirname, exists
 
 from ovos_plugin_manager.ocp import StreamHandler
 from ovos_plugin_common_play.ocp.status import TrackState, PlaybackType
 from ovos_ocp_files_plugin.plugin import OCPFilesMetadataExtractor
 ocp_plugins = StreamHandler()
+
+
+def is_qtav_available():
+    return exists("/usr/include/qt/QtAV") or \
+           exists("/usr/lib/qt/qml/QtAV") or \
+           exists("/usr/lib/libQtAV.so")
 
 
 def find_mime(uri):

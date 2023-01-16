@@ -10,6 +10,7 @@ from ovos_utils.gui import GUIInterface
 from ovos_utils.log import LOG
 
 from ovos_plugin_common_play.ocp.status import *
+from ovos_plugin_common_play.ocp.utils import is_qtav_available
 from threading import Timer
 
 
@@ -69,13 +70,16 @@ class OCPMediaPlayerGUI(GUIInterface):
 
     @property
     def video_player_page(self):
+        qtav = join(self.player.res_dir, "ui", "OVOSVideoPlayerQtAv.qml")
+        native = join(self.player.res_dir, "ui", "OVOSVideoPlayer.qml")
         if self.video_backend == VideoPlayerBackend.AUTO:
-            # TODO - detect if qtav is available, if yes use it
-            pass
-        if self.video_backend == VideoPlayerBackend.QTAV:
-            return join(self.player.res_dir, "ui", "OVOSVideoPlayerQtAv.qml")
-        else:
-            return join(self.player.res_dir, "ui", "OVOSVideoPlayer.qml")
+            # detect if qtav is available, if yes use it
+            if is_qtav_available():
+                return qtav
+        elif self.video_backend == VideoPlayerBackend.QTAV:
+            return qtav
+
+        return native
 
     @property
     def web_player_page(self):
