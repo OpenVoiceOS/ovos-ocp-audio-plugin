@@ -1,6 +1,10 @@
 import random
+from os.path import join, isfile
 from threading import RLock
 from typing import List
+
+from ovos_config.locations import get_xdg_config_save_path
+from ovos_plugin_common_play.ocp.player import OCPMediaPlayer
 
 import time
 
@@ -53,7 +57,12 @@ class OCPQuery:
     def settings(self) -> dict:
         if self.ocp_search:
             return self.ocp_search.settings
-        # TODO: Default Settings?
+
+        default_path = join(get_xdg_config_save_path(), 'apps',
+                            'ovos_common_play', 'settings.json')
+        if isfile(default_path):
+            from json_database import JsonStorage
+            return JsonStorage(default_path, disable_lock=True)
         return dict()
 
     @property
@@ -289,7 +298,7 @@ class OCPQuery:
 
 
 class OCPSearch(OCPAbstractComponent):
-    def __init__(self, player=None):
+    def __init__(self, player: OCPMediaPlayer = None):
         super(OCPSearch, self).__init__(player)
         self.search_playlist = Playlist()
         self.old_cps = None
@@ -299,7 +308,7 @@ class OCPSearch(OCPAbstractComponent):
         if player:
             self.bind(player)
 
-    def bind(self, player):
+    def bind(self, player: OCPMediaPlayer):
         self._player = player
         self.old_cps = MycroftCommonPlayInterface() if \
             self.settings.backwards_compatibility else None
