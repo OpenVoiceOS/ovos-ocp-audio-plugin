@@ -26,7 +26,7 @@ class OCPAudioBackend(OCPAudioPlayerBackend):
 
     def create_ocp(self, config: dict):
         self.config = config
-
+        self.config.setdefault("mode", "auto")
         LOG.debug(f"OCP config:\n {pformat(config)}")
 
         if self.config["mode"] == "external":
