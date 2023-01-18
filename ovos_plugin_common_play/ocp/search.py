@@ -4,7 +4,6 @@ from threading import RLock
 from typing import List
 
 from ovos_config.locations import get_xdg_config_save_path
-from ovos_plugin_common_play.ocp.player import OCPMediaPlayer
 
 import time
 
@@ -298,6 +297,8 @@ class OCPQuery:
 
 
 class OCPSearch(OCPAbstractComponent):
+    from ovos_plugin_common_play.ocp.player import OCPMediaPlayer
+
     def __init__(self, player: OCPMediaPlayer = None):
         super(OCPSearch, self).__init__(player)
         self.search_playlist = Playlist()
