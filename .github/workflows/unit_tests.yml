@@ -33,7 +33,6 @@ on:
 jobs:
   unit_tests:
     strategy:
-      max-parallel: 2
       matrix:
         python-version: [ 3.7, 3.8, 3.9, "3.10" ]
     runs-on: ubuntu-latest
@@ -71,10 +70,37 @@ jobs:
         env:
           CODECOV_TOKEN: ${{secrets.CODECOV_TOKEN}}
         uses: codecov/codecov-action@v2
-      - name: Replace ovos-core with mycroft-core repo
+  unit_tests_mycroft:
+    needs:
+      - unit_tests
+    strategy:
+      matrix:
+        python-version: [ 3.7, 3.8, 3.9, "3.10" ]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install System Dependencies
         run: |
-          pip uninstall ovos-core -y
+          sudo apt-get update
+          sudo apt install python3-dev
+          python -m pip install build wheel
+      - name: Install core repo
+        run: |
+          sudo apt install libssl-dev libfann-dev portaudio19-dev libpulse-dev
           pip install git+https://github.com/MycroftAI/mycroft-core
+      - name: Install OCP
+        run: |
+          pip install .
+      - name: Install test dependencies
+        run: |
+          pip install ovos-core
+          pip install ./test/ovos-test-mycroft-audio-plugin
+          pip install ./test/ovos-test-ocp-audio-plugin
+          pip install pytest pytest-timeout pytest-cov
       - name: Run mycroft unittests
         run: |
           pytest --cov-append --cov=ovos_plugin_common_play --cov-report xml test/unittests
