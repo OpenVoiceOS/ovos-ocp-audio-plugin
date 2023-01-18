@@ -1,11 +1,14 @@
 import random
+import time
+
 from os.path import join, isfile
 from threading import RLock
 from typing import List
 
 from ovos_config.locations import get_xdg_config_save_path
-
-import time
+from ovos_utils.gui import is_gui_connected, is_gui_running
+from ovos_utils.log import LOG
+from ovos_utils.messagebus import Message, get_mycroft_bus
 
 from ovos_plugin_common_play.ocp.base import OCPAbstractComponent
 from ovos_plugin_common_play.ocp.media import Playlist
@@ -13,9 +16,6 @@ from ovos_plugin_common_play.ocp.mycroft_cps import \
     MycroftCommonPlayInterface
 from ovos_plugin_common_play.ocp.status import *
 from ovos_plugin_common_play.ocp.utils import available_extractors
-from ovos_utils.gui import is_gui_connected, is_gui_running
-from ovos_utils.log import LOG
-from ovos_utils.messagebus import Message, get_mycroft_bus
 
 
 class OCPQuery:
@@ -297,9 +297,7 @@ class OCPQuery:
 
 
 class OCPSearch(OCPAbstractComponent):
-    from ovos_plugin_common_play.ocp.player import OCPMediaPlayer
-
-    def __init__(self, player: OCPMediaPlayer = None):
+    def __init__(self, player=None):  # OCPMediaPlayer
         super(OCPSearch, self).__init__(player)
         self.search_playlist = Playlist()
         self.old_cps = None
@@ -309,7 +307,7 @@ class OCPSearch(OCPAbstractComponent):
         if player:
             self.bind(player)
 
-    def bind(self, player: OCPMediaPlayer):
+    def bind(self, player):  # OCPMediaPlayer
         self._player = player
         self.old_cps = MycroftCommonPlayInterface() if \
             self.settings.backwards_compatibility else None
