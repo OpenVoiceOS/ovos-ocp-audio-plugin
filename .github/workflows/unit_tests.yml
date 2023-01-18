@@ -56,7 +56,6 @@ jobs:
           pip install .
       - name: Install test dependencies
         run: |
-          pip install ovos-core
           pip install ./test/ovos-test-mycroft-audio-plugin
           pip install ./test/ovos-test-ocp-audio-plugin
           pip install pytest pytest-timeout pytest-cov
@@ -97,7 +96,6 @@ jobs:
           pip install .
       - name: Install test dependencies
         run: |
-          pip install ovos-core
           pip install ./test/ovos-test-mycroft-audio-plugin
           pip install ./test/ovos-test-ocp-audio-plugin
           pip install pytest pytest-timeout pytest-cov
