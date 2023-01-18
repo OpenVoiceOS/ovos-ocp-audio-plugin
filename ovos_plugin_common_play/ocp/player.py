@@ -25,6 +25,14 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         # Define things referenced in `bind`
         self.now_playing = NowPlaying()
         self.media = OCPSearch()
+        self.state = PlayerState.STOPPED
+        self.loop_state = LoopState.NONE
+        self.media_state = MediaState.NO_MEDIA
+        self.playlist = Playlist()
+        self.shuffle = False
+        self.audio_service = None
+        self._audio_backend = None
+        self.track_history = {}
 
         super().__init__("ovos_common_play", settings=settings, bus=bus,
                          gui=gui, resources_dir=resources_dir, lang=lang)
@@ -39,16 +47,6 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         else:
             self.mpris = MprisPlayerCtl(manage_players=manage_players)
             self.mpris.bind(self)
-
-        self.state = PlayerState.STOPPED
-        self.loop_state = LoopState.NONE
-        self.media_state = MediaState.NO_MEDIA
-        self.playlist = Playlist()
-        self.shuffle = False
-
-        self.audio_service = None
-        self._audio_backend = None
-        self.track_history = {}
 
     def bind(self, bus=None):
         super(OCPMediaPlayer, self).bind(bus)
