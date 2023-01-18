@@ -14,18 +14,18 @@ from ovos_utils.gui import is_gui_connected, is_gui_running
 from ovos_utils.log import LOG
 from ovos_utils.messagebus import Message, get_mycroft_bus
 
-cast2audio = [
-    MediaType.MUSIC,
-    MediaType.PODCAST,
-    MediaType.AUDIOBOOK,
-    MediaType.RADIO,
-    MediaType.RADIO_THEATRE,
-    MediaType.VISUAL_STORY,
-    MediaType.NEWS
-]
-
 
 class OCPQuery:
+    cast2audio = [
+        MediaType.MUSIC,
+        MediaType.PODCAST,
+        MediaType.AUDIOBOOK,
+        MediaType.RADIO,
+        MediaType.RADIO_THEATRE,
+        MediaType.VISUAL_STORY,
+        MediaType.NEWS
+    ]
+
     def __init__(self, query, ocp_search=None, media_type=MediaType.GENERIC, bus=None):
         LOG.debug(f"Created {media_type.name} query: {query}")
         self.query = query
@@ -195,7 +195,7 @@ class OCPQuery:
                 # filter video results if GUI not connected
                 if not has_gui:
                     # force allowed stream types to be played audio only
-                    if res.get("media_type", "") in cast2audio:
+                    if res.get("media_type", "") in self.cast2audio:
                         LOG.debug("unable to use GUI, "
                                   "forcing result to play audio only")
                         res["playback"] = PlaybackType.AUDIO
