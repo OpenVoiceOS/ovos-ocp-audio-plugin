@@ -1,4 +1,3 @@
-from ovos_plugin_common_play.ocp.settings import OCPSettings
 from ovos_plugin_common_play.ocp.status import MediaState, PlayerState, TrackState
 from ovos_plugin_manager.templates.audio import AudioBackend
 from ovos_ocp_files_plugin.plugin import OCPFilesMetadataExtractor

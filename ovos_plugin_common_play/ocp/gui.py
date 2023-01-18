@@ -1,5 +1,5 @@
 from os.path import join, dirname
-from time import sleep, time
+from time import sleep
 from mycroft_bus_client.message import Message
 from ovos_utils.gui import GUIInterface
 from ovos_utils.events import EventSchedulerInterface
@@ -106,10 +106,10 @@ class OCPMediaPlayerGUI(GUIInterface):
         self["uri"] = self.player.now_playing.uri
         self["title"] = self.player.now_playing.title
         self["image"] = self.player.now_playing.image or \
-                        join(dirname(__file__), "res/ui/images/ocp.png")
+            join(dirname(__file__), "res/ui/images/ocp.png")
         self["artist"] = self.player.now_playing.artist
         self["bg_image"] = self.player.now_playing.bg_image or \
-                           join(dirname(__file__), "res/ui/images/ocp_bg.png")
+            join(dirname(__file__), "res/ui/images/ocp_bg.png")
         self["duration"] = self.player.now_playing.length
         self["position"] = self.player.now_playing.position
         # options below control the web player
@@ -409,6 +409,7 @@ class OCPMediaPlayerGUI(GUIInterface):
         
     def remove_homescreen(self):
         self.release()
+
 
 class OCPExternalGuiInterface(GUIInterface):
     def __init__(self, skill_id):

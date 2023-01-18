@@ -144,9 +144,9 @@ class Playlist(list):
         return entries
 
     def sort_by_conf(self):
-        self.sort(key=lambda k: k.match_confidence \
-            if isinstance(k, MediaEntry) else \
-            k.get("match_confidence", 0), reverse=True)
+        self.sort(key=lambda k: k.match_confidence
+                  if isinstance(k, MediaEntry) else
+                  k.get("match_confidence", 0), reverse=True)
 
     def add_entry(self, entry, index=-1):
         assert isinstance(index, int)

@@ -2,7 +2,6 @@ from os.path import join, dirname, isfile
 from ovos_workshop.decorators.ocp import *
 from ovos_plugin_common_play.ocp.gui import OCPMediaPlayerGUI
 from ovos_plugin_common_play.ocp.player import OCPMediaPlayer
-from ovos_plugin_common_play.ocp.settings import OCPSettings
 from ovos_plugin_common_play.ocp.status import *
 from ovos_utils.gui import can_use_gui
 from ovos_utils.log import LOG
@@ -42,11 +41,14 @@ class OCP(OVOSAbstractApplication):
     }
 
     def __init__(self, bus=None, lang=None, settings=None):
-        settings = settings or OCPSettings()
+        # settings = settings or OCPSettings()
         res_dir = join(dirname(__file__), "res")
         gui = OCPMediaPlayerGUI()
         super().__init__(skill_id="ovos.common_play", resources_dir=res_dir,
-                         bus=bus, lang=lang, settings=settings, gui=gui)
+                         bus=bus, lang=lang, gui=gui)
+        if settings:
+            LOG.debug(f"Updating settings from value passed at init")
+            self.settings = settings
         self._intents_event = Event()
         self._intent_registration_lock = Lock()
         self.player = OCPMediaPlayer(bus=self.bus,

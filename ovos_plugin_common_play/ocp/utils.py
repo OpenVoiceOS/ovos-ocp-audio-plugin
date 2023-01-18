@@ -1,10 +1,8 @@
 import mimetypes
 import shutil
-import tempfile
 from os import makedirs
-from os.path import basename, expanduser, isfile, join, dirname
+from os.path import expanduser, isfile, join, dirname
 
-from ovos_plugin_common_play.ocp.status import TrackState, PlaybackType
 from ovos_plugin_manager.ocp import StreamHandler
 from ovos_ocp_files_plugin.plugin import OCPFilesMetadataExtractor
 ocp_plugins = StreamHandler()

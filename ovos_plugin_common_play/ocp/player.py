@@ -11,7 +11,6 @@ from ovos_plugin_common_play.ocp.gui import OCPMediaPlayerGUI
 from ovos_plugin_common_play.ocp.media import Playlist, MediaEntry, NowPlaying
 from ovos_plugin_common_play.ocp.mpris import MprisPlayerCtl
 from ovos_plugin_common_play.ocp.search import OCPSearch
-from ovos_plugin_common_play.ocp.settings import OCPSettings
 from ovos_plugin_common_play.ocp.status import *
 from ovos_plugin_common_play.ocp.mycroft_cps import MycroftAudioService
 from ovos_workshop import OVOSAbstractApplication
@@ -20,12 +19,15 @@ from ovos_workshop import OVOSAbstractApplication
 class OCPMediaPlayer(OVOSAbstractApplication):
     def __init__(self, bus=None, settings=None, lang=None, gui=None,
                  resources_dir=None):
-        settings = settings or OCPSettings()
         resources_dir = resources_dir or join(dirname(__file__), "res")
         gui = gui or OCPMediaPlayerGUI()
+
+        super().__init__("ovos_common_play", settings=settings, bus=bus,
+                         gui=gui, resources_dir=resources_dir, lang=lang)
+
         # mpris settings
-        manage_players = settings.get("manage_external_players", False)
-        if settings.disable_mpris:
+        manage_players = self.settings.get("manage_external_players", False)
+        if self.settings.get('disable_mpris'):
             LOG.info("MPRIS integration is disabled")
             self.mpris = None
         else:
@@ -41,8 +43,6 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         self.audio_service = None
         self._audio_backend = None
         self.track_history = {}
-        super().__init__("ovos_common_play", settings=settings, bus=bus,
-                         gui=gui, resources_dir=resources_dir, lang=lang)
 
     def bind(self, bus=None):
         super(OCPMediaPlayer, self).bind(bus)
@@ -483,7 +483,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
                                    PlaybackType.UNDEFINED]:
             self.stop_gui_player()
             self.set_player_state(PlayerState.STOPPED)
-        #if self.active_backend in [PlaybackType.MPRIS] and self.mpris:
+        # if self.active_backend in [PlaybackType.MPRIS] and self.mpris:
         #    self.mpris.stop()
 
     def stop_gui_player(self):
