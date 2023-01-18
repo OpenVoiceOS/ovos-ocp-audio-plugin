@@ -34,7 +34,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         self._audio_backend = None
         self.track_history = {}
 
-        super().__init__("ovos_common_play", settings=settings, bus=bus,
+        super().__init__("ovos_common_play", bus=bus,
                          gui=gui, resources_dir=resources_dir, lang=lang)
         if settings:
             self.settings.merge(settings)
