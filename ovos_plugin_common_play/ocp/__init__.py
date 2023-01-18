@@ -48,7 +48,7 @@ class OCP(OVOSAbstractApplication):
                          bus=bus, lang=lang, gui=gui)
         if settings:
             LOG.debug(f"Updating settings from value passed at init")
-            self.settings = settings
+            self.settings.merge(settings)
         self._intents_event = Event()
         self._intent_registration_lock = Lock()
         self.player = OCPMediaPlayer(bus=self.bus,

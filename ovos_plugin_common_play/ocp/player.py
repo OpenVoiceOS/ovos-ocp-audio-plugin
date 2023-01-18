@@ -24,6 +24,8 @@ class OCPMediaPlayer(OVOSAbstractApplication):
 
         super().__init__("ovos_common_play", settings=settings, bus=bus,
                          gui=gui, resources_dir=resources_dir, lang=lang)
+        if settings:
+            self.settings.merge(settings)
 
         # mpris settings
         manage_players = self.settings.get("manage_external_players", False)
