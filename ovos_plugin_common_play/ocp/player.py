@@ -162,7 +162,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
                 self.shuffle or \
                 self.active_backend == PlaybackType.MPRIS:
             return True
-        elif self.settings.merge_search and \
+        elif self.settings.get("merge_search", True) and \
                 not self.media.search_playlist.is_last_track:
             return True
         elif not self.playlist.is_last_track:
@@ -242,7 +242,8 @@ class OCPMediaPlayer(OVOSAbstractApplication):
                 LOG.exception(e)
                 return False
             has_gui = is_gui_running() or is_gui_connected(self.bus)
-            if not has_gui or self.settings.force_audioservice:
+            if not has_gui or self.settings.get("force_audioservice") or \
+                    self.settings.get("playback_mode") == PlaybackMode.FORCE_AUDIOSERVICE:
                 # No gui, so lets force playback to use audio only
                 self.now_playing.playback = PlaybackType.AUDIO_SERVICE
             self.gui["stream"] = self.now_playing.uri
@@ -286,7 +287,9 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         cfg = Configuration()["Audio"]["backends"]
         available = [k for k, v in backends.items()
                      if cfg[k].get("type", "") != "ovos_common_play"]
-        for b in self.settings.preferred_audio_services:
+        preferred = self.settings.get("preferred_audio_services") or \
+                    ["vlc", "mplayer", "simple"]
+        for b in preferred:
             if b in available:
                 return b
         LOG.error("Preferred audio service backend not installed")
@@ -392,7 +395,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
             self.set_now_playing(self.playlist.current_track)
             LOG.info(f"Next track index: {self.playlist.position}")
         elif not self.media.search_playlist.is_last_track and \
-                self.settings.merge_search:
+                self.settings.get("merge_search", True):
             while self.media.search_playlist.current_track in self.playlist:
                 self.media.search_playlist.next_track()
             self.set_now_playing(self.media.search_playlist.current_track)
@@ -558,7 +561,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
             self.handle_playback_ended(message)
         elif state == MediaState.INVALID_MEDIA:
             self.handle_invalid_media(message)
-            if self.settings.autoplay:
+            if self.settings.get("autoplay", True):
                 self.play_next()
 
     def handle_invalid_media(self, message):
@@ -566,7 +569,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
 
     def handle_playback_ended(self, message):
         LOG.debug("Playback ended")
-        if self.settings.autoplay and \
+        if self.settings.get("autoplay", True) and \
                 self.active_backend != PlaybackType.MPRIS:
             self.play_next()
             return

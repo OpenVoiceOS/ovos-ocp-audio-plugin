@@ -122,7 +122,7 @@ class OCP(OVOSAbstractApplication):
         """
         locale_folder = join(dirname(__file__), "res", "locale", self.lang)
         intents = self.intent2media
-        if self.settings.adult_content:
+        if self.settings.get("adult_content", False):
             intents.update(self.adultintents)
 
         for intent_name in intents:

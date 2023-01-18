@@ -50,7 +50,7 @@ class OCPQuery:
         self.query_replies = []
         self.searching = False
         self.search_start = 0
-        self.query_timeouts = self.settings.min_timeout
+        self.query_timeouts = self.settings.get("min_timeout", 5)
 
     @property
     def settings(self) -> dict:
@@ -84,7 +84,7 @@ class OCPQuery:
 
     def send(self):
         self.query_replies = []
-        self.query_timeouts = self.settings.min_timeout
+        self.query_timeouts = self.settings.get("min_timeout", 5)
         self.search_start = time.time()
         self.searching = True
         self.register_events()
@@ -310,7 +310,7 @@ class OCPSearch(OCPAbstractComponent):
     def bind(self, player):  # OCPMediaPlayer
         self._player = player
         self.old_cps = MycroftCommonPlayInterface() if \
-            self.settings.backwards_compatibility else None
+            self.settings.get("backwards_compatibility", True) else None
         if self.old_cps:
             self.old_cps.bind(player)
         self.add_event("ovos.common_play.skills.detach",
@@ -391,7 +391,7 @@ class OCPSearch(OCPAbstractComponent):
 
             # fallback to generic search type
             if not query.results and \
-                    self.settings.search_fallback and \
+                    self.settings.get("search_fallback", True) and \
                     media_type != MediaType.GENERIC:
                 LOG.debug("OVOSCommonPlay falling back to MediaType.GENERIC")
                 query.media_type = MediaType.GENERIC
@@ -429,7 +429,7 @@ class OCPSearch(OCPAbstractComponent):
             # select randomly
             selected = random.choice(ties)
 
-            if self.settings.video_only:
+            if self.settings.get("playback_mode") == PlaybackMode.VIDEO_ONLY:
                 # select only from VIDEO results if preference is set
                 gui_results = [r for r in ties if r["playback"] ==
                                PlaybackType.VIDEO]
@@ -437,7 +437,7 @@ class OCPSearch(OCPAbstractComponent):
                     selected = random.choice(gui_results)
                 else:
                     return None
-            elif self.settings.audio_only:
+            elif self.settings.get("playback_mode") == PlaybackMode.AUDIO_ONLY:
                 # select only from AUDIO results if preference is set
                 audio_results = [r for r in ties if r["playback"] !=
                                  PlaybackType.VIDEO]
