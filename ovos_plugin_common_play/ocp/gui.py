@@ -1,4 +1,6 @@
 from os.path import join, dirname
+
+from ovos_plugin_common_play.ocp import OCP_ID
 from time import sleep
 from mycroft_bus_client.message import Message
 from ovos_utils.gui import GUIInterface
@@ -14,7 +16,7 @@ class OCPMediaPlayerGUI(GUIInterface):
     def __init__(self):
         # the skill_id is chosen so the namespace matches the regular bus api
         # ie, the gui event "XXX" is sent in the bus as "ovos.common_play.XXX"
-        super(OCPMediaPlayerGUI, self).__init__(skill_id="ovos.common_play")
+        super(OCPMediaPlayerGUI, self).__init__(skill_id=OCP_ID)
         self.ocp_skills = {}  # skill_id: meta
         core_config = Configuration()
         enclosure_config = core_config.get("gui") or {}
@@ -35,7 +37,8 @@ class OCPMediaPlayerGUI(GUIInterface):
                               self.handle_play_from_search)
         self.player.add_event('ovos.common_play.skill.play',
                               self.handle_play_skill_featured_media)
-        self.event_scheduler_interface = EventSchedulerInterface(name="ovos.common_play", bus=self.bus)
+        self.event_scheduler_interface = EventSchedulerInterface(name=OCP_ID,
+                                                                 bus=self.bus)
 
     @property
     def home_screen_page(self):

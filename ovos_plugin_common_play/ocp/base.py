@@ -1,5 +1,5 @@
 from ovos_config.locations import get_xdg_config_save_path
-from ovos_plugin_common_play.ocp import OCP_ID
+from ovos_plugin_common_play.ocp.constants import OCP_ID
 from ovos_plugin_common_play.ocp.status import MediaState, PlayerState, TrackState
 from ovos_plugin_manager.templates.audio import AudioBackend
 from ovos_ocp_files_plugin.plugin import OCPFilesMetadataExtractor
@@ -7,7 +7,6 @@ from ovos_utils.log import LOG
 from os.path import basename, join, isfile
 from mycroft_bus_client.message import Message
 
-OCP_ID = "ovos_common_play"
 
 
 class OCPAbstractComponent:
