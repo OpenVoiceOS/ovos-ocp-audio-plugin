@@ -14,8 +14,7 @@ from ovos_plugin_common_play.ocp.search import OCPSearch
 from ovos_plugin_common_play.ocp.status import *
 from ovos_plugin_common_play.ocp.mycroft_cps import MycroftAudioService
 from ovos_workshop import OVOSAbstractApplication
-
-OCP_ID = "ovos_common_play"
+from ovos_plugin_common_play.ocp import OCP_ID
 
 
 class OCPMediaPlayer(OVOSAbstractApplication):
