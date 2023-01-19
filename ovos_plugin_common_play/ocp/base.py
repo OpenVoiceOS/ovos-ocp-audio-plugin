@@ -7,6 +7,8 @@ from ovos_utils.log import LOG
 from os.path import basename, join, isfile
 from mycroft_bus_client.message import Message
 
+OCP_ID = "ovos_common_play"
+
 
 class OCPAbstractComponent:
     def __init__(self, player=None):

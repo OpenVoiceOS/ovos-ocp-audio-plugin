@@ -16,7 +16,7 @@ from ovos_plugin_common_play.ocp.mycroft_cps import \
     MycroftCommonPlayInterface
 from ovos_plugin_common_play.ocp.status import *
 from ovos_plugin_common_play.ocp.utils import available_extractors
-from ovos_plugin_common_play.ocp import OCP_ID
+from ovos_plugin_common_play.ocp.base import OCP_ID
 
 
 class OCPQuery:

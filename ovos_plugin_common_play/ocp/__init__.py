@@ -12,8 +12,6 @@ from padacioso import IntentContainer
 from ovos_utils.intents.intent_service_interface import IntentQueryApi
 from threading import Event, Lock
 
-OCP_ID = "ovos_common_play"
-
 
 class OCP(OVOSAbstractApplication):
     intent2media = {
