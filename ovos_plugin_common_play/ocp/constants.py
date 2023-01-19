@@ -1,1 +1,1 @@
-OCP_ID = "ovos_common_play"
+OCP_ID = "ovos.common_play"
