@@ -16,6 +16,7 @@ from ovos_plugin_common_play.ocp.mycroft_cps import \
     MycroftCommonPlayInterface
 from ovos_plugin_common_play.ocp.status import *
 from ovos_plugin_common_play.ocp.utils import available_extractors
+from ovos_plugin_common_play.ocp.player import OCP_ID
 
 
 class OCPQuery:
@@ -58,7 +59,7 @@ class OCPQuery:
             return self.ocp_search.settings
 
         default_path = join(get_xdg_config_save_path(), 'apps',
-                            'ovos_common_play', 'settings.json')
+                            OCP_ID, 'settings.json')
         if isfile(default_path):
             from json_database import JsonStorage
             return JsonStorage(default_path, disable_lock=True)

@@ -1,4 +1,5 @@
 from ovos_config.locations import get_xdg_config_save_path
+from ovos_plugin_common_play.ocp.player import OCP_ID
 from ovos_plugin_common_play.ocp.status import MediaState, PlayerState, TrackState
 from ovos_plugin_manager.templates.audio import AudioBackend
 from ovos_ocp_files_plugin.plugin import OCPFilesMetadataExtractor
@@ -29,7 +30,7 @@ class OCPAbstractComponent:
             return self._player.settings
 
         default_path = join(get_xdg_config_save_path(), 'apps',
-                            'ovos_common_play', 'settings.json')
+                            OCP_ID, 'settings.json')
         if isfile(default_path):
             from json_database import JsonStorage
             return JsonStorage(default_path, disable_lock=True)

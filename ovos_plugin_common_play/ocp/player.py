@@ -15,6 +15,8 @@ from ovos_plugin_common_play.ocp.status import *
 from ovos_plugin_common_play.ocp.mycroft_cps import MycroftAudioService
 from ovos_workshop import OVOSAbstractApplication
 
+OCP_ID = "ovos_common_play"
+
 
 class OCPMediaPlayer(OVOSAbstractApplication):
     def __init__(self, bus=None, settings=None, lang=None, gui=None,
@@ -34,7 +36,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         self._audio_backend = None
         self.track_history = {}
 
-        super().__init__("ovos_common_play", bus=bus,
+        super().__init__(OCP_ID, bus=bus,
                          gui=gui, resources_dir=resources_dir, lang=lang)
         if settings:
             self.settings.merge(settings)
