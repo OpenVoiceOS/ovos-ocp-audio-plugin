@@ -2,7 +2,16 @@
 
 ## [Unreleased](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/HEAD)
 
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.3a11...HEAD)
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.3a12...HEAD)
+
+**Merged pull requests:**
+
+- Update license tests to maintained GH Action [\#37](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/37) ([NeonDaniel](https://github.com/NeonDaniel))
+- refactor/ovos workshop settings + deprecate OCPSettings [\#36](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/36) ([NeonDaniel](https://github.com/NeonDaniel))
+
+## [V0.0.3a12](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.3a12) (2023-01-16)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.3a11...V0.0.3a12)
 
 **Fixed bugs:**
 
