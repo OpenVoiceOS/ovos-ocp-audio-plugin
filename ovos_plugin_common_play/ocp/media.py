@@ -1,3 +1,4 @@
+from ovos_plugin_common_play.ocp import OCP_ID
 from ovos_plugin_common_play.ocp.status import *
 from ovos_plugin_common_play.ocp.utils import ocp_plugins, find_mime
 from ovos_utils.json_helper import merge_dict
@@ -9,7 +10,7 @@ from dbus_next.service import Variant
 
 # TODO subclass from dict (?)
 class MediaEntry:
-    def __init__(self, title="", uri="", skill_id="ovos.common_play",
+    def __init__(self, title="", uri="", skill_id=OCP_ID,
                  image=None, match_confidence=0,
                  playback=PlaybackType.UNDEFINED,
                  status=TrackState.DISAMBIGUATION, phrase=None,
@@ -50,7 +51,7 @@ class MediaEntry:
     def from_dict(data):
         if data.get("bg_image") and data["bg_image"].startswith("/"):
             data["bg_image"] = "file:/" + data["bg_image"]
-        data["skill"] = data.get("skill_id") or "ovos.common_play"
+        data["skill"] = data.get("skill_id") or OCP_ID
         data["position"] = data.get("position", 0)
         data["length"] = data.get("length") or \
                          data.get("track_length") or \
@@ -144,9 +145,9 @@ class Playlist(list):
         return entries
 
     def sort_by_conf(self):
-        self.sort(key=lambda k: k.match_confidence \
-            if isinstance(k, MediaEntry) else \
-            k.get("match_confidence", 0), reverse=True)
+        self.sort(key=lambda k: k.match_confidence
+                  if isinstance(k, MediaEntry) else
+                  k.get("match_confidence", 0), reverse=True)
 
     def add_entry(self, entry, index=-1):
         assert isinstance(index, int)

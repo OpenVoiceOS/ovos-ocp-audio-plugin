@@ -1,21 +1,35 @@
 import random
-from threading import RLock
-
 import time
+
+from os.path import join, isfile
+from threading import RLock
+from typing import List
+
+from ovos_config.locations import get_xdg_config_save_path
+from ovos_utils.gui import is_gui_connected, is_gui_running
+from ovos_utils.log import LOG
+from ovos_utils.messagebus import Message, get_mycroft_bus
 
 from ovos_plugin_common_play.ocp.base import OCPAbstractComponent
 from ovos_plugin_common_play.ocp.media import Playlist
 from ovos_plugin_common_play.ocp.mycroft_cps import \
     MycroftCommonPlayInterface
-from ovos_plugin_common_play.ocp.settings import OCPSettings
 from ovos_plugin_common_play.ocp.status import *
 from ovos_plugin_common_play.ocp.utils import available_extractors
-from ovos_utils.gui import is_gui_connected, is_gui_running
-from ovos_utils.log import LOG
-from ovos_utils.messagebus import Message, get_mycroft_bus
+from ovos_plugin_common_play.ocp.constants import OCP_ID
 
 
 class OCPQuery:
+    cast2audio = [
+        MediaType.MUSIC,
+        MediaType.PODCAST,
+        MediaType.AUDIOBOOK,
+        MediaType.RADIO,
+        MediaType.RADIO_THEATRE,
+        MediaType.VISUAL_STORY,
+        MediaType.NEWS
+    ]
+
     def __init__(self, query, ocp_search=None, media_type=MediaType.GENERIC, bus=None):
         LOG.debug(f"Created {media_type.name} query: {query}")
         self.query = query
@@ -37,16 +51,22 @@ class OCPQuery:
         self.query_replies = []
         self.searching = False
         self.search_start = 0
-        self.query_timeouts = self.settings.min_timeout
+        self.query_timeouts = self.settings.get("min_timeout", 5)
 
     @property
-    def settings(self):
+    def settings(self) -> dict:
         if self.ocp_search:
             return self.ocp_search.settings
-        return OCPSettings()
+
+        default_path = join(get_xdg_config_save_path(), 'apps',
+                            OCP_ID, 'settings.json')
+        if isfile(default_path):
+            from json_database import JsonStorage
+            return JsonStorage(default_path, disable_lock=True)
+        return dict()
 
     @property
-    def search_playlist(self):
+    def search_playlist(self) -> Playlist:
         if self.ocp_search:
             return self.ocp_search.search_playlist
         return Playlist()
@@ -65,7 +85,7 @@ class OCPQuery:
 
     def send(self):
         self.query_replies = []
-        self.query_timeouts = self.settings.min_timeout
+        self.query_timeouts = self.settings.get("min_timeout", 5)
         self.search_start = time.time()
         self.searching = True
         self.register_events()
@@ -77,16 +97,16 @@ class OCPQuery:
         # if there is no match type defined, lets increase timeout a bit
         # since all skills need to search
         if self.media_type == MediaType.GENERIC:
-            timeout = self.settings.max_timeout + 3  # timeout bonus
+            timeout = self.settings.get("max_timeout", 15) + 3  # timeout bonus
         else:
-            timeout = self.settings.max_timeout
+            timeout = self.settings.get("max_timeout", 15)
         while self.searching and time.time() - self.search_start <= timeout:
             time.sleep(0.1)
         self.searching = False
         self.remove_events()
 
     @property
-    def results(self):
+    def results(self) -> List[dict]:
         return [s for s in self.query_replies if s.get("results")]
 
     def register_events(self):
@@ -136,7 +156,7 @@ class OCPQuery:
 
         if message.data.get("searching"):
             # extend the timeout by N seconds
-            if timeout and self.settings.allow_extensions:
+            if timeout and self.settings.get("allow_extensions", True):
                 self.query_timeouts += timeout
             # else -> expired search
 
@@ -154,8 +174,9 @@ class OCPQuery:
             for idx, res in enumerate(results):
                 if self.media_type not in [MediaType.ADULT, MediaType.HENTAI]:
                     # skip adult content results unless explicitly enabled
-                    if not self.settings.adult_content and \
-                            res.get("media_type", MediaType.GENERIC) in [MediaType.ADULT, MediaType.HENTAI]:
+                    if not self.settings.get("adult_content", False) and \
+                            res.get("media_type", MediaType.GENERIC) in \
+                            [MediaType.ADULT, MediaType.HENTAI]:
                         continue
 
                 # filter uris we can play, usually files and http streams, but some
@@ -183,10 +204,9 @@ class OCPQuery:
                 # filter video results if GUI not connected
                 if not has_gui:
                     # force allowed stream types to be played audio only
-                    if res.get("media_type", "") in \
-                            OCPSettings.cast2audio:
-                        LOG.debug(
-                            "unable to use GUI, forcing result to play audio only")
+                    if res.get("media_type", "") in self.cast2audio:
+                        LOG.debug("unable to use GUI, "
+                                  "forcing result to play audio only")
                         res["playback"] = PlaybackType.AUDIO
                         res["match_confidence"] -= 10
                         results[idx] = res
@@ -226,7 +246,7 @@ class OCPQuery:
             elif self.searching:
                 for res in message.data.get("results", []):
                     if res.get("match_confidence", 0) >= \
-                            self.settings.early_stop_thresh:
+                            self.settings.get("early_stop_thresh", 85):
                         # got a really good match, dont search further
                         LOG.info(
                             "Receiving very high confidence match, stopping "
@@ -241,10 +261,12 @@ class OCPQuery:
                                     f"match - {res['title']}\n" \
                                     f"confidence - {res['match_confidence']} "
                         # allow other skills to "just miss"
-                        if self.settings.early_stop_grace_period:
+                        early_stop_grace = \
+                            self.settings.get("early_stop_grace_period", 0.5)
+                        if early_stop_grace:
                             LOG.debug(
-                                f"  - grace period: {self.settings.early_stop_grace_period} seconds")
-                            time.sleep(self.settings.early_stop_grace_period)
+                                f"  - grace period: {early_stop_grace} seconds")
+                            time.sleep(early_stop_grace)
                         self.searching = False
                         return
 
@@ -276,7 +298,7 @@ class OCPQuery:
 
 
 class OCPSearch(OCPAbstractComponent):
-    def __init__(self, player=None):
+    def __init__(self, player=None):  # OCPMediaPlayer
         super(OCPSearch, self).__init__(player)
         self.search_playlist = Playlist()
         self.old_cps = None
@@ -286,10 +308,10 @@ class OCPSearch(OCPAbstractComponent):
         if player:
             self.bind(player)
 
-    def bind(self, player):
+    def bind(self, player):  # OCPMediaPlayer
         self._player = player
         self.old_cps = MycroftCommonPlayInterface() if \
-            self.settings.backwards_compatibility else None
+            self.settings.get("backwards_compatibility", True) else None
         if self.old_cps:
             self.old_cps.bind(player)
         self.add_event("ovos.common_play.skills.detach",
@@ -370,7 +392,7 @@ class OCPSearch(OCPAbstractComponent):
 
             # fallback to generic search type
             if not query.results and \
-                    self.settings.search_fallback and \
+                    self.settings.get("search_fallback", True) and \
                     media_type != MediaType.GENERIC:
                 LOG.debug("OVOSCommonPlay falling back to MediaType.GENERIC")
                 query.media_type = MediaType.GENERIC
@@ -408,7 +430,7 @@ class OCPSearch(OCPAbstractComponent):
             # select randomly
             selected = random.choice(ties)
 
-            if self.settings.video_only:
+            if self.settings.get("playback_mode") == PlaybackMode.VIDEO_ONLY:
                 # select only from VIDEO results if preference is set
                 gui_results = [r for r in ties if r["playback"] ==
                                PlaybackType.VIDEO]
@@ -416,7 +438,7 @@ class OCPSearch(OCPAbstractComponent):
                     selected = random.choice(gui_results)
                 else:
                     return None
-            elif self.settings.audio_only:
+            elif self.settings.get("playback_mode") == PlaybackMode.AUDIO_ONLY:
                 # select only from AUDIO results if preference is set
                 audio_results = [r for r in ties if r["playback"] !=
                                  PlaybackType.VIDEO]
@@ -428,8 +450,8 @@ class OCPSearch(OCPAbstractComponent):
             # TODO: Ask user to pick between ties or do it automagically
         else:
             selected = best
-        LOG.debug(
-            f"OVOSCommonPlay selected: {selected['skill_id']} - {selected['match_confidence']}")
+        LOG.debug(f"OVOSCommonPlay selected: {selected['skill_id']} - "
+                  f"{selected['match_confidence']}")
         return selected
 
     def clear(self):

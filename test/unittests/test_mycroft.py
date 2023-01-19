@@ -5,10 +5,9 @@ from unittest.mock import patch
 
 from mycroft_bus_client import Message
 
-from mycroft.configuration.config import Configuration
+from ovos_config.config import Configuration
 from mycroft.skills.intent_service import IntentService
 from mycroft.skills.skill_loader import SkillLoader
-from ovos_utils.log import LOG
 from ovos_utils.messagebus import FakeBus
 
 import ovos_plugin_common_play

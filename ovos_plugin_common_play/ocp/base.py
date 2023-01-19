@@ -1,10 +1,12 @@
-from ovos_plugin_common_play.ocp.settings import OCPSettings
+from ovos_config.locations import get_xdg_config_save_path
+from ovos_plugin_common_play.ocp.constants import OCP_ID
 from ovos_plugin_common_play.ocp.status import MediaState, PlayerState, TrackState
 from ovos_plugin_manager.templates.audio import AudioBackend
 from ovos_ocp_files_plugin.plugin import OCPFilesMetadataExtractor
 from ovos_utils.log import LOG
-from os.path import basename
+from os.path import basename, join, isfile
 from mycroft_bus_client.message import Message
+
 
 
 class OCPAbstractComponent:
@@ -25,9 +27,15 @@ class OCPAbstractComponent:
 
     @property
     def settings(self):
-        if not self._player:
-            return OCPSettings()
-        return self._player.settings
+        if self._player:
+            return self._player.settings
+
+        default_path = join(get_xdg_config_save_path(), 'apps',
+                            OCP_ID, 'settings.json')
+        if isfile(default_path):
+            from json_database import JsonStorage
+            return JsonStorage(default_path, disable_lock=True)
+        return dict()
 
     @property
     def enclosure(self):
