@@ -332,7 +332,8 @@ class OCP(OVOSAbstractApplication):
         LOG.debug(f"Got {len(results)} results")
         # ignore very low score matches
         results = [r for r in results
-                   if r["match_confidence"] >= self.settings.min_score]
+                   if r["match_confidence"] >= self.settings.get("min_score",
+                                                                 50)]
         LOG.debug(f"Got {len(results)} usable results")
 
         # check if user said "play XXX audio only"
