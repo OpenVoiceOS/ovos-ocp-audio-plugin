@@ -241,7 +241,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
                 LOG.exception(e)
                 return False
             has_gui = is_gui_running() or is_gui_connected(self.bus)
-            if not has_gui or self.settings.get("force_audioservice") or \
+            if not has_gui or self.settings.get("force_audioservice", False) or \
                     self.settings.get("playback_mode") == PlaybackMode.FORCE_AUDIOSERVICE:
                 # No gui, so lets force playback to use audio only
                 self.now_playing.playback = PlaybackType.AUDIO_SERVICE
