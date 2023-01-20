@@ -281,7 +281,7 @@ class OCPMediaPlayerGUI(GUIInterface):
     # page helpers
     def _get_player_page(self):
         if self.player.active_backend == PlaybackType.AUDIO_SERVICE or \
-                self.player.settings.force_audioservice:
+                self.player.settings.get("force_audioservice"):
             return self.audio_service_page
         elif self.player.active_backend == PlaybackType.VIDEO:
             return self.video_player_page
