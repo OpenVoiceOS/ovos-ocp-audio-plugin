@@ -2,7 +2,15 @@
 
 ## [Unreleased](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/HEAD)
 
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.3a13...HEAD)
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.3a14...HEAD)
+
+**Merged pull requests:**
+
+- Add optional support for QtAV video player via configuration [\#34](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/34) ([AIIX](https://github.com/AIIX))
+
+## [V0.0.3a14](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.3a14) (2023-01-20)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.3a13...V0.0.3a14)
 
 **Merged pull requests:**
 
