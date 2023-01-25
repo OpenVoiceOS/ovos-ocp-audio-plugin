@@ -1,15 +1,23 @@
+import enum
 from os.path import join, dirname
 
 from ovos_plugin_common_play.ocp import OCP_ID
 from time import sleep
 from mycroft_bus_client.message import Message
-from ovos_utils.gui import GUIInterface
-from ovos_utils.events import EventSchedulerInterface
-from ovos_utils.log import LOG
 from ovos_config import Configuration
+from ovos_utils.events import EventSchedulerInterface
+from ovos_utils.gui import GUIInterface
+from ovos_utils.log import LOG
 
 from ovos_plugin_common_play.ocp.status import *
+from ovos_plugin_common_play.ocp.utils import is_qtav_available
 from threading import Timer
+
+
+class VideoPlayerBackend(str, enum.Enum):
+    AUTO = "auto"
+    QTAV = "qtav"
+    NATIVE = "native"
 
 
 class OCPMediaPlayerGUI(GUIInterface):
@@ -37,8 +45,12 @@ class OCPMediaPlayerGUI(GUIInterface):
                               self.handle_play_from_search)
         self.player.add_event('ovos.common_play.skill.play',
                               self.handle_play_skill_featured_media)
-        self.event_scheduler_interface = EventSchedulerInterface(name=OCP_ID,
-                                                                 bus=self.bus)
+        self.event_scheduler_interface = EventSchedulerInterface(name=OCP_ID, bus=self.bus)
+
+    @property
+    def video_backend(self):
+        return self.player.settings.get("video_player_backend") or \
+               VideoPlayerBackend.AUTO
 
     @property
     def home_screen_page(self):
@@ -58,7 +70,25 @@ class OCPMediaPlayerGUI(GUIInterface):
 
     @property
     def video_player_page(self):
-        return join(self.player.res_dir, "ui", "OVOSVideoPlayer.qml")
+        qtav = join(self.player.res_dir, "ui", "OVOSVideoPlayerQtAv.qml")
+        native = join(self.player.res_dir, "ui", "OVOSVideoPlayer.qml")
+        has_qtav = is_qtav_available()
+        if has_qtav:
+            LOG.info("QtAV detected")
+
+        if self.video_backend == VideoPlayerBackend.AUTO:
+            # detect if qtav is available, if yes use it
+            if has_qtav:
+                LOG.debug("defaulting to OVOSVideoPlayerQtAv")
+                return qtav
+            LOG.debug("defaulting to native OVOSVideoPlayer")
+        elif self.video_backend == VideoPlayerBackend.QTAV:
+            LOG.debug("OVOSVideoPlayerQtAv explicitly configured")
+            return qtav
+        elif self.video_backend == VideoPlayerBackend.NATIVE:
+            LOG.debug("native OVOSVideoPlayer explicitly configured")
+
+        return native
 
     @property
     def web_player_page(self):

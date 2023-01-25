@@ -204,7 +204,13 @@ OCPPluginConfig = {
         # this list is checked in order until a available backend is found
         "preferred_audio_services": ["vlc", "mplayer", "simple"],
 
-        # when media playback ends "click next"
+        # to handle video playback different backends are supported
+        #   - valid options - "native", "qtav", "auto"
+        # "qtav" does not support widget integration
+        # "native" sometimes has problems playing stream urls
+        "video_player_backend": "auto",
+
+        ## when media playback ends "click next"
         "autoplay": True,
         # if True behaves as if the search results are part of the playlist
         #  eg:
