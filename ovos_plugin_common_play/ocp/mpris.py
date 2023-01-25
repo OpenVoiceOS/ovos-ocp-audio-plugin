@@ -60,7 +60,9 @@ class MprisPlayerCtl(Thread):
     @property
     def dbus_type(self):
         if self._ocp_player:
-            return self._ocp_player.settings.dbus_type
+            config = self._ocp_player.settings.get("dbus_type") or "session"
+            return BusType.SYSTEM if config.lower().strip() == "system" else \
+                BusType.SESSION
         return BusType.SESSION
 
     async def export_ocp(self):
