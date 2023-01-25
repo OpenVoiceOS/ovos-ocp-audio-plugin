@@ -2,7 +2,15 @@
 
 ## [Unreleased](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/HEAD)
 
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.3a14...HEAD)
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.3a15...HEAD)
+
+**Merged pull requests:**
+
+- Fix missed dbus settings reference [\#39](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/39) ([NeonDaniel](https://github.com/NeonDaniel))
+
+## [V0.0.3a15](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.3a15) (2023-01-25)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.3a14...V0.0.3a15)
 
 **Merged pull requests:**
 
