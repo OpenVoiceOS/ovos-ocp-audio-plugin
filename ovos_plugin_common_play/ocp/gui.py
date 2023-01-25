@@ -45,7 +45,7 @@ class OCPMediaPlayerGUI(GUIInterface):
                               self.handle_play_from_search)
         self.player.add_event('ovos.common_play.skill.play',
                               self.handle_play_skill_featured_media)
-        self.event_scheduler_interface = EventSchedulerInterface(name="ovos.common_play", bus=self.bus)
+        self.event_scheduler_interface = EventSchedulerInterface(name=OCP_ID, bus=self.bus)
 
     @property
     def video_backend(self):
