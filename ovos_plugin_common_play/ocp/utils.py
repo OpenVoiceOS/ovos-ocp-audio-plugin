@@ -2,6 +2,7 @@ import mimetypes
 import shutil
 from os import makedirs
 from os.path import expanduser, isfile, join, dirname, exists
+from typing import List
 
 from ovos_plugin_manager.ocp import StreamHandler
 from ovos_plugin_common_play.ocp.status import TrackState, PlaybackType
@@ -24,9 +25,14 @@ def find_mime(uri):
         return None
 
 
-def available_extractors():
-    return ["/", "http"] + \
-           [f"{sei}://" for sei in ocp_plugins.supported_seis]
+def available_extractors() -> List[str]:
+    """
+    Get a list of supported Stream Extractor Identifiers. Note that these look
+    like but are not URI schemes.
+    @return: List of supported SEI prefixes
+    """
+    return ["/", "http:", "https:", "file:"] + \
+           [f"{sei}//" for sei in ocp_plugins.supported_seis]
 
 
 def extract_metadata(uri):
