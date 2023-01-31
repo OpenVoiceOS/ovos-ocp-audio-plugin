@@ -26,7 +26,7 @@ def find_mime(uri):
 
 def available_extractors():
     return ["/", "http"] + \
-           [f"{sei}//" for sei in ocp_plugins.supported_seis]
+           [f"{sei}://" for sei in ocp_plugins.supported_seis]
 
 
 def extract_metadata(uri):
