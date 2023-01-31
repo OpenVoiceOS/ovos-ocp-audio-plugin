@@ -1,5 +1,17 @@
 # Changelog
 
+## [Unreleased](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/HEAD)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.4a1...HEAD)
+
+**Merged pull requests:**
+
+- Add missing ':' in extractor SEI parsing [\#41](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/41) ([NeonDaniel](https://github.com/NeonDaniel))
+
+## [V0.0.4a1](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.4a1) (2023-01-30)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.3...V0.0.4a1)
+
 ## [V0.0.3](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.3) (2023-01-26)
 
 [Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.3a17...V0.0.3)
