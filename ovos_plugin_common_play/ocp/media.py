@@ -40,6 +40,7 @@ class MediaEntry:
         skipkeys = skipkeys or []
         if isinstance(entry, MediaEntry):
             entry = entry.as_dict
+        entry = entry or {}
         for k, v in entry.items():
             if k not in skipkeys and hasattr(self, k):
                 if newonly and self.__getattribute__(k):
@@ -321,7 +322,8 @@ class NowPlaying(MediaEntry):
             video = False
         meta = ocp_plugins.extract_stream(uri, video)
         # update media entry with new data
-        self.update(meta, newonly=True)
+        if meta:
+            self.update(meta, newonly=True)
 
     # events from gui_player/audio_service
     def handle_external_play(self, message):
