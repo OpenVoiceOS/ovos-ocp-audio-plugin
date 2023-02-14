@@ -323,7 +323,10 @@ class NowPlaying(MediaEntry):
         meta = ocp_plugins.extract_stream(uri, video)
         # update media entry with new data
         if meta:
+            LOG.debug(f"OCP plugins metadata: {meta}")
             self.update(meta, newonly=True)
+        elif not any((uri.startswith(s) for s in ["http", "file", "/"])):
+            LOG.info(f"OCP WARNING: plugins returned no metadata for uri {uri}")
 
     # events from gui_player/audio_service
     def handle_external_play(self, message):
