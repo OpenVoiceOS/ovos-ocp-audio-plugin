@@ -1,1 +1,5 @@
 recursive-include ovos_plugin_common_play/ocp/res *
+include README.md
+include requirements.txt
+include CHANGELOG.md
+include LICENSE
