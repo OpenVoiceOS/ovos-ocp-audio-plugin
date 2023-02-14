@@ -2,7 +2,15 @@
 
 ## [Unreleased](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/HEAD)
 
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.4a4...HEAD)
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.4a5...HEAD)
+
+**Implemented enhancements:**
+
+- feat/add\_plugin\_logs [\#46](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/46) ([JarbasAl](https://github.com/JarbasAl))
+
+## [V0.0.4a5](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.4a5) (2023-02-13)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.4a4...V0.0.4a5)
 
 **Fixed bugs:**
 
