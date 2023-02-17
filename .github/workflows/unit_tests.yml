@@ -58,6 +58,7 @@ jobs:
         run: |
           pip install ./test/ovos-test-mycroft-audio-plugin
           pip install ./test/ovos-test-ocp-audio-plugin
+          pip install ovos-ocp-news-plugin==0.0.2
           pip install pytest pytest-timeout pytest-cov
       - name: Run unittests
         run: |
