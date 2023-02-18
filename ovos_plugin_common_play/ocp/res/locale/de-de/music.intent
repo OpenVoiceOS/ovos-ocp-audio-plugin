@@ -1,4 +1,3 @@
-(spiel|spiele|beginn|beginne|start|starte) (music|song|musik|lied) {{query}}
-(spiel|spiele|beginn|beginne|start|starte) (music|song|musik|lied)
-(spiel|spiele|beginn|beginne|start|starte) {{query}} (music|song|musik|lied)
-(spiel|spiele|beginn|beginne|start|starte) (das|ein) (music|song|musik|lied)
+(spiel|spiele|beginn|beginne|start|starte) (das|den|die|) (musik|song|lied|melodie|hymne|track) {{query}}
+(spiel|spiele|beginn|beginne|start|starte) {{query}} (musik|song|lied|melodie|hymne|track)
+(spiel|spiele|beginn|beginne|start|starte) (das|den|die|ein|) (musik|music|song|lied|melodie|hymne|track)

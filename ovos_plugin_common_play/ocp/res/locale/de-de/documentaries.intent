@@ -1,5 +1,3 @@
-(spiel|spiele|beginn|beginne|start|starte) (dokumentation|wissenssendung) {{query}}
-(spiel|spiele|beginn|beginne|start|starte) (eine|die|das) (dokumentation|wissenssendung) {{query}}
-(spiel|spiele|beginn|beginne|start|starte) {{query}} (dokumentation|wissenssendung)
-(spiel|spiele|beginn|beginne|start|starte) (dokumentation|wissenssendung)
-(spiel|spiele|beginn|beginne|start|starte) (eine|die|das) (dokumentation|wissenssendung)
+(spiel|spiele|beginn|beginne|start|starte) (die|) (doku|dokumentation|wissenssendung) {{query}}
+(spiel|spiele|beginn|beginne|start|starte) {{query}} (doku|dokumentation|wissenssendung)
+(spiel|spiele|beginn|beginne|start|starte) (eine|igendeine|die|)(dokumentation|wissenssendung)

@@ -1,2 +1,19 @@
-pause
-pause (music|song|track|video|media|playback)
+(pause|pausiere|halte an|halt an) (musik|song|track|video|sender|sendung|kapitel|playback|)
+(musik|song|track|video|sender|sendung|kapitel|playback|) (anhalten|pausieren)
+(halt|halte) (musik|song|track|video|sender|sendung|kapitel|playback) an
+halte den track an
+halte den sender an
+halte den song an
+halte das playback an
+halte das video an
+halte das kapitel an
+halte die musik an
+halte die sendung an
+halt den track an
+halt den sender an
+halt den song an
+halt das playback an
+halt das video an
+halt das kapitel an
+halt die musik an
+halt die sendung an
