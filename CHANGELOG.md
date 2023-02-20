@@ -1,5 +1,17 @@
 # Changelog
 
+## [Unreleased](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/HEAD)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.4a7...HEAD)
+
+**Merged pull requests:**
+
+- Added italian translation [\#49](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/49) ([denics](https://github.com/denics))
+
+## [V0.0.4a7](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.4a7) (2023-02-14)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.4a6...V0.0.4a7)
+
 ## [V0.0.4a6](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.4a6) (2023-02-14)
 
 [Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.4a5...V0.0.4a6)
