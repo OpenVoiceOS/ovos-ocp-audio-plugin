@@ -1,4 +1,64 @@
-(next|skip)
-play next
-(next|skip) (music|song|track|video|media)
-(play|go to) next (music|song|track|video|media)
+nächsten song
+nächsten track
+überspringe medium
+überspringe video
+überspringe sender
+überspringe sendung
+überspringe song
+überspringe track
+überspringe lied
+überspringe kapitel
+nächstes video
+nächstes kapitel
+nächstes lied
+nächster song
+nächster sender
+nächster track
+nächste sendung
+starte nächsten song
+starte nächsten track
+starte nächsten sender
+starte nächstes medium
+starte nächstes video
+starte nächstes lied
+starte nächstes kapitel
+starte nächster song
+starte nächster track
+starte nächste sendung
+start nächsten song
+start nächsten sender
+start nächsten track
+start nächstes video
+start nächstes lied
+start nächstes kapitel
+start nächster song
+start nächster track
+start nächste sendung
+spiele nächsten song
+spiele nächsten track
+spiele nächsten sender
+spiele nächstes medium
+spiele nächstes video
+spiele nächstes kapitel
+spiele nächstes lied
+spiele nächster song
+spiele nächster track
+spiele nächste sendung
+spiel nächsten song
+spiel nächsten track
+spiel nächsten sender
+spiel nächstes medium
+spiel nächstes video
+spiel nächstes kapitel
+spiel nächstes lied
+spiel nächster song
+spiel nächster track
+spiel nächste sendung
+medium überspringen
+video überspringen
+sender überspringen
+sendung überspringen
+song überspringen
+track überspringen
+lied überspringen
+kapitel überspringen

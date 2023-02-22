@@ -1,4 +1,3 @@
-(spiel|spiele|beginn|beginne|start|starte) (schwarz und weiß|schwarz weiß|schwarz weis|schwarz und weis) (film) {{query}}
-(spiel|spiele|beginn|beginne|start|starte) {{query}} (schwarz und weiß|schwarz weiß|schwarz weis|schwarz und weis) (film|filme)
-(spiel|spiele|beginn|beginne|start|starte) (schwarz und weiß|schwarz weiß|schwarz weis|schwarz und weis) (movie|movie|movies|film|filme)
-(spiel|spiele|beginn|beginne|start|starte) (den|die|der|das) (schwarz und weiß|schwarz weiß|schwarz weis|schwarz und weis) (film|filme)
+(spiel|spiele|beginn|beginne|start|starte) (schwarz-weiß-film|schwarz und weiß|schwarz weiß|schwarz weiss|schwarz und weiss|schwarz-weiß|schwarz-weiss) (film|movie|) {{query}}
+(spiel|spiele|beginn|beginne|start|starte) {{query}} (schwarz-weiß-film|schwarz-weiß-filme|schwarz und weiß|schwarz weiß|schwarz weis|schwarz und weis|schwarz-weiß|schwarz-weiss) (movie|movies|film|filme|)
+(spiel|spiele|beginn|beginne|start|starte) (ein|einen|irgendeinen|den|die|) (schwarz-weiß-film|schwarz-weiß-filme|schwarz und weiß|schwarz weiß|schwarz weis|schwarz und weis|schwarz-weiß|schwarz-weiss) (movie|movies|film|filme)
