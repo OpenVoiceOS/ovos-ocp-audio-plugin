@@ -2,7 +2,19 @@
 
 ## [Unreleased](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/HEAD)
 
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.4a8...HEAD)
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.4a9...HEAD)
+
+**Closed issues:**
+
+- Add all plugins to optional dependencies [\#50](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/issues/50)
+
+**Merged pull requests:**
+
+- Update OCP Plugin dependencies [\#51](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/51) ([NeonDaniel](https://github.com/NeonDaniel))
+
+## [V0.0.4a9](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.4a9) (2023-02-22)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.4a8...V0.0.4a9)
 
 **Implemented enhancements:**
 
