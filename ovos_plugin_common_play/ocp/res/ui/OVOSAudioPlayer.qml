@@ -16,8 +16,8 @@ Item {
     property var source
     property string status: "stop"
     property var thumbnail: sessionData.image
-    property var title: sessionData.title
-    property var author: sessionData.artist
+    property var title
+    property var author
 
     property var loopStatus: sessionData.loopStatus
     property var canResume: sessionData.canResume
@@ -137,6 +137,8 @@ Item {
 
         onStopRequested: {
             source = ""
+            root.title = ""
+            root.author = ""
         }
 
         onMediaStatusChanged: {
@@ -166,7 +168,7 @@ Item {
             root.cpsMeta = audioService.getCPSMeta()
             root.thumbnail = root.cpsMeta.thumbnail
             root.author = root.cpsMeta.artist
-            root.title = root.cpsMeta.title
+            root.title = root.cpsMeta.title ? root.cpsMeta.title : ""
 
             console.log("From QML Media Received Loading Metainfo")
             console.log(JSON.stringify(root.cpsMeta))
