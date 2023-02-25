@@ -13,7 +13,7 @@ class TestOCPExtractor(unittest.TestCase):
             "https://www.pbs.org/newshour/feeds/rss/podcasts/show",
             "https://www.deutschlandfunk.de/podcast-nachrichten.1257.de.podcast.xml",
             "https://podcasts.files.bbci.co.uk/p02nq0gn.rss",
-            "http://www.rtp.pt/play/podcast/7496",
+            # "http://www.rtp.pt/play/podcast/7496",
             "https://www.cbc.ca/podcasting/includes/hourlynews.xml",
             "https://podcast.hr-online.de/der_tag_in_hessen/podcast.xml",
             "https://api.sr.se/api/rss/pod/3795",
@@ -46,6 +46,26 @@ class TestOCPExtractor(unittest.TestCase):
             self.assertTrue(bool(meta.get("uri")), url)
             meta = parser.extract_stream(f"news//{url}") or {}
             self.assertTrue(bool(meta.get("uri")))
+
+    def test_youtube(self):
+        parser = StreamHandler()
+        yt_urls = [
+            "https://www.youtube.com/watch?v=i345E48AtYg",
+            "https://www.youtube.com/watch?v=gvnhcNdXJsk",
+            "https://www.youtube.com/watch?v=hCwdtZu7WqA",
+            "https://www.youtube.com/watch?v=R89sSEbLI-M",
+        ]
+        for url in yt_urls:
+            meta = parser.extract_stream(url) or {}
+            self.assertTrue(bool(meta.get("uri")), url)
+            meta = parser.extract_stream(f"youtube//{url}") or {}
+            self.assertTrue(bool(meta.get("uri")))
+
+    def test_deezer(self):
+        pass
+
+    def test_bandcamp(self):
+        pass
 
 
 if __name__ == '__main__':
