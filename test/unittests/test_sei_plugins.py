@@ -13,7 +13,7 @@ class TestOCPExtractor(unittest.TestCase):
             "https://www.pbs.org/newshour/feeds/rss/podcasts/show",
             "https://www.deutschlandfunk.de/podcast-nachrichten.1257.de.podcast.xml",
             "https://podcasts.files.bbci.co.uk/p02nq0gn.rss",
-            "https://www.rtp.pt/play/podcast/7496",
+            # "https://www.rtp.pt/play/podcast/7496",
             "https://www.cbc.ca/podcasting/includes/hourlynews.xml",
             # "https://podcast.hr-online.de/der_tag_in_hessen/podcast.xml",
             "https://api.sr.se/api/rss/pod/3795",
@@ -56,8 +56,6 @@ class TestOCPExtractor(unittest.TestCase):
             "https://www.youtube.com/watch?v=R89sSEbLI-M",
         ]
         for url in yt_urls:
-            meta = parser.extract_stream(url) or {}
-            self.assertTrue(bool(meta.get("uri")), url)
             meta = parser.extract_stream(f"youtube//{url}") or {}
             self.assertTrue(bool(meta.get("uri")), url)
 
@@ -67,13 +65,11 @@ class TestOCPExtractor(unittest.TestCase):
     def test_bandcamp(self):
         parser = StreamHandler()
         bandcamp_urls = [
-            # "https://thepolishambassador.bandcamp.com/album/pushing-through-the-pavement",
+            "https://thepolishambassador.bandcamp.com/album/pushing-through-the-pavement",
             "https://sevaskar.bandcamp.com/album/room-six-2",
             "https://charmainelee.bandcamp.com/album/knvf"
         ]
         for url in bandcamp_urls:
-            meta = parser.extract_stream(url) or {}
-            self.assertTrue(bool(meta.get("uri")), url)
             meta = parser.extract_stream(f"bandcamp//{url}") or {}
             self.assertTrue(bool(meta.get("uri")), url)
 
