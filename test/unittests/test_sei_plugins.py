@@ -25,10 +25,10 @@ class TestOCPExtractor(unittest.TestCase):
         for url in rss_urls:
             print(f"#### {url}")
             meta = parser.extract_stream(f"rss//{url}") or {}
-            self.assertTrue(bool(meta.get("uri")))
+            self.assertTrue(bool(meta.get("uri")), url)
             # test dropped news// sei
             meta = parser.extract_stream(f"news//rss//{url}") or {}
-            self.assertTrue(bool(meta.get("uri")))
+            self.assertTrue(bool(meta.get("uri")), url)
 
     def test_news(self):
         parser = StreamHandler()
@@ -43,7 +43,7 @@ class TestOCPExtractor(unittest.TestCase):
         for url in news_urls:
             print(f"#### {url}")
             meta = parser.extract_stream(url) or {}
-            self.assertTrue(bool(meta.get("uri")))
+            self.assertTrue(bool(meta.get("uri")), url)
             meta = parser.extract_stream(f"news//{url}") or {}
             self.assertTrue(bool(meta.get("uri")))
 
