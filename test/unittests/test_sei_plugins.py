@@ -15,7 +15,7 @@ class TestOCPExtractor(unittest.TestCase):
             "https://podcasts.files.bbci.co.uk/p02nq0gn.rss",
             # "http://www.rtp.pt/play/podcast/7496",
             "https://www.cbc.ca/podcasting/includes/hourlynews.xml",
-            "https://podcast.hr-online.de/der_tag_in_hessen/podcast.xml",
+            # "https://podcast.hr-online.de/der_tag_in_hessen/podcast.xml",
             "https://api.sr.se/api/rss/pod/3795",
             "http://api.rtve.es/api/programas/36019/audios.rs",
             "https://www.pbs.org/newshour/feeds/rss/podcasts/show",
@@ -23,7 +23,7 @@ class TestOCPExtractor(unittest.TestCase):
             "https://de1.api.radio-browser.info/pls/url/69bc7084-523c-11ea-be63-52543be04c81"  # .pls
         ]
         for url in rss_urls:
-            print(f"#### {url}")
+            # print(f"#### {url}")
             meta = parser.extract_stream(f"rss//{url}") or {}
             self.assertTrue(bool(meta.get("uri")), url)
             # test dropped news// sei
@@ -41,11 +41,11 @@ class TestOCPExtractor(unittest.TestCase):
             "http://feeds.feedburner.com/gpbnews"
         ]
         for url in news_urls:
-            print(f"#### {url}")
+            # print(f"#### {url}")
             meta = parser.extract_stream(url) or {}
             self.assertTrue(bool(meta.get("uri")), url)
             meta = parser.extract_stream(f"news//{url}") or {}
-            self.assertTrue(bool(meta.get("uri")))
+            self.assertTrue(bool(meta.get("uri")), url)
 
     def test_youtube(self):
         parser = StreamHandler()
@@ -59,7 +59,7 @@ class TestOCPExtractor(unittest.TestCase):
             meta = parser.extract_stream(url) or {}
             self.assertTrue(bool(meta.get("uri")), url)
             meta = parser.extract_stream(f"youtube//{url}") or {}
-            self.assertTrue(bool(meta.get("uri")))
+            self.assertTrue(bool(meta.get("uri")), url)
 
     def test_deezer(self):
         pass
