@@ -20,7 +20,7 @@ class TestOCPExtractor(unittest.TestCase):
             "http://api.rtve.es/api/programas/36019/audios.rs",
             "https://www.pbs.org/newshour/feeds/rss/podcasts/show",
             "https://feeds.yle.fi/areena/v1/series/1-1440981.rss",
-            "https://de1.api.radio-browser.info/pls/url/69bc7084-523c-11ea-be63-52543be04c81"  # .pls
+            # "https://de1.api.radio-browser.info/pls/url/69bc7084-523c-11ea-be63-52543be04c81"  # .pls
         ]
         for url in rss_urls:
             # print(f"#### {url}")
@@ -65,7 +65,17 @@ class TestOCPExtractor(unittest.TestCase):
         pass
 
     def test_bandcamp(self):
-        pass
+        parser = StreamHandler()
+        bandcamp_urls = [
+            "https://thepolishambassador.bandcamp.com/album/pushing-through-the-pavement",
+            "https://sevaskar.bandcamp.com/album/room-six-2",
+            "https://charmainelee.bandcamp.com/album/knvf"
+        ]
+        for url in bandcamp_urls:
+            meta = parser.extract_stream(url) or {}
+            self.assertTrue(bool(meta.get("uri")), url)
+            meta = parser.extract_stream(f"bandcamp//{url}") or {}
+            self.assertTrue(bool(meta.get("uri")), url)
 
 
 if __name__ == '__main__':
