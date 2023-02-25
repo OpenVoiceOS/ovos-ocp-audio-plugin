@@ -53,12 +53,11 @@ jobs:
           pip install ovos-core[skills_lgpl]
       - name: Install OCP
         run: |
-          pip install .
+          pip install .[extractors]
       - name: Install test dependencies
         run: |
           pip install ./test/ovos-test-mycroft-audio-plugin
           pip install ./test/ovos-test-ocp-audio-plugin
-          pip install ovos-ocp-news-plugin==0.0.2
           pip install pytest pytest-timeout pytest-cov
       - name: Run unittests
         run: |
@@ -94,12 +93,11 @@ jobs:
           pip install git+https://github.com/MycroftAI/mycroft-core
       - name: Install OCP
         run: |
-          pip install .
+          pip install .[extractors]
       - name: Install test dependencies
         run: |
           pip install ./test/ovos-test-mycroft-audio-plugin
           pip install ./test/ovos-test-ocp-audio-plugin
-          pip install ovos-ocp-news-plugin==0.0.2
           pip install pytest pytest-timeout pytest-cov
       - name: Run mycroft unittests
         run: |
