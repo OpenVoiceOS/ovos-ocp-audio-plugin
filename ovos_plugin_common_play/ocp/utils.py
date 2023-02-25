@@ -6,7 +6,7 @@ from typing import List
 
 from ovos_plugin_manager.ocp import StreamHandler
 from ovos_plugin_common_play.ocp.status import TrackState, PlaybackType
-from ovos_ocp_files_plugin.plugin import OCPFilesMetadataExtractor
+
 ocp_plugins = StreamHandler()
 
 
@@ -37,6 +37,7 @@ def available_extractors() -> List[str]:
 
 def extract_metadata(uri):
     # backwards compat
+    from ovos_ocp_files_plugin.plugin import OCPFilesMetadataExtractor
     return OCPFilesMetadataExtractor.extract_metadata(uri)
 
 

@@ -34,7 +34,7 @@ jobs:
   unit_tests:
     strategy:
       matrix:
-        python-version: [ 3.7, 3.8, 3.9, "3.10" ]
+        python-version: [ 3.8, 3.9, "3.10" ]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -53,7 +53,7 @@ jobs:
           pip install ovos-core[skills_lgpl]
       - name: Install OCP
         run: |
-          pip install .
+          pip install .[extractors]
       - name: Install test dependencies
         run: |
           pip install ./test/ovos-test-mycroft-audio-plugin
@@ -93,7 +93,7 @@ jobs:
           pip install git+https://github.com/MycroftAI/mycroft-core
       - name: Install OCP
         run: |
-          pip install .
+          pip install .[extractors]
       - name: Install test dependencies
         run: |
           pip install ./test/ovos-test-mycroft-audio-plugin
