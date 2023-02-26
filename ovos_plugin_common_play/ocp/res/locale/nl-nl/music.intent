@@ -1,3 +1,4 @@
 (luister|speel|begin|start) (het) (liedje|lied) {{query}}
 (luister|speel|begin|start) {{query}} (liedje|lied|track|muziek)
 (luister|speel|begin|start) {{query}} (de) (tracks|track|muziek|song|songs|liedjes|liederen)
+luister naar (liedje|lied|track|muziek) (van) {{query}
