@@ -1,8 +1,5 @@
-# auto translated from en-us to nl-nl
-Speel audio
-Begin met audio
-Speel alleen audio
-Begin maar met geluid
-Begin maar
-speel alleen geluid
-Begin maar met audio
+(speel|begin|start|) alleen (audio|muziek|geluid) {{query}}
+(speel|begin|start|) {{query}} met alleen (audio|muziek|geluid) 
+speel {{query}} af met alleen audio
+speel alleen audio
+(speel|begin|start|) (audio|muziek|geluid)
