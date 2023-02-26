@@ -1,3 +1,3 @@
-(speel|begin|start) (het) (liedje|lied) {{query}}
-(speel|begin|start) {{query}} (liedje|lied|track|muziek)
-(speel|begin|start) {{query}} (de) (tracks|track|muziek|song|songs|liedjes|liederen)
+(luister|speel|begin|start) (het) (liedje|lied) {{query}}
+(luister|speel|begin|start) {{query}} (liedje|lied|track|muziek)
+(luister|speel|begin|start) {{query}} (de) (tracks|track|muziek|song|songs|liedjes|liederen)
