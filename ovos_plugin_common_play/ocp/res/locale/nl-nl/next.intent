@@ -1,9 +1,9 @@
-volgend nummer
+volgend (nummer|zender|medium|video|hoofdstuk|show|lied|song|liedje|programma)
 (nummer|zender|medium|video|hoofdstuk|show|lied|song|liedje|programma) overslaan
 volgende (nummer|zender|medium|video|hoofdstuk|show|lied|song|liedje|programma|track)
-volgend hoofdstuk
+volgend (nummer|zender|medium|video|hoofdstuk|show|lied|song|liedje|programma)
 start volgende (nummer|zender|medium|video|hoofdstuk|show|lied|song|liedje|programma|track)
 volgende (nummer|zender|medium|video|hoofdstuk|show|lied|song|liedje|programma|track) afspelen
 speel volgende (nummer|zender|medium|video|hoofdstuk|show|lied|song|liedje|programma|track)
-speel next song
+speel next (nummer|zender|medium|video|hoofdstuk|show|lied|song|liedje|programma)
 skip (nummer|zender|medium|video|hoofdstuk|show|lied|song|liedje|programma|track)
