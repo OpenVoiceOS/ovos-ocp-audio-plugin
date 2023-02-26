@@ -1,8 +1,7 @@
 vorig (nummer|zender|medium|video|hoofdstuk|show|lied|song|liedje|programma)
 (nummer|zender|medium|video|hoofdstuk|show|lied|song|liedje|programma) terug
 vorige (nummer|zender|medium|video|hoofdstuk|show|lied|song|liedje|programma|track)
-vorig hoofdstuk
+vorig (nummer|zender|medium|video|hoofdstuk|show|lied|song|liedje|programma) 
 (start|terug naar) vorig (nummer|zender|medium|video|hoofdstuk|show|lied|song|liedje|programma|track)
 vorig (nummer|zender|medium|video|hoofdstuk|show|lied|song|liedje|programma|track) afspelen
-vorige (nummer|zender|medium|video|hoofdstuk|show|lied|song|liedje|programma|track)
 speel previous (nummer|zender|medium|video|hoofdstuk|show|lied|song|liedje|programma) 
