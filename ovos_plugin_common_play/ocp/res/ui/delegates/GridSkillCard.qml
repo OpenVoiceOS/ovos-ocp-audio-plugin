@@ -1,9 +1,9 @@
-import QtQuick 2.9
-import QtQuick.Layouts 1.4
-import QtGraphicalEffects 1.0
-import QtQuick.Controls 2.3
-import org.kde.kirigami 2.8 as Kirigami
+import QtQuick 2.15
+import QtQuick.Layouts 1.15
+import QtQuick.Controls 2.15
+import org.kde.kirigami 2.19 as Kirigami
 import Mycroft 1.0 as Mycroft
+import Qt5Compat.GraphicalEffects
 
 ItemDelegate {
     id: delegate
@@ -131,11 +131,11 @@ ItemDelegate {
         }
     }
     
-    Keys.onReturnPressed: {
+    Keys.onReturnPressed: (event)=> {
         clicked()
     }
 
-    onClicked: {
+    onClicked: (mouse)=> {
         skillsListView.forceActiveFocus()
         skillsListView.currentIndex = index
         triggerGuiEvent("featured_tracks.play",

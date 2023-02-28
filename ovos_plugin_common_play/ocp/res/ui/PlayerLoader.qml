@@ -1,7 +1,7 @@
-import QtQuick.Layouts 1.12
-import QtQuick 2.12
-import QtQuick.Controls 2.12
-import org.kde.kirigami 2.10 as Kirigami
+import QtQuick.Layouts 1.15
+import QtQuick 2.15
+import QtQuick.Controls 2.15
+import org.kde.kirigami 2.19 as Kirigami
 import Mycroft 1.0 as Mycroft
 
 Mycroft.Delegate {
@@ -15,7 +15,7 @@ Mycroft.Delegate {
     rightPadding: 0
     property var backgroundAllowedPlayers: ["OVOSAudioPlayer.qml", "OVOSSyncPlayer.qml"]
 
-    onGuiEvent: {
+    onGuiEvent: (eventName, data)=> {
         switch (eventName) {
             case "ocp.gui.player.loader.clear":
                 rootLoader.source = ""

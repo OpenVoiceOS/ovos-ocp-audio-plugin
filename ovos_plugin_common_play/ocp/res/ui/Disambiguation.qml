@@ -15,13 +15,12 @@
  *
  */
 
-import QtQuick 2.9
-import QtQuick.Controls 2.3 as Controls
-import QtQuick.Layouts 1.3
-import org.kde.kirigami 2.8 as Kirigami
-import QtGraphicalEffects 1.0
+import QtQuick 2.15
+import QtQuick.Controls 2.15 as Controls
+import QtQuick.Layouts 1.15
+import org.kde.kirigami 2.19 as Kirigami
 import Mycroft 1.0 as Mycroft
-
+import Qt5Compat.GraphicalEffects
 
 Item {
     id: disambiguationViewPage
@@ -149,7 +148,7 @@ Item {
                     }
                 }
 
-                onClicked: {
+                onClicked: (mouse)=> {
                     triggerGuiEvent("search.play",
                     {"playlistData": modelData})
                 }

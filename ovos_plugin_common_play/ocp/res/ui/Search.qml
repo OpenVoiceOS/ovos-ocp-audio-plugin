@@ -16,12 +16,12 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import QtQuick.Layouts 1.4
-import QtQuick 2.12
-import QtQuick.Controls 2.12
-import org.kde.kirigami 2.10 as Kirigami
+import QtQuick.Layouts 1.15
+import QtQuick 2.15
+import QtQuick.Controls 2.15
+import org.kde.kirigami 2.19 as Kirigami
 import Mycroft 1.0 as Mycroft
-import QtGraphicalEffects 1.0
+import Qt5Compat.GraphicalEffects
 
 Item {
     id: root
@@ -42,7 +42,7 @@ Item {
         anchors.fill: parent
         enabled: root.configOverlayOpened ? 1 : 0
         z: 3
-        onClicked: {
+        onClicked: (mouse)=> {
             if (root.configOverlayOpened) {
                 ocpConfigOverlay.close()
             }
@@ -68,7 +68,7 @@ Item {
             border.color: Qt.darker(Kirigami.Theme.textColor, 1.5)
         }
 
-        Keys.onEscapePressed: {
+        Keys.onEscapePressed: (event)=> {
             if (root.configOverlayOpened) {
                 ocpConfigOverlay.close()
             }
@@ -138,7 +138,7 @@ Item {
 
                     MouseArea {
                         anchors.fill: parent
-                        onClicked: {
+                        onClicked: (mouse)=> {
                             ocpConfigOverlay.close()
                         }
                     }
@@ -304,7 +304,7 @@ Item {
                     }
                 }
 
-                onClicked: {
+                onClicked: (mouse)=> {
                     ocpConfigurationButtonAnim.restart()
                     ocpConfigOverlay.open()
                 }
@@ -329,7 +329,7 @@ Item {
                 KeyNavigation.down: answerButton
                 focus: true
 
-                Keys.onReturnPressed: {
+                Keys.onReturnPressed: (event)=> {
                     txtFldInternal.forceActiveFocus()
                 }
 
@@ -345,7 +345,7 @@ Item {
                     onAccepted: {
                         triggerGuiEvent("search", { "utterance": txtFldInternal.text})
                     }
-                    Keys.onReturnPressed: {
+                    Keys.onReturnPressed: (event)=> {
                         triggerGuiEvent("search", { "utterance": txtFldInternal.text})
                     }
                 }
@@ -392,15 +392,15 @@ Item {
                     }
                 }
 
-                onClicked: {
+                onClicked: (mouse)=> {
                     triggerGuiEvent("search", { "utterance": txtFldInternal.text})
                 }
 
-                onPressed: {
+                onPressed: (mouse)=> {
                     answerButtonAnim.running = true;
                 }
 
-                Keys.onReturnPressed: {
+                Keys.onReturnPressed: (event)=> {
                     clicked()
                 }
             }

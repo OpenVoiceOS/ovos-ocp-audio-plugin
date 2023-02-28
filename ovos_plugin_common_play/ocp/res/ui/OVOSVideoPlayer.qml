@@ -16,19 +16,22 @@
  *
  */
 
-import QtMultimedia 5.12
-import QtQuick.Layouts 1.4
-import QtQuick 2.12
-import QtQuick.Controls 2.12 as Controls
-import org.kde.kirigami 2.10 as Kirigami
-import QtQuick.Window 2.3
-import QtGraphicalEffects 1.0
+import QtQuick.Layouts 1.15
+import QtQuick 2.15
+import QtQuick.Controls 2.15 as Controls
+import org.kde.kirigami 2.19 as Kirigami
+import QtQuick.Window 2.15
 import Mycroft 1.0 as Mycroft
+import QtMultimedia
+import Qt5Compat.GraphicalEffects
 import "." as Local
 
 Rectangle {
     id: root
     readonly property var videoService: Mycroft.MediaService
+    property var currentState: Mycroft.MediaService.playbackState
+    property int currentMediaState: Mycroft.MediaService.mediaState
+
     property Component controlBar
     color: "black"
 
@@ -50,14 +53,11 @@ Rectangle {
     property var cpsMeta
     property bool busyIndicate: false
 
-    //Player Button Control Actions
-    property var currentState: videoService.playbackState
-
     //Mediaplayer Related Properties To Be Set By Probe MediaPlayer
     property var playerDuration
     property var playerPosition
 
-    Keys.onDownPressed: {
+    Keys.onDownPressed: (event)=> {
         controlBarItem.opened = true
         controlBarItem.forceActiveFocus()
     }
@@ -69,37 +69,52 @@ Rectangle {
         })
     }
 
+
     function play(){
-        videoService.playURL(videoSource)
+        Mycroft.MediaService.videoOutput = videoOutput;
+        Mycroft.MediaService.videoSink = videoOutput.videoSink;
+        videoService.mediaLoadUrl(Qt.resolvedUrl(source), audioService.VideoProvider)
     }
 
     function pause(){
-        videoService.playerPause()
+        videoService.mediaPause()
     }
 
     function stop(){
-        videoService.playerStop()
+        videoService.mediaStop()
     }
 
     function resume(){
-        videoService.playerContinue()
-    }
-
-    function seek(val){
-        videoService.playerSeek(val)
+        videoService.mediaContinue()
     }
 
     function next(){
-        videoService.playerNext()
+        videoService.mediaNext()
     }
 
     function previous(){
-        videoService.playerPrevious()
+        videoService.mediaPrevious()
+    }
+
+    function repeat(){
+        videoService.mediaRepeat()
+    }
+
+    function shuffle(){
+        videoService.mediaShuffle()
+    }
+
+    function seek(val){
+        videoService.mediaSeek(val)
+    }
+
+    function restart(){
+        videoService.mediaRestart()
     }
 
     Connections {
         target: Window.window
-        onVisibleChanged: {
+        function onVisibleChanged(visible): {
             if(video.playbackState == MediaPlayer.PlayingState) {
                 stop()
             }
@@ -109,46 +124,48 @@ Rectangle {
     Connections {
         target: Mycroft.MediaService
 
-        onDurationChanged: {
+        function onDurationChanged(dur) {
             playerDuration = dur
         }
-        onPositionChanged: {
+
+        function onPositionChanged(pos) {
             playerPosition = pos
         }
-        onPlayRequested: {
-            videoSource = videoService.getTrack()
+
+        function onPlayRequested(): {
+            source = audioService.requestServiceInfo("loadedUrl")
         }
 
-        onStopRequested: {
-            videoSource = ""
+        function onStopRequested(): {
+            source = ""
+            root.title = ""
+            root.author = ""
         }
 
-        onMediaStatusChanged: {
-            triggerGuiEvent("media.state", {"state": status})
-            if (status == MediaPlayer.EndOfMedia) {
-                pause()
-            }
-        }
-
-        onMetaUpdated: {
-            root.playerMeta = videoService.getPlayerMeta()
+        function onMetaDataReceived(): {
+            root.playerMeta = audioService.requestServiceMetaData()
 
             if(root.playerMeta.hasOwnProperty("Title")) {
-                root.videoTitle = root.playerMeta.Title ? root.playerMeta.Title : ""
+                root.title = root.playerMeta.Title ? root.playerMeta.Title : ""
             }
 
             if(root.playerMeta.hasOwnProperty("Artist")) {
-                root.videoAuthor = root.playerMeta.Artist
+                root.author = root.playerMeta.Artist
             } else if(root.playerMeta.hasOwnProperty("ContributingArtist")) {
-                root.videoAuthor = root.playerMeta.ContributingArtist
+                root.author = root.playerMeta.ContributingArtist
             }
+            console.log("From QML Meta Updated Loading Metainfo")
+            console.log("Author: " + root.author + " Title: " + root.title)
         }
 
-        onMetaReceived: {
-            root.cpsMeta = videoService.getCPSMeta()
-            root.videoThumb = root.cpsMeta.thumbnail
-            root.videoAuthor = root.cpsMeta.artist
-            root.videoTitle = root.cpsMeta.title
+        function onMetaDataUpdated(): {
+            root.cpsMeta = audioService.requestCommonPlayMetaData()
+            root.thumbnail = root.cpsMeta.thumbnail
+            root.author = root.cpsMeta.artist
+            root.title = root.cpsMeta.title ? root.cpsMeta.title : ""
+
+            console.log("From QML Media Received Loading Metainfo")
+            console.log(JSON.stringify(root.cpsMeta))
         }
     }
 
@@ -211,23 +228,22 @@ Rectangle {
         }
 
         VideoOutput {
-            id: video
+            id: videoOutput
             anchors.fill: parent
-            source: videoService
             z: 5
 
-            Keys.onReturnPressed: {
+            Keys.onReturnPressed: (event)=> {
                 video.playbackState == MediaPlayer.PlayingState ? video.pause() : video.play()
             }
 
-            Keys.onDownPressed: {
+            Keys.onDownPressed: (event)=> {
                 controlBarItem.opened = true
                 controlBarItem.forceActiveFocus()
             }
 
             MouseArea {
                 anchors.fill: parent
-                onClicked: {
+                onClicked: (mouse)=> {
                     controlBarItem.opened = !controlBarItem.opened
                 }
             }

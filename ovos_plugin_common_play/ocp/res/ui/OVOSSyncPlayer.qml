@@ -1,12 +1,12 @@
-import QtQuick 2.12
-import QtQuick.Window 2.12
-import QtQuick.Controls 2.12
-import org.kde.kirigami 2.11 as Kirigami
+import QtQuick 2.15
+import QtQuick.Window 2.15
+import QtQuick.Controls 2.15
+import org.kde.kirigami 2.19 as Kirigami
 import Mycroft 1.0 as Mycroft
-import QtQuick.Layouts 1.12
-import QtGraphicalEffects 1.0
-import QtQuick.Templates 2.12 as T
-import QtMultimedia 5.12
+import QtQuick.Layouts 1.15
+import QtQuick.Templates 2.15 as T
+import QtMultimedia
+import Qt5Compat.GraphicalEffects
 import "code/helper.js" as HelperJS
 
 Item {
@@ -186,10 +186,10 @@ Item {
                         }
                     }
 
-                    onClicked: {
+                    onClicked: (mouse)=> {
                     }
 
-                    onPressed: {
+                    onPressed: (mouse)=> {
                         repeatButtonAnim.running = true;
                     }
 
@@ -237,11 +237,11 @@ Item {
                         }
                     }
 
-                    onClicked: {
+                    onClicked: (mouse)=> {
                         triggerGuiEvent("previous", {})
                     }
 
-                    onPressed: {
+                    onPressed: (mouse)=> {
                         prevButtonAnim.running = true;
                     }
 
@@ -291,7 +291,7 @@ Item {
                         }
                     }
 
-                    onClicked: {
+                    onClicked: (mouse)=> {
                         if (playerState === "Paused"){
                             playerState = "Playing"
                             triggerGuiEvent("resume", {})
@@ -301,7 +301,7 @@ Item {
                         }
                     }
 
-                    onPressed: {
+                    onPressed: (mouse)=> {
                         playButtonAnim.running = true;
                     }
 
@@ -349,11 +349,11 @@ Item {
                         }
                     }
 
-                    onClicked: {
+                    onClicked: (mouse)=> {
                         triggerGuiEvent("next", {})
                     }
 
-                    onPressed: {
+                    onPressed: (mouse)=> {
                         nextButtonAnim.running = true;
                     }
 
@@ -401,9 +401,9 @@ Item {
                         }
                     }
 
-                    onClicked: {}
+                    onClicked: (mouse)=> {}
 
-                    onPressed: {
+                    onPressed: (mouse)=> {
                         shuffleButtonAnim.running = true;
                     }
 

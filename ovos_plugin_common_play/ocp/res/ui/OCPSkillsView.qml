@@ -16,13 +16,12 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import QtQuick 2.9
-import QtQuick.Layouts 1.4
-import QtGraphicalEffects 1.0
-import QtQuick.Controls 2.3
-import org.kde.kirigami 2.8 as Kirigami
+import QtQuick 2.15
+import QtQuick.Layouts 1.15
+import QtQuick.Controls 2.15
+import org.kde.kirigami 2.19 as Kirigami
 import Mycroft 1.0 as Mycroft
-import "views" as Views
+import Qt5Compat.GraphicalEffects
 import "delegates" as Delegates
 
 Item {

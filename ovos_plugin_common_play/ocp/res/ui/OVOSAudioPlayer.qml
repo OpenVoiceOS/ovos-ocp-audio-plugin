@@ -1,17 +1,19 @@
-import QtQuick 2.12
-import QtQuick.Window 2.12
-import QtQuick.Controls 2.12
-import org.kde.kirigami 2.11 as Kirigami
+import QtQuick 2.15
+import QtQuick.Window 2.15
+import QtQuick.Controls 2.15
+import org.kde.kirigami 2.19 as Kirigami
 import Mycroft 1.0 as Mycroft
-import QtQuick.Layouts 1.12
-import QtGraphicalEffects 1.0
-import QtQuick.Templates 2.12 as T
-import QtMultimedia 5.12
+import QtQuick.Layouts 1.15
+import QtQuick.Templates 2.15 as T
+import QtMultimedia
+import Qt5Compat.GraphicalEffects
 import "code/helper.js" as HelperJS
 
 Item {
     id: root
     readonly property var audioService: Mycroft.MediaService
+    property var currentState: Mycroft.MediaService.playbackState
+    property int currentMediaState: Mycroft.MediaService.mediaState
 
     property var source
     property string status: "stop"
@@ -34,15 +36,14 @@ Item {
     property bool horizontalMode: width > height ? 1 : 0
 
     //Player Button Control Actions
-    property var currentState: audioService.playbackState
 
     //Mediaplayer Related Properties To Be Set By Probe MediaPlayer
     property var playerDuration
     property var playerPosition
 
     //Spectrum Related Properties
-    property var spectrum: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-    property var soundModelLength: audioService.spectrum.length
+    property var spectrum: Mycroft.MediaService.spectrum ? Mycroft.MediaService.spectrum : [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+    property var soundModelLength: spectrum.length
     property color spectrumColorNormal: Kirigami.Theme.highlightColor
     property color spectrumColorMid: Kirigami.Theme.highlightColor
     property color spectrumColorPeak: Kirigami.Theme.textColor
@@ -54,16 +55,6 @@ Item {
     onSourceChanged: {
         console.log(source)
         play()
-    }
-
-    Timer {
-        id: sampler
-        running: true
-        interval: 100
-        repeat: true
-        onTriggered: {
-            spectrum = audioService.spectrum
-        }
     }
 
     function formatedDuration(millis){
@@ -83,73 +74,68 @@ Item {
     }
 
     function play(){
-        audioService.playURL(source)
+        audioService.mediaLoadUrl(Qt.resolvedUrl(source), audioService.AudioProvider)
     }
 
     function pause(){
-        audioService.playerPause()
+        audioService.mediaPause()
     }
 
     function stop(){
-        audioService.playerStop()
+        audioService.mediaStop()
     }
 
     function resume(){
-        audioService.playerContinue()
+        audioService.mediaContinue()
     }
 
     function next(){
-        audioService.playerNext()
+        audioService.mediaNext()
     }
 
     function previous(){
-        audioService.playerPrevious()
+        audioService.mediaPrevious()
     }
 
     function repeat(){
-        audioService.playerRepeat()
+        audioService.mediaRepeat()
     }
 
     function shuffle(){
-        audioService.playerShuffle()
+        audioService.mediaShuffle()
     }
 
     function seek(val){
-        audioService.playerSeek(val)
+        audioService.mediaSeek(val)
     }
 
     function restart(){
-        audioService.playerRestart()
+        audioService.mediaRestart()
     }
 
     Connections {
         target: Mycroft.MediaService
 
-        onDurationChanged: {
+        function onDurationChanged(dur) {
             playerDuration = dur
         }
-        onPositionChanged: {
+
+        function onPositionChanged(pos) {
             playerPosition = pos
         }
-        onPlayRequested: {
-            source = audioService.getTrack()
+
+        function onPlayRequested(): {
+            source = audioService.requestServiceInfo("loadedUrl")
         }
 
-        onStopRequested: {
+        function onStopRequested(): {
             source = ""
             root.title = ""
             root.author = ""
         }
 
-        onMediaStatusChanged: {
-            triggerGuiEvent("media.state", {"state": status})
-            if (status == MediaPlayer.EndOfMedia) {
-                pause()
-            }
-        }
-
-        onMetaUpdated: {
-            root.playerMeta = audioService.getPlayerMeta()
+        function onMetaDataReceived(): {
+            root.playerMeta = audioService.requestServiceMetaData()
 
             if(root.playerMeta.hasOwnProperty("Title")) {
                 root.title = root.playerMeta.Title ? root.playerMeta.Title : ""
@@ -164,8 +150,8 @@ Item {
             console.log("Author: " + root.author + " Title: " + root.title)
         }
 
-        onMetaReceived: {
-            root.cpsMeta = audioService.getCPSMeta()
+        function onMetaDataUpdated(): {
+            root.cpsMeta = audioService.requestCommonPlayMetaData()
             root.thumbnail = root.cpsMeta.thumbnail
             root.author = root.cpsMeta.artist
             root.title = root.cpsMeta.title ? root.cpsMeta.title : ""
@@ -335,7 +321,7 @@ Item {
 
                 MouseArea {
                     anchors.fill: parent
-                    onClicked: {
+                    onClicked: (mouse)=> {
                         if(root.spectrumType == 1) {
                             root.spectrumType = 2
                             Mycroft.MycroftController.sendRequest("ovos.common_play.spectrum", {"type": 2})
@@ -495,11 +481,11 @@ Item {
                         }
                     }
 
-                    onClicked: {
+                    onClicked: (mouse)=> {
                         repeat()
                     }
 
-                    onPressed: {
+                    onPressed: (mouse)=> {
                         repeatButtonAnim.running = true;
                     }
 
@@ -547,11 +533,11 @@ Item {
                         }
                     }
 
-                    onClicked: {
+                    onClicked: (mouse)=> {
                         previous()
                     }
 
-                    onPressed: {
+                    onPressed: (mouse)=> {
                         prevButtonAnim.running = true;
                     }
 
@@ -600,11 +586,11 @@ Item {
                         }
                     }
 
-                    onClicked: {
+                    onClicked: (mouse)=> {
                         root.currentState === MediaPlayer.PlayingState ? root.pause() : root.currentState === MediaPlayer.PausedState ? root.resume() : root.play()
                     }
 
-                    onPressed: {
+                    onPressed: (mouse)=> {
                         playButtonAnim.running = true;
                     }
 
@@ -652,11 +638,11 @@ Item {
                         }
                     }
 
-                    onClicked: {
+                    onClicked: (mouse)=> {
                         next()
                     }
 
-                    onPressed: {
+                    onPressed: (mouse)=> {
                         nextButtonAnim.running = true;
                     }
 
@@ -704,11 +690,11 @@ Item {
                         }
                     }
 
-                    onClicked: {
+                    onClicked: (mouse)=> {
                         shuffle()
                     }
 
-                    onPressed: {
+                    onPressed: (mouse)=> {
                         shuffleButtonAnim.running = true;
                     }
 

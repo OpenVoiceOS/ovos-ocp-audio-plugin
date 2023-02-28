@@ -1,17 +1,15 @@
-import QtQuick.Layouts 1.4
-import QtQuick 2.12
-import QtQuick.Controls 2.12 as Controls
-import org.kde.kirigami 2.10 as Kirigami
-import QtQuick.Window 2.3
-import QtGraphicalEffects 1.0
+import QtQuick.Layouts 1.15
+import QtQuick 2.15
+import QtQuick.Controls 2.15 as Controls
+import org.kde.kirigami 2.19 as Kirigami
+import QtQuick.Window 2.15
 import Mycroft 1.0 as Mycroft
-import QtMultimedia 5.12
+import QtMultimedia
+import Qt5Compat.GraphicalEffects
 import "." as Local
 
 Item {
     id: nowPlayingHomeBar
-    readonly property var mediaService: Mycroft.MediaService
-    property var mediaStatus: mediaService.playbackState
     property var mediaTitle: sessionData.title
     property var mediaArtist: sessionData.artist
     property var mediaArt: sessionData.image
@@ -56,7 +54,7 @@ Item {
 
     MouseArea {
         anchors.fill: parent
-        onClicked: {
+        onClicked: (mouse)=> {
             root.movePageRight()
         }
     }

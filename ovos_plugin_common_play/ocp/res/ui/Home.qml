@@ -1,11 +1,11 @@
-import QtQuick.Layouts 1.4
-import QtQuick 2.12
-import QtQuick.Controls 2.12 as Controls
-import org.kde.kirigami 2.10 as Kirigami
-import QtQuick.Window 2.3
-import QtGraphicalEffects 1.0
+import QtQuick.Layouts 1.15
+import QtQuick 2.15
+import QtQuick.Controls 2.15 as Controls
+import org.kde.kirigami 2.19 as Kirigami
+import QtQuick.Window 2.15
 import Mycroft 1.0 as Mycroft
-import QtMultimedia 5.12
+import QtMultimedia
+import Qt5Compat.GraphicalEffects
 import "." as Local
 
 Mycroft.Delegate {
@@ -19,14 +19,14 @@ Mycroft.Delegate {
     topPadding: 0
     bottomPadding: 0
     readonly property var mediaService: Mycroft.MediaService
-    property var mediaStatus: mediaService.playbackState
+    property var playbackState: mediaService.playbackState
 
     function movePageRight(){
         parent.parent.parent.currentIndex++
         parent.parent.parent.currentItem.contentItem.forceActiveFocus()
     }
 
-    onGuiEvent: {
+    onGuiEvent: (eventName, data)=> {
         switch (eventName) {
             case "ocp.gui.show.busy.overlay":
                 busyPageOverlay.open = true
@@ -128,8 +128,8 @@ Mycroft.Delegate {
             anchors.left: parent.left
             anchors.right: parent.right
             height: Mycroft.Units.gridUnit * 3
-            visible: root.mediaStatus === MediaPlayer.PlayingState ? 1 : 0
-            enabled: root.mediaStatus === MediaPlayer.PlayingState ? 1 : 0
+            visible: root.playbackState === MediaPlayer.PlayingState ? 1 : 0
+            enabled: root.playbackState === MediaPlayer.PlayingState ? 1 : 0
         }
 
         Kirigami.Separator {
@@ -171,14 +171,14 @@ Mycroft.Delegate {
 
                 MouseArea {
                     anchors.fill: parent
-                    onClicked: {
+                    onClicked: (mouse)=> {
                         homescreenStackLayout.currentIndex = 0
                     }
-                    onPressed: {
+                    onPressed: (mouse)=> {
                         homepageButtonTangle.color = Kirigami.Theme.highlightColor
                         homepageButtonLabel.color = Kirigami.Theme.backgroundColor
                     }
-                    onReleased: {
+                    onReleased: (mouse)=> {
                         homepageButtonTangle.color = Kirigami.Theme.backgroundColor
                         homepageButtonLabel.color = homescreenStackLayout.currentIndex == 0 ? Kirigami.Theme.highlightColor : Kirigami.Theme.textColor
                     }
@@ -203,14 +203,14 @@ Mycroft.Delegate {
 
                 MouseArea {
                     anchors.fill: parent
-                    onClicked: {
+                    onClicked: (mouse)=> {
                         homescreenStackLayout.currentIndex = 1
                     }
-                    onPressed: {
+                    onPressed: (mouse)=> {
                         skillsViewButtonTangle.color = Kirigami.Theme.highlightColor
                         skillsViewButtonLabel.color = Kirigami.Theme.backgroundColor
                     }
-                    onReleased: {
+                    onReleased: (mouse)=> {
                         skillsViewButtonTangle.color = Kirigami.Theme.backgroundColor
                         skillsViewButtonLabel.color = homescreenStackLayout.currentIndex == 1 ? Kirigami.Theme.highlightColor : Kirigami.Theme.textColor
                     }

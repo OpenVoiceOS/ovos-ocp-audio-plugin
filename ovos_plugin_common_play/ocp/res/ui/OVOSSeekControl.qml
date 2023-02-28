@@ -16,14 +16,13 @@
  *
  */
 
-import QtMultimedia 5.12
-import QtQuick.Layouts 1.4
-import QtQuick 2.12
-import QtQuick.Controls 2.12 as Controls
-import org.kde.kirigami 2.10 as Kirigami
-import QtQuick.Templates 2.12 as Templates
-import QtGraphicalEffects 1.0
-
+import QtQuick.Layouts 1.15
+import QtQuick 2.15
+import QtQuick.Controls 2.15 as Controls
+import org.kde.kirigami 2.19 as Kirigami
+import QtQuick.Templates 2.15 as Templates
+import QtMultimedia
+import Qt5Compat.GraphicalEffects
 import Mycroft 1.0 as Mycroft
 
 Item {
@@ -120,14 +119,14 @@ Item {
                         }
                     }
 
-                    onClicked: {
+                    onClicked: (mouse)=> {
                         currentState === MediaPlayer.PlayingState ? videoControl.pause() : videoControl.currentState === MediaPlayer.PausedState ? videoControl.resume() : videoControl.play()
                         hideTimer.restart();
                     }
                     KeyNavigation.up: video
                     KeyNavigation.left: backButton
                     KeyNavigation.right: slider
-                    Keys.onReturnPressed: {
+                    Keys.onReturnPressed: (event)=> {
                         clicked()
                     }
                     onFocusChanged: {
@@ -162,7 +161,7 @@ Item {
                         }
                     }
 
-                    onClicked: {
+                    onClicked: (mouse)=> {
                         videoControl.previous()
                         hideTimer.restart();
                     }
@@ -170,7 +169,7 @@ Item {
                     KeyNavigation.up: video
                     KeyNavigation.left: backButton
                     KeyNavigation.right: slider
-                    Keys.onReturnPressed: {
+                    Keys.onReturnPressed: (event)=> {
                         clicked()
                     }
                     onFocusChanged: {
@@ -206,14 +205,14 @@ Item {
                         }
                     }
 
-                    onClicked: {
+                    onClicked: (mouse)=> {
                         videoControl.next()
                         hideTimer.restart();
                     }
                     KeyNavigation.up: video
                     KeyNavigation.left: backButton
                     KeyNavigation.right: slider
-                    Keys.onReturnPressed: {
+                    Keys.onReturnPressed: (event)=> {
                         clicked()
                     }
                     onFocusChanged: {
@@ -321,7 +320,7 @@ Item {
                     }
                     KeyNavigation.up: video
                     KeyNavigation.left: button
-                    Keys.onReturnPressed: {
+                    Keys.onReturnPressed: (event)=> {
                         hideTimer.restart();
                         if(!navSliderItem){
                             navSliderItem = true
@@ -330,7 +329,7 @@ Item {
                         }
                     }
 
-                    Keys.onLeftPressed: {
+                    Keys.onLeftPressed: (event)=> {
                         console.log("leftPressedonSlider")
                         hideTimer.restart();
                         if(navSliderItem) {
@@ -340,7 +339,7 @@ Item {
                         }
                     }
 
-                    Keys.onRightPressed: {
+                    Keys.onRightPressed: (event)=> {
                         hideTimer.restart();
                         if(navSliderItem) {
                             videoControl.seek(video.position + 5000)
@@ -375,13 +374,13 @@ Item {
                         }
                     }
 
-                    onClicked: {
+                    onClicked: (mouse)=> {
                         triggerGuiEvent("video.media.playback.ended", {})
                         video.stop();
                     }
                     KeyNavigation.up: video
                     KeyNavigation.right: button
-                    Keys.onReturnPressed: {
+                    Keys.onReturnPressed: (event)=> {
                         hideTimer.restart();
                         triggerGuiEvent("video.media.playback.ended", {})
                         video.stop();

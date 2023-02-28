@@ -1,10 +1,10 @@
-import QtQuick.Layouts 1.4
-import QtQuick 2.12
-import QtQuick.Controls 2.12 as Controls
-import org.kde.kirigami 2.10 as Kirigami
-import QtQuick.Window 2.3
-import QtGraphicalEffects 1.0
+import QtQuick.Layouts 1.15
+import QtQuick 2.15
+import QtQuick.Controls 2.15 as Controls
+import org.kde.kirigami 2.19 as Kirigami
+import QtQuick.Window 2.15
 import Mycroft 1.0 as Mycroft
+import Qt5Compat.GraphicalEffects
 import "." as Local
 
 Mycroft.Delegate {
@@ -18,7 +18,7 @@ Mycroft.Delegate {
     topPadding: 0
     bottomPadding: 0
 
-    onGuiEvent: {
+    onGuiEvent: (eventName, data)=> {
         switch (eventName) {
             case "ocp.gui.show.suggestion.view.disambiguation":
                 console.log("ocp.gui.show.suggestion.view.disambiguation")
@@ -99,14 +99,14 @@ Mycroft.Delegate {
 
                 MouseArea {
                     anchors.fill: parent
-                    onClicked: {
+                    onClicked: (mouse)=> {
                         suggestionStackLayout.currentIndex = 0
                     }
-                    onPressed: {
+                    onPressed: (mouse)=> {
                         playlistButtonTangle.color = Kirigami.Theme.highlightColor
                         playlistButtonLabel.color = Kirigami.Theme.backgroundColor
                     }
-                    onReleased: {
+                    onReleased: (mouse)=> {
                         playlistButtonTangle.color = Kirigami.Theme.backgroundColor
                         playlistButtonLabel.color = suggestionStackLayout.currentIndex == 0 ? Kirigami.Theme.highlightColor : Kirigami.Theme.textColor
                     }
@@ -131,14 +131,14 @@ Mycroft.Delegate {
 
                 MouseArea {
                     anchors.fill: parent
-                    onClicked: {
+                    onClicked: (mouse)=> {
                         suggestionStackLayout.currentIndex = 1
                     }
-                    onPressed: {
+                    onPressed: (mouse)=> {
                         disambiguationViewButtonTangle.color = Kirigami.Theme.highlightColor
                         disambiguationViewButtonLabel.color = Kirigami.Theme.backgroundColor
                     }
-                    onReleased: {
+                    onReleased: (mouse)=> {
                         disambiguationViewButtonTangle.color = Kirigami.Theme.backgroundColor
                         disambiguationViewButtonLabel.color = suggestionStackLayout.currentIndex == 1 ? Kirigami.Theme.highlightColor : Kirigami.Theme.textColor
                     }
