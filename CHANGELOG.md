@@ -2,7 +2,15 @@
 
 ## [Unreleased](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/HEAD)
 
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.4a10...HEAD)
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.4a11...HEAD)
+
+**Merged pull requests:**
+
+- fix skill featured list not showing on first boot [\#53](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/53) ([AIIX](https://github.com/AIIX))
+
+## [V0.0.4a11](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.4a11) (2023-02-24)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.4a10...V0.0.4a11)
 
 **Closed issues:**
 
