@@ -7,7 +7,8 @@ from typing import List
 from ovos_plugin_manager.ocp import StreamHandler
 from ovos_plugin_common_play.ocp.status import TrackState, PlaybackType
 from ovos_ocp_files_plugin.plugin import OCPFilesMetadataExtractor
-ocp_plugins = StreamHandler()
+
+_ocp_plugins = None
 
 
 def is_qtav_available():
@@ -56,3 +57,34 @@ def create_desktop_file():
     dst_icon = join(icon_path, "OCP.png")
     if not isfile(dst_icon):
         shutil.copy(src_icon, dst_icon)
+
+
+def module_property(func):
+    """
+    Decorator to turn module functions into properties.
+    Function names must be prefixed with an underscore.
+    :param func: function to decorate
+    """
+    import sys
+    module = sys.modules[func.__module__]
+
+    def fallback_getattr(name):
+        raise AttributeError(
+            f"module '{module.__name__}' has no attribute '{name}'")
+
+    default_getattr = getattr(module, '__getattr__', fallback_getattr)
+
+    def patched_getattr(name):
+        if f'_{name}' == func.__name__:
+            return func()
+        return default_getattr(name)
+
+    module.__getattr__ = patched_getattr
+    return func
+
+
+@module_property
+def ocp_plugins():
+    global _ocp_plugins
+    _ocp_plugins = _ocp_plugins or StreamHandler()
+    return _ocp_plugins
