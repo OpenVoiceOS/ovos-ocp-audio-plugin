@@ -40,7 +40,7 @@ ItemDelegate {
 
         Label {
             id: settingDescription
-            font.pixelSize: settingOneLabel.font.pixelSize / 1.5
+            font.pixelSize: settingLabel.font.pixelSize / 1.5
             color: Kirigami.Theme.textColor
             wrapMode: Text.WordWrap
             elide: Text.ElideRight

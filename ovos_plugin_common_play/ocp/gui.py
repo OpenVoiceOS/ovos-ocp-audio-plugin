@@ -387,9 +387,14 @@ class OCPMediaPlayerGUI(GUIInterface):
         self.player.playlist.clear()
         self.player.media.replace(playlist)
         self["displaySuggestionBar"] = False
-        self._show_suggestion_disambiguation()
 
         self.manage_display("disambiguation")
+
+        # Model and page are heavy wait for them to load
+        # Calling event has no listners on first boot
+        # As page has never been loaded in GUI stack before
+        sleep(1.5)
+        self._show_suggestion_disambiguation()
 
     # audio_only service -> gui
     def handle_sync_seekbar(self, message):

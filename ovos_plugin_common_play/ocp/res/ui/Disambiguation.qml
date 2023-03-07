@@ -29,6 +29,7 @@ Item {
     property Component emptyHighlighter: Item{}
 
     onDisambiguationModelChanged: {
+        disambiguationListView.model = disambiguationModel.data
         disambiguationListView.forceLayout()
     }
 
@@ -60,7 +61,6 @@ Item {
         ListView {
             id: disambiguationListView
             keyNavigationEnabled: true
-            model: disambiguationModel.data
             focus: false
             interactive: true
             bottomMargin: delegate.controlBarItem.height + Kirigami.Units.largeSpacing
