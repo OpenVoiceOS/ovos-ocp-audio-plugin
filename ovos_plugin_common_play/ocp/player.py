@@ -324,7 +324,11 @@ class OCPMediaPlayer(OVOSAbstractApplication):
             elif is_gui_running():
                 LOG.debug("Handling playback via gui")
                 # handle audio natively in mycroft-gui
+
+                # TODO - add a dedicated event for when page finished loading
+                # https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/issues/57
                 sleep(2)  # wait for gui page to start or this is sent before page
+
                 self.bus.emit(Message("gui.player.media.service.play", {
                     "track": self.now_playing.uri,
                     "mime": self.now_playing.mimetype,
