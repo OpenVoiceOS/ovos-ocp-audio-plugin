@@ -393,6 +393,8 @@ class OCPMediaPlayerGUI(GUIInterface):
         # Model and page are heavy wait for them to load
         # Calling event has no listners on first boot
         # As page has never been loaded in GUI stack before
+        # TODO - add a dedicated event for when page finished loading
+        # https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/issues/57
         sleep(1.5)
         self._show_suggestion_disambiguation()
 
