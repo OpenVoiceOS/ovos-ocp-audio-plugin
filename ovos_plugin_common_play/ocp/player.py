@@ -294,6 +294,15 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         LOG.error("Preferred audio service backend not installed")
         return "simple"
 
+    def _do_gui_audio_play(self):
+        self.bus.emit(Message("gui.player.media.service.play", {
+            "track": self.now_playing.uri,
+            "mime": self.now_playing.mimetype,
+            "repeat": False}))
+        sleep(0.2)  # wait for the above message to be processed
+        self.bus.emit(Message("ovos.common_play.track.state", {
+            "state": TrackState.PLAYING_AUDIO}))
+
     def play(self):
         # stop any external media players
         if self.mpris:
@@ -324,18 +333,9 @@ class OCPMediaPlayer(OVOSAbstractApplication):
             elif is_gui_running():
                 LOG.debug("Handling playback via gui")
                 # handle audio natively in mycroft-gui
+                # wait for gui page to start or this is sent before page
+                self.gui.add_page_load_callback("player", callback=self._do_gui_audio_play, once=True)
 
-                # TODO - add a dedicated event for when page finished loading
-                # https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/issues/57
-                sleep(2)  # wait for gui page to start or this is sent before page
-
-                self.bus.emit(Message("gui.player.media.service.play", {
-                    "track": self.now_playing.uri,
-                    "mime": self.now_playing.mimetype,
-                    "repeat": False}))
-                sleep(0.2)  # wait for the above message to be processed
-                self.bus.emit(Message("ovos.common_play.track.state", {
-                    "state": TrackState.PLAYING_AUDIO}))
         elif self.active_backend == PlaybackType.SKILL:
             LOG.debug("Requesting playback: PlaybackType.SKILL")
             if self.now_playing.is_cps:  # mycroft-core compat layer
