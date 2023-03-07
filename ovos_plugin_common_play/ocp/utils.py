@@ -3,12 +3,13 @@ import shutil
 from os import makedirs
 from os.path import expanduser, isfile, join, dirname, exists
 from typing import List
+from ovos_utils.system import module_property
 
 from ovos_plugin_manager.ocp import StreamHandler
 from ovos_plugin_common_play.ocp.status import TrackState, PlaybackType
 from ovos_ocp_files_plugin.plugin import OCPFilesMetadataExtractor
 
-_ocp_plugins = None
+_plugins = None
 
 
 def is_qtav_available():
@@ -33,7 +34,7 @@ def available_extractors() -> List[str]:
     @return: List of supported SEI prefixes
     """
     return ["/", "http:", "https:", "file:"] + \
-           [f"{sei}//" for sei in ocp_plugins.supported_seis]
+           [f"{sei}//" for sei in _ocp_plugins().supported_seis]
 
 
 def extract_metadata(uri):
@@ -59,32 +60,8 @@ def create_desktop_file():
         shutil.copy(src_icon, dst_icon)
 
 
-def module_property(func):
-    """
-    Decorator to turn module functions into properties.
-    Function names must be prefixed with an underscore.
-    :param func: function to decorate
-    """
-    import sys
-    module = sys.modules[func.__module__]
-
-    def fallback_getattr(name):
-        raise AttributeError(
-            f"module '{module.__name__}' has no attribute '{name}'")
-
-    default_getattr = getattr(module, '__getattr__', fallback_getattr)
-
-    def patched_getattr(name):
-        if f'_{name}' == func.__name__:
-            return func()
-        return default_getattr(name)
-
-    module.__getattr__ = patched_getattr
-    return func
-
-
 @module_property
-def ocp_plugins():
-    global _ocp_plugins
-    _ocp_plugins = _ocp_plugins or StreamHandler()
-    return _ocp_plugins
+def _ocp_plugins():
+    global _plugins
+    _plugins = _plugins or StreamHandler()
+    return _plugins
