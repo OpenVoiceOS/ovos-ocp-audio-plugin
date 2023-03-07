@@ -34,7 +34,7 @@ class OCPMediaPlayerGUI(GUIInterface):
         self.persist_home_display = False
         self.event_scheduler_interface = None
         self._expected_ocp_page = None
-        self._callbacks = {}  # page_id:  (validator, callback, once_bool)
+        self._callbacks = {}  # page_id:  (callback, once_bool)
 
     def bind(self, player):
         self.player = player
@@ -51,31 +51,18 @@ class OCPMediaPlayerGUI(GUIInterface):
                               self.handle_page_displayed)
         self.event_scheduler_interface = EventSchedulerInterface(name=OCP_ID, bus=self.bus)
 
-    def add_page_load_callback(self, ocp_page_id, callback, validator=None, once=True):
-        if not validator:
-
-            def validator():
-                return True
-
-        self._callbacks[ocp_page_id] = (validator, callback, once)
+    def add_page_load_callback(self, ocp_page_id, callback, once=True):
+        self._callbacks[ocp_page_id] = (callback, once)
 
     def handle_page_displayed(self, message):
         skill_id = message.data.get('skill_id', "") or message.data.get('namespace', "")
         if skill_id != OCP_ID:
             return
         if self._expected_ocp_page in self._callbacks:
-            validator, callback, once = self._callbacks[self._expected_ocp_page]
-
-            if validator is None:
-                validated = True
-            else:
-                validated = validator()
-
-            if validated:
-                callback()
-
-                if once:
-                    self._callbacks.pop(self._expected_ocp_page)
+            callback, once = self._callbacks[self._expected_ocp_page]
+            callback()
+            if once:
+                self._callbacks.pop(self._expected_ocp_page)
 
     @property
     def video_backend(self):
