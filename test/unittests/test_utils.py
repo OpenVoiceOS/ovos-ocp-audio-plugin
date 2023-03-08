@@ -4,7 +4,8 @@ import unittest
 class TestUtils(unittest.TestCase):
     def test_plugins_init(self):
         from ovos_plugin_common_play.ocp.utils import ocp_plugins
-        self.assertIsInstance(ocp_plugins, dict)
+        from ovos_plugin_manager.ocp import StreamHandler
+        self.assertIsInstance(ocp_plugins, StreamHandler)
 
     def test_available_extractors(self):
         from ovos_plugin_common_play.ocp.utils import available_extractors
