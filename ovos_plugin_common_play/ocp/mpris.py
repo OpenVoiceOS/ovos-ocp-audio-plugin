@@ -11,6 +11,7 @@ from ovos_utils.log import LOG
 from mycroft_bus_client.message import Message
 from ovos_plugin_common_play.ocp.status import TrackState, PlaybackType, \
     PlayerState, LoopState
+from ovos_plugin_common_play.ocp.gui import OCPView
 
 
 class MprisPlayerCtl(Thread):
@@ -82,7 +83,7 @@ class MprisPlayerCtl(Thread):
             # reset ocp, it will display metadata of current track
             if self._ocp_player.active_skill != self.main_player:
                 self._ocp_player.reset()
-                self._ocp_player.gui.manage_display("player")  # TODO OCPView.HOME
+                self._ocp_player.gui.manage_display(OCPView.PLAYER)
 
             # player state
             state = data.get("state") or "Playing"

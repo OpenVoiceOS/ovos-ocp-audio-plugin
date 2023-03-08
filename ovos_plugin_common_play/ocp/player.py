@@ -7,7 +7,7 @@ from ovos_utils.log import LOG
 from ovos_utils.messagebus import Message
 from ovos_config import Configuration
 
-from ovos_plugin_common_play.ocp.gui import OCPMediaPlayerGUI
+from ovos_plugin_common_play.ocp.gui import OCPMediaPlayerGUI, OCPView
 from ovos_plugin_common_play.ocp.media import Playlist, MediaEntry, NowPlaying
 from ovos_plugin_common_play.ocp.mpris import MprisPlayerCtl
 from ovos_plugin_common_play.ocp.search import OCPSearch
@@ -304,7 +304,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
             # TODO error animation
             self.on_invalid_media()
             return
-        self.gui.manage_display("player") # TODO OCPView.PLAYER
+        self.gui.manage_display(OCPView.PLAYER)
 
         if self.now_playing.uri not in self.track_history:
             self.track_history[self.now_playing.uri] = 0

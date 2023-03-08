@@ -2,7 +2,7 @@ from os.path import join, dirname, isfile
 
 from ovos_plugin_common_play.ocp.constants import OCP_ID
 from ovos_workshop.decorators.ocp import *
-from ovos_plugin_common_play.ocp.gui import OCPMediaPlayerGUI
+from ovos_plugin_common_play.ocp.gui import OCPMediaPlayerGUI, OCPView
 from ovos_plugin_common_play.ocp.player import OCPMediaPlayer
 from ovos_plugin_common_play.ocp.status import *
 from ovos_utils.gui import can_use_gui
@@ -86,8 +86,7 @@ class OCP(OVOSAbstractApplication):
 
     def handle_home(self):
         # homescreen / launch from .desktop
-        self.gui.manage_display("home")  # TODO OCPView.HOME
-        # self.gui.show_home(app_mode=True)
+        self.gui.manage_display(OCPView.HOME)
 
     def register_ocp_intents(self, message=None):
         with self._intent_registration_lock:
@@ -208,7 +207,7 @@ class OCP(OVOSAbstractApplication):
 
     # playback control intents
     def handle_open(self, message):
-        self.gui.manage_display("home")  # TODO OCPView.HOME
+        self.gui.manage_display(OCPView.HOME)
 
     def handle_next(self, message):
         self.player.play_next()
@@ -246,7 +245,7 @@ class OCP(OVOSAbstractApplication):
             if not phrase:
                 # TODO some dialog ?
                 self.player.stop()
-                self.gui.manage_display("home")  # TODO OCPView.HOME
+                self.gui.manage_display(OCPView.HOME)
                 return
 
         # classify the query media type
