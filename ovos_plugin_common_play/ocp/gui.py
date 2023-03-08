@@ -144,7 +144,7 @@ class AbstractOCPMediaPlayerGUI(GUIInterface):
             self.render_playlist(timeout)
         elif page_requested == OCPGUIState.DISAMBIGUATION:
             self.prepare_search()
-            self.render_search(timeout)
+            self.render_disambiguation(timeout)
         elif page_requested == OCPGUIState.SPINNER:
             self.prepare_search_spinner()
             self.render_search_spinner()
@@ -222,7 +222,7 @@ class AbstractOCPMediaPlayerGUI(GUIInterface):
         pass
 
     @abstractmethod
-    def render_search(self, timeout=None):
+    def render_disambiguation(self, timeout=None):
         pass
 
     @abstractmethod
