@@ -2,7 +2,15 @@
 
 ## [Unreleased](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/HEAD)
 
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.4a11...HEAD)
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.4a12...HEAD)
+
+**Merged pull requests:**
+
+- Refactor utils.ocp\_plugins to a module property to init on reference instead of on import [\#56](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/56) ([NeonDaniel](https://github.com/NeonDaniel))
+
+## [V0.0.4a12](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.4a12) (2023-03-07)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.4a11...V0.0.4a12)
 
 **Merged pull requests:**
 
