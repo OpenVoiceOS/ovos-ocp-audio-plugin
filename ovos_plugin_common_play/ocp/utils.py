@@ -12,6 +12,13 @@ from ovos_ocp_files_plugin.plugin import OCPFilesMetadataExtractor
 _plugins = None
 
 
+@module_property
+def _ocp_plugins():
+    global _plugins
+    _plugins = _plugins or StreamHandler()
+    return _plugins
+
+
 def is_qtav_available():
     return exists("/usr/include/qt/QtAV") or \
            exists("/usr/lib/qt/qml/QtAV") or \
@@ -58,10 +65,3 @@ def create_desktop_file():
     dst_icon = join(icon_path, "OCP.png")
     if not isfile(dst_icon):
         shutil.copy(src_icon, dst_icon)
-
-
-@module_property
-def _ocp_plugins():
-    global _plugins
-    _plugins = _plugins or StreamHandler()
-    return _plugins
