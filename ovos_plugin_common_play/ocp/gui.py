@@ -19,6 +19,8 @@ class OCPView(str, enum.Enum):
     PLAYER = "player"
     PLAYLIST = "playlist"
     SEARCH = "disambiguation"
+    SPINNER = "spinner"
+    PLAYBACK_ERROR = "playback_error"
     EXTRA = "extra"
 
 
@@ -131,6 +133,12 @@ class AbstractOCPMediaPlayerGUI(GUIInterface):
         elif page_requested == OCPView.SEARCH:
             self.prepare_search()
             self.render_search(timeout)
+        elif page_requested == OCPView.SPINNER:
+            self.prepare_search_spinner()
+            self.render_search_spinner()
+        elif page_requested == OCPView.PLAYBACK_ERROR:
+            self.prepare_playback_error()
+            self.render_playback_error()
 
         if (self.player.app_view_timeout_enabled
                 and page_requested == "player"
@@ -159,6 +167,14 @@ class AbstractOCPMediaPlayerGUI(GUIInterface):
     def prepare_search(self):
         self.update_search_results()  # populate self["searchModel"]
 
+    @abstractmethod
+    def prepare_search_spinner(self):
+        pass
+
+    @abstractmethod
+    def prepare_playback_error(self):
+        pass
+
     # OCP rendering abstract methods
     @abstractmethod
     def render_home(self):
@@ -184,8 +200,9 @@ class AbstractOCPMediaPlayerGUI(GUIInterface):
     def render_search_spinner(self, persist_home=False):
         pass
 
+    @abstractmethod
     def remove_search_spinner(self):
-        self.send_event("ocp.gui.hide.busy.overlay")
+        pass
 
     # app view timeout
     def cancel_app_view_timeout(self, restart=False):

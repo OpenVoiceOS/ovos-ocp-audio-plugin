@@ -251,7 +251,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         return True
 
     def on_invalid_media(self):
-        self.gui.render_playback_error()
+        self.gui.manage_display(OCPView.PLAYBACK_ERROR)
         self.play_next()
 
     # media controls
@@ -564,7 +564,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
                 self.play_next()
 
     def handle_invalid_media(self, message):
-        self.gui.render_playback_error()
+        self.gui.manage_display(OCPView.PLAYBACK_ERROR)
 
     def handle_playback_ended(self, message):
         LOG.debug("Playback ended")
