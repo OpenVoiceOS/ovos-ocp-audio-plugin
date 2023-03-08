@@ -82,7 +82,7 @@ class MprisPlayerCtl(Thread):
             # reset ocp, it will display metadata of current track
             if self._ocp_player.active_skill != self.main_player:
                 self._ocp_player.reset()
-                self._ocp_player.gui.show_player()
+                self._ocp_player.gui.manage_display("player")  # TODO OCPView.HOME
 
             # player state
             state = data.get("state") or "Playing"

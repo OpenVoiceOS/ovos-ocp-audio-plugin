@@ -86,7 +86,8 @@ class OCP(OVOSAbstractApplication):
 
     def handle_home(self):
         # homescreen / launch from .desktop
-        self.gui.show_home(app_mode=True)
+        self.gui.manage_display("home")  # TODO OCPView.HOME
+        # self.gui.show_home(app_mode=True)
 
     def register_ocp_intents(self, message=None):
         with self._intent_registration_lock:
@@ -207,7 +208,7 @@ class OCP(OVOSAbstractApplication):
 
     # playback control intents
     def handle_open(self, message):
-        self.gui.show_home(app_mode=True)
+        self.gui.manage_display("home")  # TODO OCPView.HOME
 
     def handle_next(self, message):
         self.player.play_next()
@@ -245,7 +246,7 @@ class OCP(OVOSAbstractApplication):
             if not phrase:
                 # TODO some dialog ?
                 self.player.stop()
-                self.gui.show_home(app_mode=True)
+                self.gui.manage_display("home")  # TODO OCPView.HOME
                 return
 
         # classify the query media type

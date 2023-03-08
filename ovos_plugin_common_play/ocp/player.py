@@ -251,7 +251,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         return True
 
     def on_invalid_media(self):
-        self.gui.show_playback_error()
+        self.gui.render_playback_error()
         self.play_next()
 
     # media controls
@@ -304,7 +304,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
             # TODO error animation
             self.on_invalid_media()
             return
-        self.gui.show_player()
+        self.gui.manage_display("player") # TODO OCPView.PLAYER
 
         if self.now_playing.uri not in self.track_history:
             self.track_history[self.now_playing.uri] = 0
@@ -564,7 +564,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
                 self.play_next()
 
     def handle_invalid_media(self, message):
-        self.gui.show_playback_error()
+        self.gui.render_playback_error()
 
     def handle_playback_ended(self, message):
         LOG.debug("Playback ended")

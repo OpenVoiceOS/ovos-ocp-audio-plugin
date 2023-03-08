@@ -369,10 +369,8 @@ class OCPSearch(OCPAbstractComponent):
                 if self.gui.active_extension == "smartspeaker":
                     self.gui.display_notification("Searching...Your query is being processed")
                 else:
-                    if self.gui.persist_home_display:
-                        self.gui.show_search_spinner(persist_home=True)
-                    else:
-                        self.gui.show_search_spinner(persist_home=False)
+                    self.gui.render_search_spinner(persist_home=self.gui.persist_home_display)
+
             self.clear()
 
             query = OCPQuery(query=phrase, media_type=media_type, ocp_search=self,
