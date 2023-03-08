@@ -145,21 +145,19 @@ class AbstractOCPMediaPlayerGUI(GUIInterface):
     def prepare_display(self):
         pass
 
-    @abstractmethod
     def prepare_home(self, app_mode=True):
-        pass
+        self.update_ocp_skills()  # populate self["skillCards"]
 
-    @abstractmethod
     def prepare_player(self):
-        pass
+        self.remove_search_spinner()
+        self.clear_notification()
+        self.update_current_track()  # populate now_playing metadata
 
-    @abstractmethod
     def prepare_playlist(self):
-        pass
+        self.update_playlist()  # populate self["playlistModel"]
 
-    @abstractmethod
     def prepare_search(self):
-        pass
+        self.update_search_results()  # populate self["searchModel"]
 
     # OCP rendering abstract methods
     @abstractmethod
