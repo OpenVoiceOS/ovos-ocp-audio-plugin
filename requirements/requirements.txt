@@ -4,4 +4,4 @@ ovos_workshop~=0.0, >=0.0.10
 ovos_audio_plugin_simple
 dbus-next
 ovos-ocp-files-plugin~=0.13
-ovos-utils@git+https://github.com/OpenVoiceOS/ovos-utils@FEAT_ModuleProperty
+ovos-utils~=0.0.29,>=0.0.30a1
