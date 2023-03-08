@@ -1,6 +1,6 @@
 import enum
 from os.path import join, dirname
-
+from threading import Lock
 from ovos_plugin_common_play.ocp import OCP_ID
 from time import sleep
 from mycroft_bus_client.message import Message
@@ -35,6 +35,7 @@ class OCPMediaPlayerGUI(GUIInterface):
         self.event_scheduler_interface = None
         self._expected_ocp_page = None
         self._callbacks = {}  # page_id:  (callback, once_bool)
+        self._lock = Lock()
 
     def bind(self, player):
         self.player = player
@@ -58,11 +59,12 @@ class OCPMediaPlayerGUI(GUIInterface):
         skill_id = message.data.get('skill_id', "") or message.data.get('namespace', "")
         if skill_id != OCP_ID:
             return
-        if self._expected_ocp_page in self._callbacks:
-            callback, once = self._callbacks[self._expected_ocp_page]
-            callback()
-            if once:
-                self._callbacks.pop(self._expected_ocp_page)
+        with self._lock:
+            if self._expected_ocp_page in self._callbacks:
+                callback, once = self._callbacks[self._expected_ocp_page]
+                if once:
+                    self._callbacks.pop(self._expected_ocp_page)
+                callback()
 
     @property
     def video_backend(self):
