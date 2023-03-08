@@ -13,12 +13,12 @@ from ovos_plugin_common_play.ocp import OCP_ID
 from ovos_plugin_common_play.ocp.status import *
 
 
-class OCPView(str, enum.Enum):
+class OCPGUIState(str, enum.Enum):
     HOME = "home"
     APPS = "apps"
     PLAYER = "player"
     PLAYLIST = "playlist"
-    SEARCH = "disambiguation"
+    DISAMBIGUATION = "disambiguation"
     SPINNER = "spinner"
     PLAYBACK_ERROR = "playback_error"
     EXTRA = "extra"
@@ -121,22 +121,22 @@ class AbstractOCPMediaPlayerGUI(GUIInterface):
         # handle any state management needed before render
         self.prepare_display()
 
-        if page_requested == OCPView.HOME:
+        if page_requested == OCPGUIState.HOME:
             self.prepare_home()
             self.render_home()
-        elif page_requested == OCPView.PLAYER:
+        elif page_requested == OCPGUIState.PLAYER:
             self.prepare_player()
             self.render_player()
-        elif page_requested == OCPView.PLAYLIST:
+        elif page_requested == OCPGUIState.PLAYLIST:
             self.prepare_playlist()
             self.render_playlist(timeout)
-        elif page_requested == OCPView.SEARCH:
+        elif page_requested == OCPGUIState.DISAMBIGUATION:
             self.prepare_search()
             self.render_search(timeout)
-        elif page_requested == OCPView.SPINNER:
+        elif page_requested == OCPGUIState.SPINNER:
             self.prepare_search_spinner()
             self.render_search_spinner()
-        elif page_requested == OCPView.PLAYBACK_ERROR:
+        elif page_requested == OCPGUIState.PLAYBACK_ERROR:
             self.prepare_playback_error()
             self.render_playback_error()
 
@@ -276,7 +276,7 @@ class AbstractOCPMediaPlayerGUI(GUIInterface):
         self.player.media.replace(playlist)
         self["displaySuggestionBar"] = False
 
-        self.manage_display(OCPView.SEARCH)
+        self.manage_display(OCPGUIState.DISAMBIGUATION)
 
     # audio_only service -> gui
     def handle_sync_seekbar(self, message):
@@ -295,4 +295,4 @@ class AbstractOCPMediaPlayerGUI(GUIInterface):
 
         # show search results, release screen after 60 seconds
         if show_results:
-            self.manage_display(OCPView.PLAYLIST, timeout=60)
+            self.manage_display(OCPGUIState.PLAYLIST, timeout=60)

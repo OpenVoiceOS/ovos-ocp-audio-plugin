@@ -7,7 +7,7 @@ from ovos_utils.log import LOG
 from ovos_utils.messagebus import Message
 from ovos_config import Configuration
 
-from ovos_plugin_common_play.ocp.gui import OCPMediaPlayerGUI, OCPView
+from ovos_plugin_common_play.ocp.gui import OCPMediaPlayerGUI, OCPGUIState
 from ovos_plugin_common_play.ocp.media import Playlist, MediaEntry, NowPlaying
 from ovos_plugin_common_play.ocp.mpris import MprisPlayerCtl
 from ovos_plugin_common_play.ocp.search import OCPSearch
@@ -251,7 +251,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         return True
 
     def on_invalid_media(self):
-        self.gui.manage_display(OCPView.PLAYBACK_ERROR)
+        self.gui.manage_display(OCPGUIState.PLAYBACK_ERROR)
         self.play_next()
 
     # media controls
@@ -304,7 +304,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
             # TODO error animation
             self.on_invalid_media()
             return
-        self.gui.manage_display(OCPView.PLAYER)
+        self.gui.manage_display(OCPGUIState.PLAYER)
 
         if self.now_playing.uri not in self.track_history:
             self.track_history[self.now_playing.uri] = 0
@@ -564,7 +564,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
                 self.play_next()
 
     def handle_invalid_media(self, message):
-        self.gui.manage_display(OCPView.PLAYBACK_ERROR)
+        self.gui.manage_display(OCPGUIState.PLAYBACK_ERROR)
 
     def handle_playback_ended(self, message):
         LOG.debug("Playback ended")

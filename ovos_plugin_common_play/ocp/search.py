@@ -17,7 +17,7 @@ from ovos_plugin_common_play.ocp.mycroft_cps import \
 from ovos_plugin_common_play.ocp.status import *
 from ovos_plugin_common_play.ocp.utils import available_extractors
 from ovos_plugin_common_play.ocp.constants import OCP_ID
-from ovos_plugin_common_play.ocp.gui import OCPView
+from ovos_plugin_common_play.ocp.gui import OCPGUIState
 
 
 class OCPQuery:
@@ -370,7 +370,7 @@ class OCPSearch(OCPAbstractComponent):
                 if self.gui.active_extension == "smartspeaker":
                     self.gui.display_notification("Searching...Your query is being processed")
                 else:
-                    self.gui.manage_display(OCPView.SPINNER)
+                    self.gui.manage_display(OCPGUIState.SPINNER)
 
             self.clear()
 
