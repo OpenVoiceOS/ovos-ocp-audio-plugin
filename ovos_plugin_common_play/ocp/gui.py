@@ -15,13 +15,16 @@ from ovos_plugin_common_play.ocp.status import *
 
 class OCPGUIState(str, enum.Enum):
     HOME = "home"
-    APPS = "apps"
-    PLAYER = "player"
+    APPS = "apps"  # skill selection menu
+    SYNC_PLAYER = "sync_player"  # just show metadata
+    AUDIO_PLAYER = "audio_player"  # handle playback gui side
+    VIDEO_PLAYER = "video_player"  # handle playback gui side
+    WEB_PLAYER = "web_player"  # playback is a web page (eg, iframe)
     PLAYLIST = "playlist"
     DISAMBIGUATION = "disambiguation"
     SPINNER = "spinner"
     PLAYBACK_ERROR = "playback_error"
-    EXTRA = "extra"
+    EXTRA = "extra"  # skill that provided selected media
 
 
 class AbstractOCPMediaPlayerGUI(GUIInterface):
@@ -124,9 +127,18 @@ class AbstractOCPMediaPlayerGUI(GUIInterface):
         if page_requested == OCPGUIState.HOME:
             self.prepare_home()
             self.render_home()
-        elif page_requested == OCPGUIState.PLAYER:
-            self.prepare_player()
-            self.render_player()
+        elif page_requested == OCPGUIState.SYNC_PLAYER:
+            self.prepare_sync_player()
+            self.render_sync_player()
+        elif page_requested == OCPGUIState.AUDIO_PLAYER:
+            self.prepare_audio_player()
+            self.render_audio_player()
+        elif page_requested == OCPGUIState.VIDEO_PLAYER:
+            self.prepare_video_player()
+            self.render_video_player()
+        elif page_requested == OCPGUIState.WEB_PLAYER:
+            self.prepare_web_player()
+            self.render_web_player()
         elif page_requested == OCPGUIState.PLAYLIST:
             self.prepare_playlist()
             self.render_playlist(timeout)
@@ -156,10 +168,19 @@ class AbstractOCPMediaPlayerGUI(GUIInterface):
     def prepare_home(self, app_mode=True):
         self.update_ocp_skills()  # populate self["skillCards"]
 
-    def prepare_player(self):
+    def prepare_audio_player(self):
+        self.prepare_sync_player()
+
+    def prepare_video_player(self):
+        self.prepare_sync_player()
+
+    def prepare_sync_player(self):
         self.remove_search_spinner()
         self.clear_notification()
         self.update_current_track()  # populate now_playing metadata
+
+    def prepare_web_player(self):
+        self.prepare_sync_player()
 
     def prepare_playlist(self):
         self.update_playlist()  # populate self["playlistModel"]
@@ -181,7 +202,19 @@ class AbstractOCPMediaPlayerGUI(GUIInterface):
         pass
 
     @abstractmethod
-    def render_player(self):
+    def render_audio_player(self):
+        pass
+
+    @abstractmethod
+    def render_video_player(self):
+        pass
+
+    @abstractmethod
+    def render_sync_player(self):
+        pass
+
+    @abstractmethod
+    def render_web_player(self):
         pass
 
     @abstractmethod

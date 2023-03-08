@@ -304,7 +304,6 @@ class OCPMediaPlayer(OVOSAbstractApplication):
             # TODO error animation
             self.on_invalid_media()
             return
-        self.gui.manage_display(OCPGUIState.PLAYER)
 
         if self.now_playing.uri not in self.track_history:
             self.track_history[self.now_playing.uri] = 0
@@ -315,14 +314,16 @@ class OCPMediaPlayer(OVOSAbstractApplication):
             LOG.debug("Requesting playback: PlaybackType.AUDIO")
             if self.active_backend == PlaybackType.AUDIO_SERVICE:
                 LOG.debug("Handling playback via audio_service")
+                self.gui.manage_display(OCPGUIState.SYNC_PLAYER)
                 # we explicitly want to use a audio backend for audio only output
                 self.audio_service.play(self.now_playing.uri,
                                         utterance=self.audio_service_player)
-                self.bus.emit(Message("ovos.common_play.track.state", {
-                    "state": TrackState.PLAYING_AUDIOSERVICE}))
+                self.bus.emit(Message("ovos.common_play.track.state",
+                                      {"state": TrackState.PLAYING_AUDIOSERVICE}))
                 self.set_player_state(PlayerState.PLAYING)
             elif is_gui_running():
                 LOG.debug("Handling playback via gui")
+                self.gui.manage_display(OCPGUIState.AUDIO_PLAYER)
                 # handle audio natively in mycroft-gui
                 sleep(2)  # wait for gui page to start or this is sent before page
                 self.bus.emit(Message("gui.player.media.service.play", {
@@ -334,6 +335,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
                     "state": TrackState.PLAYING_AUDIO}))
         elif self.active_backend == PlaybackType.SKILL:
             LOG.debug("Requesting playback: PlaybackType.SKILL")
+            self.gui.manage_display(OCPGUIState.SYNC_PLAYER)
             if self.now_playing.is_cps:  # mycroft-core compat layer
                 LOG.debug("     - Mycroft common play result selected")
                 self.bus.emit(Message('play:start',
@@ -348,6 +350,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
                 "state": TrackState.PLAYING_SKILL}))
         elif self.active_backend == PlaybackType.VIDEO:
             LOG.debug("Requesting playback: PlaybackType.VIDEO")
+            self.gui.manage_display(OCPGUIState.VIDEO_PLAYER)
             # handle video natively in mycroft-gui
             self.bus.emit(Message("gui.player.media.service.play", {
                 "track": self.now_playing.uri,
@@ -357,9 +360,10 @@ class OCPMediaPlayer(OVOSAbstractApplication):
                 "state": TrackState.PLAYING_VIDEO}))
         elif self.active_backend == PlaybackType.WEBVIEW:
             LOG.debug("Requesting playback: PlaybackType.WEBVIEW")
+            self.gui.manage_display(OCPGUIState.WEB_PLAYER)
             # open a url in native webview in mycroft-gui
-            self.bus.emit(Message("ovos.common_play.track.state", {
-                "state": TrackState.PLAYING_WEBVIEW}))
+            self.bus.emit(Message("ovos.common_play.track.state",
+                                  {"state": TrackState.PLAYING_WEBVIEW}))
         else:
             raise ValueError("invalid playback request")
         if self.mpris:
