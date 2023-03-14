@@ -1,4 +1,3 @@
-# auto translated from en-us to nl-nl
-Lees audioboek
-Lees boek query
-boek
+lees (boek|audioboek|audio boek) {{query}}
+lees {{query}} (boek|audioboek|audio boek)
+lees {{query}}
