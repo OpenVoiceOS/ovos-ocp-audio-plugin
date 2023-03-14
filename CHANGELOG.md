@@ -1,5 +1,17 @@
 # Changelog
 
+## [Unreleased](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/HEAD)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.4...HEAD)
+
+**Merged pull requests:**
+
+- Dutch \(nl-nl\) translations [\#59](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/59) ([timonvanhasselt](https://github.com/timonvanhasselt))
+
+## [V0.0.4](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.4) (2023-03-09)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.4a14...V0.0.4)
+
 ## [V0.0.4a14](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.4a14) (2023-03-09)
 
 [Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.4a13...V0.0.4a14)
