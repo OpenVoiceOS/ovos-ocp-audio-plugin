@@ -2,7 +2,15 @@
 
 ## [Unreleased](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/HEAD)
 
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.4...HEAD)
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.5a1...HEAD)
+
+**Merged pull requests:**
+
+- fix OCPQuery playlist [\#63](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/63) ([emphasize](https://github.com/emphasize))
+
+## [V0.0.5a1](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.5a1) (2023-03-14)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.4...V0.0.5a1)
 
 **Merged pull requests:**
 
