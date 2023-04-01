@@ -60,7 +60,7 @@ Rectangle {
 
     Keys.onDownPressed: {
         controlBarItem.opened = true
-        controlBarItem.forceActiveFocus()
+        controlBarItem.itemKeyFocus()
     }
 
     onVideoSourceChanged: {
