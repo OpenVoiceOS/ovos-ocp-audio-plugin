@@ -2,11 +2,15 @@
 
 ## [Unreleased](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/HEAD)
 
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.5a2...HEAD)
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.5a3...HEAD)
 
 **Closed issues:**
 
 - \[BUG\] No clear way of exiting the music application [\#55](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/issues/55)
+
+## [V0.0.5a3](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.5a3) (2023-04-01)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.5a2...V0.0.5a3)
 
 **Merged pull requests:**
 
