@@ -45,9 +45,8 @@ class OCP(OVOSAbstractApplication):
     def __init__(self, bus=None, lang=None, settings=None):
         # settings = settings or OCPSettings()
         res_dir = join(dirname(__file__), "res")
-        gui = OCPMediaPlayerGUI()
         super().__init__(skill_id=OCP_ID, resources_dir=res_dir,
-                         bus=bus, lang=lang, gui=gui)
+                         bus=bus, lang=lang, gui=OCPMediaPlayerGUI())
         if settings:
             LOG.debug(f"Updating settings from value passed at init")
             self.settings.merge(settings)
@@ -71,20 +70,33 @@ class OCP(OVOSAbstractApplication):
             self.remove_event("mycroft.ready")
             self.replace_mycroft_cps(skills_ready)
         try:
+            # TODO: Should this just happen at install time? A user might not
+            #       want this shortcut.
             create_desktop_file()
         except:  # permission errors and stuff
             pass
 
     def handle_ping(self, message):
+        """
+        Handle ovos.common_play.ping Messages and emit a response
+        @param message: message associated with request
+        """
         self.bus.emit(message.reply("ovos.common_play.pong"))
 
     def register_ocp_api_events(self):
+        """
+        Register messagebus handlers for OCP events
+        """
         self.add_event("ovos.common_play.ping", self.handle_ping)
         self.add_event('ovos.common_play.home', self.handle_home)
         # bus api shared with intents
         self.add_event("ovos.common_play.search", self.handle_play)
 
-    def handle_home(self):
+    def handle_home(self, _=None):
+        """
+        Handle ovos.common_play.home Messages and show the homescreen
+        @param _: message associated with request
+        """
         # homescreen / launch from .desktop
         self.gui.show_home(app_mode=True)
 
@@ -207,6 +219,10 @@ class OCP(OVOSAbstractApplication):
 
     # playback control intents
     def handle_open(self, message):
+        """
+        Handle open.intent
+        @param message: Message associated with intent match
+        """
         self.gui.show_home(app_mode=True)
 
     def handle_next(self, message):
@@ -218,14 +234,23 @@ class OCP(OVOSAbstractApplication):
     def handle_pause(self, message):
         self.player.pause()
 
+    def handle_stop(self, message=None):
+        # will stop any playback in GUI and AudioService
+        try:
+            return self.player.stop()
+        except:
+            pass
+
     def handle_resume(self, message):
         """Resume playback if paused"""
+        # TODO: Should this also handle "stopped"?
         if self.player.state == PlayerState.PAUSED:
             self.player.resume()
         else:
+            LOG.info("Asked to resume while not paused")
             query = self.get_response("play.what")
             if query:
-                message["utterance"] = query
+                message.data["utterance"] = query
                 self.handle_play(message)
 
     def handle_play(self, message):
@@ -299,13 +324,6 @@ class OCP(OVOSAbstractApplication):
             self.enclosure.mouth_reset()  # TODO display music icon in mk1
             self.set_context("Playing")
 
-    def handle_stop(self, message=None):
-        # will stop any playback in GUI and AudioService
-        try:
-            return self.player.stop()
-        except:
-            pass
-
     # helper methods
     def _search(self, phrase, utterance, media_type):
         self.enclosure.mouth_think()
@@ -363,7 +381,13 @@ class OCP(OVOSAbstractApplication):
         LOG.debug(f"Returning {len(results)} results")
         return results
 
-    def _should_resume(self, phrase):
+    def _should_resume(self, phrase: str) -> bool:
+        """
+        Check if a "play" request should resume playback or be handled as a new
+        session.
+        @param phrase: Extracted playback phrase
+        @return: True if player should resume, False if this is a new request
+        """
         if self.player.state == PlayerState.PAUSED:
             if not phrase.strip() or \
                     self.voc_match(phrase, "Resume", exact=True) or \
