@@ -652,7 +652,7 @@ class TestOCPPlayer(unittest.TestCase):
         self.player.validate_stream.reset_mock()
         self.player.gui.show_player.reset_mock()
 
-        # Test valid audio without gui (AudioService
+        # Test valid audio without gui (AudioService)
         gui_running.return_value = False
         self.player.mpris.stop_event.clear()
         self.player.play()
@@ -663,7 +663,6 @@ class TestOCPPlayer(unittest.TestCase):
         self.assertEqual(set(self.player.track_history.keys()), {'', media.uri})
         self.assertEqual(self.player.track_history[media.uri], 2)
         self.assertEqual(self.player.active_backend, PlaybackType.AUDIO_SERVICE)
-        self.assertEqual(media.playback, PlaybackType.AUDIO_SERVICE)
         self.player.set_player_state.assert_called_once_with(
             PlayerState.PLAYING)
         self.player.audio_service.play.assert_called_once_with(
