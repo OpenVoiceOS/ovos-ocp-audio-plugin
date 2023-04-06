@@ -247,7 +247,7 @@ class OCP(OVOSAbstractApplication):
         if self.player.state == PlayerState.PAUSED:
             self.player.resume()
         else:
-            LOG.info("Asked to resume while not paused")
+            LOG.info(f"Asked to resume while not paused. state={self.player.state}")
             query = self.get_response("play.what")
             if query:
                 message.data["utterance"] = query

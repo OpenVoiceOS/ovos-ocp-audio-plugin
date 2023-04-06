@@ -1,5 +1,7 @@
 import random
 from os.path import join, dirname
+from typing import List
+
 from time import sleep
 
 from ovos_utils.gui import is_gui_connected, is_gui_running
@@ -50,6 +52,11 @@ class OCPMediaPlayer(OVOSAbstractApplication):
             self.mpris.bind(self)
 
     def bind(self, bus=None):
+        """
+        Initialize components that need a MessageBusClient or instance of this
+        object.
+        @param bus: MessageBusClient object to register events on
+        """
         super(OCPMediaPlayer, self).bind(bus)
         self.now_playing.bind(self)
         self.media.bind(self)
@@ -133,30 +140,48 @@ class OCPMediaPlayer(OVOSAbstractApplication):
                        self.handle_set_app_timeout_mode)
 
     @property
-    def active_skill(self):
+    def active_skill(self) -> str:
+        """
+        Return the skill_id of the skill providing the current media
+        """
         return self.now_playing.skill_id
 
     @property
-    def active_backend(self):
+    def active_backend(self) -> PlaybackType:
+        """
+        Return the PlaybackType for the current media
+        """
         return self.now_playing.playback
 
     @property
-    def tracks(self):
+    def tracks(self) -> List[MediaEntry]:
+        """
+        Return the current queue as a list of MediaEntry objects
+        """
         return self.playlist.entries
 
     @property
-    def disambiguation(self):
+    def disambiguation(self) -> List[MediaEntry]:
+        """
+        Return a list of the previous search results as MediaEntry objects
+        """
         return self.media.search_playlist.entries
 
     @property
-    def can_prev(self):
+    def can_prev(self) -> bool:
+        """
+        Return true if there is a previous track in the queue to skip to
+        """
         if self.active_backend != PlaybackType.MPRIS and \
                 self.playlist.is_first_track:
             return False
         return True
 
     @property
-    def can_next(self):
+    def can_next(self) -> bool:
+        """
+        Return true if there is a next track in the queue to skip to
+        """
         if self.loop_state != LoopState.NONE or \
                 self.shuffle or \
                 self.active_backend == PlaybackType.MPRIS:
@@ -169,18 +194,33 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         return False
 
     # state
-    def set_media_state(self, state):
+    def set_media_state(self, state: MediaState):
+        """
+        Set self.media_state and emit an event announcing this state change.
+        @param state: New MediaState
+        """
+        if not isinstance(state, MediaState):
+            raise TypeError(f"Expected MediaState and got: {state}")
         if state == self.media_state:
             return
         self.media_state = state
         self.bus.emit(Message("ovos.common_play.media.state",
                               {"state": self.media_state}))
 
-    def set_player_state(self, state):
+    def set_player_state(self, state: PlayerState):
+        """
+        Set self.state, update the GUI and MPRIS (if available), and emit an
+        event announcing this state change.
+        @param state: New PlayerState
+        """
+        if not isinstance(state, PlayerState):
+            raise TypeError(f"Expected PlayerState and got: {state}")
         if state == self.state:
             return
         self.state = state
-        state2str = {PlayerState.PLAYING: "Playing", PlayerState.PAUSED: "Paused", PlayerState.STOPPED: "Stopped"}
+        state2str = {PlayerState.PLAYING: "Playing",
+                     PlayerState.PAUSED: "Paused",
+                     PlayerState.STOPPED: "Stopped"}
         self.gui["status"] = state2str[self.state]
         if self.mpris:
             self.mpris.update_props({"CanPause": self.state == PlayerState.PLAYING,
@@ -251,6 +291,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         return True
 
     def on_invalid_media(self):
+        LOG.warning(f"Failed to play: {self.now_playing}")
         self.gui.show_playback_error()
         self.play_next()
 
@@ -272,22 +313,29 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         self.play()
 
     @property
-    def audio_service_player(self):
+    def audio_service_player(self) -> str:
+        """
+        Return the configured audio player that is handling playback
+        """
         if not self._audio_backend:
             self._audio_backend = self._get_prefered_audio_backend()
         return self._audio_backend
 
     def _get_prefered_audio_backend(self):
-        # NOTE - the bus api tells us what backends are loaded
-        # however it does not provide "type", so we need to get that from config
-        # we still hit the messagebus to account for loading failures,
-        # even if config claims backend is enabled it might not load
+        """
+        Check configuration and available backends to select a preferred backend
+
+        NOTE - the bus api tells us what backends are loaded,however it does not
+        provide "type", so we need to get that from config we still hit the
+        messagebus to account for loading failures, even if config claims
+        backend is enabled it might not load
+        """
         backends = self.audio_service.available_backends()
         cfg = Configuration()["Audio"]["backends"]
         available = [k for k, v in backends.items()
                      if cfg[k].get("type", "") != "ovos_common_play"]
         preferred = self.settings.get("preferred_audio_services") or \
-                    ["vlc", "mplayer", "simple"]
+            ["vlc", "mplayer", "simple"]
         for b in preferred:
             if b in available:
                 return b
@@ -493,9 +541,15 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         #    self.mpris.stop()
 
     def stop_gui_player(self):
+        """
+        Emit a Message notifying the gui player to stop
+        """
         self.bus.emit(Message("gui.player.media.service.stop"))
 
     def stop_audio_skill(self):
+        """
+        Emit a Message notifying self.active_skill to stop
+        """
         self.bus.emit(Message(f'ovos.common_play.{self.active_skill}.stop'))
 
     def stop_audio_service(self):
@@ -527,6 +581,8 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         state = message.data.get("state")
         if state == self.state:
             return
+        if state not in PlayerState:
+            LOG.error(f"Got invalid state requested: {state}")
         for k in PlayerState:
             if k == state:
                 LOG.info(f"PlayerState changed: {repr(k)}")
