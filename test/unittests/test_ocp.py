@@ -375,8 +375,8 @@ class TestOCPPlayer(unittest.TestCase):
         valid_dict = valid_search_results[0]
         valid_track = MediaEntry.from_dict(valid_search_results[1])
         invalid_str = json.dumps(valid_search_results[2])
-        invalid_no_uri = valid_search_results[2]
-        invalid_no_uri.pop('uri')
+        track_no_uri = valid_search_results[2]
+        track_no_uri.pop('uri')
         # TODO: Test playlist result
 
         # Play valid dict result
@@ -403,8 +403,7 @@ class TestOCPPlayer(unittest.TestCase):
         self.player.gui.update_current_track.assert_called_once()
         self.player.gui.update_playlist.assert_called_once()
         self.player.mpris.update_props.assert_called_once_with(
-            {"Metadata": self.player.now_playing.mpris_metadata}
-        )
+            {"Metadata": self.player.now_playing.mpris_metadata})
         self.player.gui.update_current_track.reset_mock()
         self.player.gui.update_playlist.reset_mock()
         self.player.mpris.update_props.reset_mock()
@@ -417,11 +416,11 @@ class TestOCPPlayer(unittest.TestCase):
         self.player.mpris.update_props.assert_not_called()
 
         # Play result with no URI
-        with self.assertRaises(ValueError):
-            self.player.set_now_playing(invalid_no_uri)
-        self.player.gui.update_current_track.assert_not_called()
-        self.player.gui.update_playlist.assert_not_called()
-        self.player.mpris.update_props.assert_not_called()
+        self.player.set_now_playing(track_no_uri)
+        self.player.gui.update_current_track.assert_called_once()
+        self.player.gui.update_playlist.assert_called_once()
+        self.player.mpris.update_props.assert_called_once_with(
+            {"Metadata": self.player.now_playing.mpris_metadata})
 
         self.player.mpris.update_props = real_update_props
         self.player.gui.update_current_track = real_update_track

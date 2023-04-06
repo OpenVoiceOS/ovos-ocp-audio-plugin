@@ -261,10 +261,13 @@ class OCPMediaPlayer(OVOSAbstractApplication):
             if len(self.playlist):
                 self.now_playing.update(self.playlist[0])
             else:
-                # TODO This is a track with no URI; why should we try to play it
+                # If there's no URI, the skill might be handling playback so
+                # now_playing should still be updated
                 self.now_playing.update(track)
         else:
-            raise ValueError(f"Requested track has no URI: {track}")
+            # If there's no URI, the skill might be handling playback so
+            # now_playing should still be updated
+            self.now_playing.update(track)
 
         # sync playlist position
         self.playlist.goto_track(self.now_playing)
