@@ -1,12 +1,41 @@
 import json
 import unittest
+from threading import Event
 
 from mycroft_bus_client import Message
 from ovos_utils.messagebus import FakeBus
-from unittest.mock import Mock, MagicMock
+from unittest.mock import Mock, MagicMock, patch
 
 from ovos_plugin_common_play import PlayerState
-from ovos_plugin_common_play.ocp.status import MediaType, LoopState, MediaState, PlaybackType
+from ovos_plugin_common_play.ocp.media import MediaEntry
+from ovos_plugin_common_play.ocp.status import MediaType, LoopState, MediaState, PlaybackType, TrackState
+
+valid_search_results = [
+    {'media_type': MediaType.MUSIC,
+     'playback': PlaybackType.AUDIO,
+     'image': 'https://freemusicarchive.org/legacy/fma-smaller.jpg',
+     'skill_icon': 'https://freemusicarchive.org/legacy/fma-smaller.jpg',
+     'uri': 'https://freemusicarchive.org/track/07_-_Quantum_Jazz_-_Orbiting_A_Distant_Planet/stream/',
+     'title': 'Orbiting A Distant Planet',
+     'artist': 'Quantum Jazz',
+     'match_confidence': 65},
+    {'media_type': MediaType.MUSIC,
+     'playback': PlaybackType.AUDIO,
+     'image': 'https://freemusicarchive.org/legacy/fma-smaller.jpg',
+     'skill_icon': 'https://freemusicarchive.org/legacy/fma-smaller.jpg',
+     'uri': 'https://freemusicarchive.org/track/05_-_Quantum_Jazz_-_Passing_Fields/stream/',
+     'title': 'Passing Fields',
+     'artist': 'Quantum Jazz',
+     'match_confidence': 65},
+    {'media_type': MediaType.MUSIC,
+     'playback': PlaybackType.AUDIO,
+     'image': 'https://freemusicarchive.org/legacy/fma-smaller.jpg',
+     'skill_icon': 'https://freemusicarchive.org/legacy/fma-smaller.jpg',
+     'uri': 'https://freemusicarchive.org/track/04_-_Quantum_Jazz_-_All_About_The_Sun/stream/',
+     'title': 'All About The Sun',
+     'artist': 'Quantum Jazz',
+     'match_confidence': 65}
+]
 
 
 class TestOCP(unittest.TestCase):
@@ -300,28 +329,312 @@ class TestOCPPlayer(unittest.TestCase):
         self.player.mpris.update_props = real_update_props
 
     def test_set_now_playing(self):
-        # TODO
-        pass
+        real_update_props = self.player.mpris.update_props
+        real_update_track = self.player.gui.update_current_track
+        real_update_plist = self.player.gui.update_playlist
+        self.player.mpris.update_props = Mock()
+        self.player.gui.update_current_track = Mock()
+        self.player.gui.update_playlist = Mock()
 
-    def test_validate_stream(self):
-        # TODO
-        pass
+        valid_dict = valid_search_results[0]
+        valid_track = MediaEntry.from_dict(valid_search_results[1])
+        invalid_str = json.dumps(valid_search_results[2])
+        invalid_no_uri = valid_search_results[2]
+        invalid_no_uri.pop('uri')
+        # TODO: Test playlist result
+
+        # Play valid dict result
+        self.player.set_now_playing(valid_dict)
+        entry = MediaEntry.from_dict(valid_dict)
+        # self.assertEqual(self.player.now_playing.as_dict, valid_dict)
+        self.assertEqual(self.player.now_playing.as_entry(), entry)
+        self.assertEqual(self.player.playlist.current_track, entry)
+        self.assertEqual(self.player.playlist[-1], entry)
+        self.player.gui.update_current_track.assert_called_once()
+        self.player.gui.update_playlist.assert_called_once()
+        self.player.mpris.update_props.assert_called_once_with(
+            {"Metadata": self.player.now_playing.mpris_metadata}
+        )
+        self.player.gui.update_current_track.reset_mock()
+        self.player.gui.update_playlist.reset_mock()
+        self.player.mpris.update_props.reset_mock()
+
+        # Play valid MediaEntry result
+        self.player.set_now_playing(valid_track)
+        self.assertEqual(self.player.now_playing.as_entry(), valid_track)
+        self.assertEqual(self.player.playlist.current_track, valid_track)
+        self.assertEqual(self.player.playlist[-1], valid_track)
+        self.player.gui.update_current_track.assert_called_once()
+        self.player.gui.update_playlist.assert_called_once()
+        self.player.mpris.update_props.assert_called_once_with(
+            {"Metadata": self.player.now_playing.mpris_metadata}
+        )
+        self.player.gui.update_current_track.reset_mock()
+        self.player.gui.update_playlist.reset_mock()
+        self.player.mpris.update_props.reset_mock()
+
+        # Play invalid string result
+        with self.assertRaises(ValueError):
+            self.player.set_now_playing(invalid_str)
+        self.player.gui.update_current_track.assert_not_called()
+        self.player.gui.update_playlist.assert_not_called()
+        self.player.mpris.update_props.assert_not_called()
+
+        # Play result with no URI
+        with self.assertRaises(ValueError):
+            self.player.set_now_playing(invalid_no_uri)
+        self.player.gui.update_current_track.assert_not_called()
+        self.player.gui.update_playlist.assert_not_called()
+        self.player.mpris.update_props.assert_not_called()
+
+        self.player.mpris.update_props = real_update_props
+        self.player.gui.update_current_track = real_update_track
+        self.player.gui.update_playlist = real_update_plist
+
+    @patch("ovos_plugin_common_play.ocp.player.is_gui_running")
+    def test_validate_stream(self, gui_running):
+        real_update = self.player.gui.update_current_track
+        self.player.gui.update_current_track = Mock()
+        media_entry = MediaEntry.from_dict(valid_search_results[0])
+        invalid_result = valid_search_results[1]
+        invalid_result.pop('uri')
+        invalid_entry = MediaEntry.from_dict(invalid_result)
+
+        # Valid Entry
+        self.player.now_playing.update(media_entry)
+
+        self.assertFalse(self.player.now_playing.is_cps)
+        self.assertEqual(self.player.now_playing.playback,
+                         PlaybackType.AUDIO)
+        self.assertEqual(self.player.active_backend, PlaybackType.AUDIO)
+
+        # Test with GUI
+        gui_running.return_value = True
+        self.assertTrue(self.player.validate_stream())
+        self.assertEqual(self.player.gui["stream"], media_entry.uri)
+        self.player.gui.update_current_track.assert_called_once()
+        self.assertEqual(self.player.now_playing.playback,
+                         PlaybackType.AUDIO)
+
+        # Invalid Entry
+        self.player.now_playing.update(invalid_entry)
+        self.assertFalse(self.player.validate_stream())
+        self.assertEqual(self.player.gui["stream"], media_entry.uri)
+        self.player.gui.update_current_track.assert_called_once()
+
+        # Test without GUI
+        gui_running.return_value = False
+        self.player.gui.update_current_track.reset_mock()
+        self.player.gui["stream"] = None
+        self.player.now_playing.update(media_entry)
+        self.assertTrue(self.player.validate_stream())
+        self.assertEqual(self.player.gui["stream"], media_entry.uri)
+        self.player.gui.update_current_track.assert_called_once()
+        self.assertEqual(self.player.now_playing.playback,
+                         PlaybackType.AUDIO_SERVICE)
+
+        # TODO: Test Skill playback and non-audio playback
+        self.player.gui.update_current_track = real_update
 
     def test_on_invalid_media(self):
-        # TODO
-        pass
+        real_play_next = self.player.play_next
+        real_show_error = self.player.gui.show_playback_error
+        self.player.play_next = Mock()
+        self.player.gui.show_playback_error = Mock()
+
+        self.player.on_invalid_media()
+        self.player.play_next.assert_called_once()
+        self.player.gui.show_playback_error.assert_called_once()
+
+        self.player.play_next = real_play_next
+        self.player.gui.show_playback_error = real_show_error
 
     def test_play_media(self):
-        # TODO
-        pass
+        real_stop = self.player.mpris.stop
+        real_pause = self.player.pause
+        real_gui_update = self.player.gui.update_search_results
+        real_play = self.player.play
+        real_set_now_playing = self.player.set_now_playing
+        self.player.mpris.stop = Mock()
+        self.player.pause = Mock()
+        self.player.gui.update_search_results = Mock()
+        self.player.play = Mock()
+        self.player.set_now_playing = Mock()
+
+        results_as_entries = [MediaEntry.from_dict(d)
+                              for d in valid_search_results]
+        results_as_entries.sort(key=lambda k: k.match_confidence, reverse=True)
+
+        # Test invalid track
+        with self.assertRaises(TypeError):
+            self.player.play_media(valid_search_results)
+        with self.assertRaises(TypeError):
+            self.player.play_media(json.dumps(valid_search_results[0]))
+
+        # Test track only
+        self.player.state = PlayerState.STOPPED
+        track = MediaEntry.from_dict(valid_search_results[0])
+        self.player.play_media(track)
+        self.player.mpris.stop.assert_called_once()
+        self.player.pause.assert_not_called()
+        self.assertEqual(self.player.media.search_playlist.entries, list())
+        self.player.gui.update_search_results.assert_not_called()
+        self.assertEqual(self.player.playlist.entries, list())
+        self.player.set_now_playing.assert_called_once_with(track)
+        self.player.play.assert_called_once()
+
+        self.player.mpris.stop.reset_mock()
+        self.player.set_now_playing.reset_mock()
+        self.player.play.reset_mock()
+
+        # Test track with disambiguation
+        self.player.state = PlayerState.PAUSED
+        track = MediaEntry.from_dict(valid_search_results[0])
+        self.player.play_media(track, valid_search_results)
+        self.player.mpris.stop.assert_called_once()
+        self.player.pause.assert_not_called()
+
+        self.assertEqual(self.player.media.search_playlist.entries,
+                         results_as_entries)
+        self.player.gui.update_search_results.assert_called_once()
+        self.assertEqual(self.player.playlist.entries, list())
+        self.player.set_now_playing.assert_called_once_with(track)
+        self.player.play.assert_called_once()
+
+        self.player.mpris.stop.reset_mock()
+        self.player.set_now_playing.reset_mock()
+        self.player.play.reset_mock()
+        self.player.gui.update_search_results.reset_mock()
+
+        # Test track with playlist
+        self.player.state = PlayerState.PLAYING
+        self.player.media.search_playlist.clear()
+        track = MediaEntry.from_dict(valid_search_results[0])
+        self.player.play_media(track, playlist=valid_search_results)
+        self.player.mpris.stop.assert_called_once()
+        self.player.pause.assert_called_once()
+
+        self.assertEqual(self.player.media.search_playlist.entries, list())
+        self.player.gui.update_search_results.assert_not_called()
+        self.assertEqual(self.player.playlist.entries, results_as_entries)
+        self.assertEqual(self.player.playlist.current_track, track)
+        self.player.set_now_playing.assert_called_once_with(track)
+        self.player.play.assert_called_once()
+
+        self.player.set_now_playing = real_set_now_playing
+        self.player.play = real_play
+        self.player.gui.update_search_results = real_gui_update
+        self.player.pause = real_pause
+        self.player.mpris.stop = real_stop
 
     def test_get_preferred_audio_backend(self):
-        # TODO
-        pass
+        preferred = self.player._get_preferred_audio_backend()
+        self.assertIsInstance(preferred, str)
+        self.assertIn(preferred,
+                      ["ovos_common_play", "vlc", "mplayer", "simple"])
 
-    def test_play(self):
-        # TODO
-        pass
+    @patch("ovos_plugin_common_play.ocp.player.is_gui_running")
+    def test_play(self, gui_running):
+        gui_running.return_value = True
+        real_update_props = self.player.mpris.update_props
+        real_stop = self.player.mpris.stop
+        real_validate_stream = self.player.validate_stream
+        real_show_player = self.player.gui.show_player
+        real_invalid = self.player.on_invalid_media
+        real_player_state = self.player.set_player_state
+        real_audio_service_play = self.player.audio_service.play
+        self.player.mpris.update_props = Mock()
+        self.player.validate_stream = Mock(return_value=False)
+        mpris_stop = self.player.mpris.stop_event
+        self.player.mpris.stop = Mock()
+        self.player.gui.show_player = Mock()
+        self.player.on_invalid_media = Mock()
+        self.player.track_history = dict()
+        self.player.set_player_state = Mock()
+        self.player.audio_service.play = Mock()
+
+        # Test invalid stream
+        self.player.play()
+        self.player.mpris.stop.assert_called_once()
+        self.player.validate_stream.assert_called_once()
+        self.player.on_invalid_media.assert_called_once()
+        self.player.gui.show_player.assert_not_called()
+
+        self.player.validate_stream.reset_mock()
+        self.player.validate_stream.return_value = True
+
+        # Test invalid backend
+        self.player.now_playing.playback = PlaybackType.UNDEFINED
+        mpris_stop.set()
+        with self.assertRaises(ValueError):
+            self.player.play()
+        self.player.validate_stream.assert_called_once()
+        self.player.mpris.update_props.assert_not_called()
+
+        # TODO: Should the GUI be displayed and track history updated for
+        #       invalid playback requests?
+        self.player.gui.show_player.assert_called_once()
+        self.assertEqual(set(self.player.track_history.keys()), {''})
+
+        self.player.gui.show_player.reset_mock()
+        self.player.validate_stream.reset_mock()
+
+        # Test valid audio with gui
+        media = MediaEntry.from_dict(valid_search_results[0])
+        media.playback = PlaybackType.AUDIO
+        self.player.now_playing = media
+        mpris_stop.set()
+        self.player.play()
+        self.player.mpris.stop.assert_called_once()
+        self.player.validate_stream.assert_called_once()
+        self.player.on_invalid_media.assert_called_once()
+        self.player.gui.show_player.assert_called_once()
+        self.assertEqual(set(self.player.track_history.keys()), {'', media.uri})
+        self.assertEqual(self.player.track_history[media.uri], 1)
+        last_message = self.emitted_msgs[-1]
+        second_last_message = self.emitted_msgs[-2]
+        self.assertEqual(last_message.msg_type, "ovos.common_play.track.state")
+        self.assertEqual(last_message.data, {"state": TrackState.PLAYING_AUDIO})
+        self.assertEqual(second_last_message.msg_type,
+                         "gui.player.media.service.play")
+        self.assertEqual(second_last_message.data,
+                         {"track": media.uri, "mime": list(media.mimetype),
+                          "repeat": False})
+
+        self.player.mpris.stop.reset_mock()
+        self.player.validate_stream.reset_mock()
+        self.player.gui.show_player.reset_mock()
+
+        # Test valid audio without gui (AudioService
+        gui_running.return_value = False
+        self.player.mpris.stop_event.clear()
+        self.player.play()
+        self.player.mpris.stop.assert_called_once()
+        self.player.validate_stream.assert_called_once()
+        self.player.on_invalid_media.assert_called_once()
+        self.player.gui.show_player.assert_called_once()
+        self.assertEqual(set(self.player.track_history.keys()), {'', media.uri})
+        self.assertEqual(self.player.track_history[media.uri], 2)
+        self.assertEqual(self.player.active_backend, PlaybackType.AUDIO_SERVICE)
+        self.assertEqual(media.playback, PlaybackType.AUDIO_SERVICE)
+        self.player.set_player_state.assert_called_once_with(
+            PlayerState.PLAYING)
+        self.player.audio_service.play.assert_called_once_with(
+            media.uri, utterance=self.player.audio_service_player)
+        last_message = self.emitted_msgs[-1]
+        self.assertEqual(last_message.msg_type, "ovos.common_play.track.state")
+        self.assertEqual(last_message.data,
+                         {"state": TrackState.PLAYING_AUDIOSERVICE})
+
+        # TODO: Test Skill, Video, Webview
+
+        self.player.on_invalid_media = real_invalid
+        self.player.gui.show_player = real_show_player
+        self.player.mpris.stop = real_stop
+        self.player.validate_stream = real_validate_stream
+        self.player.mpris.update_props = real_update_props
+        self.player.set_player_state = real_player_state
+        self.player.audio_service.play = real_audio_service_play
 
     def test_play_shuffle(self):
         # TODO

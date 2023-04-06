@@ -316,6 +316,8 @@ class NowPlaying(MediaEntry):
 
     def extract_stream(self):
         uri = self.uri
+        if not uri:
+            raise ValueError("No URI to extract stream from")
         if self.playback == PlaybackType.VIDEO:
             video = True
         else:
