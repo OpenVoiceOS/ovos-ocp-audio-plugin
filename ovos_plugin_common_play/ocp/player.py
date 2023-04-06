@@ -26,13 +26,13 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         gui = gui or OCPMediaPlayerGUI()
 
         # Define things referenced in `bind`
-        self.now_playing = NowPlaying()
-        self.media = OCPSearch()
-        self.state = PlayerState.STOPPED
-        self.loop_state = LoopState.NONE
-        self.media_state = MediaState.NO_MEDIA
-        self.playlist = Playlist()
-        self.shuffle = False
+        self.now_playing: NowPlaying = NowPlaying()
+        self.media: OCPSearch = OCPSearch()
+        self.state: PlayerState = PlayerState.STOPPED
+        self.loop_state: LoopState = LoopState.NONE
+        self.media_state: MediaState = MediaState.NO_MEDIA
+        self.playlist: Playlist = Playlist()
+        self.shuffle: bool = False
         self.audio_service = None
         self._audio_backend = None
         self.track_history = {}  # Dict of track URI to play count
@@ -41,6 +41,8 @@ class OCPMediaPlayer(OVOSAbstractApplication):
                          gui=gui, resources_dir=resources_dir, lang=lang)
         if settings:
             self.settings.merge(settings)
+
+        self._paused_on_duck = False
 
         # mpris settings
         manage_players = self.settings.get("manage_external_players", False)
@@ -136,7 +138,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
                        self.handle_enable_app_timeout)
         self.add_event('ovos.common_play.gui.set_app_timeout',
                        self.handle_set_app_timeout)
-        self.add_event('ovos.common_play.gui.timeout.mode', 
+        self.add_event('ovos.common_play.gui.timeout.mode',
                        self.handle_set_app_timeout_mode)
 
     @property
@@ -449,8 +451,12 @@ class OCPMediaPlayer(OVOSAbstractApplication):
             self.mpris.update_props({"CanGoPrevious": self.can_prev})
 
     def play_shuffle(self):
+        """
+        Go to a random position in the playlist and play that MediaEntry.
+        """
         LOG.debug("Shuffle == True")
         if len(self.playlist) > 1 and not self.playlist.is_last_track:
+            # TODO: does the 'last track' matter in this case?
             self.playlist.set_position(random.randint(0, len(self.playlist)))
             self.set_now_playing(self.playlist.current_track)
         else:
@@ -458,12 +464,18 @@ class OCPMediaPlayer(OVOSAbstractApplication):
             self.set_now_playing(self.media.search_playlist.current_track)
 
     def play_next(self):
+        """
+        Play the next track in the playlist.
+        If there is no next track, end playback.
+        """
         if self.active_backend in [PlaybackType.MPRIS]:
             if self.mpris:
                 self.mpris.play_next()
             return
-        elif self.active_backend in [PlaybackType.SKILL, PlaybackType.UNDEFINED]:
-            self.bus.emit(Message(f'ovos.common_play.{self.now_playing.skill_id}.next'))
+        elif self.active_backend in [PlaybackType.SKILL,
+                                     PlaybackType.UNDEFINED]:
+            self.bus.emit(Message(
+                f'ovos.common_play.{self.now_playing.skill_id}.next'))
             return
         self.pause()  # make more responsive
 
@@ -480,7 +492,8 @@ class OCPMediaPlayer(OVOSAbstractApplication):
             while self.media.search_playlist.current_track in self.playlist:
                 self.media.search_playlist.next_track()
             self.set_now_playing(self.media.search_playlist.current_track)
-            LOG.info(f"Next search index: {self.media.search_playlist.position}")
+            LOG.info(f"Next search index: "
+                     f"{self.media.search_playlist.position}")
         else:
             if self.loop_state == LoopState.REPEAT and len(self.playlist):
                 LOG.debug("end of playlist, repeat == True")
@@ -492,16 +505,23 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         self.play()
 
     def play_prev(self):
+        """
+        Play the previous track in the playlist.
+        If there is no previous track, do nothing.
+        """
         if self.active_backend in [PlaybackType.MPRIS]:
             if self.mpris:
                 self.mpris.play_prev()
             return
-        elif self.active_backend in [PlaybackType.SKILL, PlaybackType.UNDEFINED]:
-            self.bus.emit(Message(f'ovos.common_play.{self.now_playing.skill_id}.prev'))
+        elif self.active_backend in [PlaybackType.SKILL,
+                                     PlaybackType.UNDEFINED]:
+            self.bus.emit(Message(
+                f'ovos.common_play.{self.now_playing.skill_id}.prev'))
             return
         self.pause()  # make more responsive
 
         if self.shuffle:
+            # TODO: Should skipping back get a random track instead of previous?
             self.play_shuffle()
         elif not self.playlist.is_first_track:
             self.playlist.prev_track()
@@ -512,6 +532,9 @@ class OCPMediaPlayer(OVOSAbstractApplication):
             LOG.debug("requested previous, but already in 1st track")
 
     def pause(self):
+        """
+        Ask the current playback to pause.
+        """
         LOG.debug(f"Pausing playback: {self.active_backend}")
         if self.active_backend in [PlaybackType.AUDIO_SERVICE,
                                    PlaybackType.UNDEFINED]:
@@ -527,8 +550,12 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         if self.active_backend in [PlaybackType.MPRIS] and self.mpris:
             self.mpris.pause()
         self.set_player_state(PlayerState.PAUSED)
+        self._paused_on_duck = False
 
     def resume(self):
+        """
+        Ask any paused or stopped playback to resume.
+        """
         LOG.debug(f"Resuming playback: {self.active_backend}")
         if self.active_backend in [PlaybackType.AUDIO_SERVICE,
                                    PlaybackType.UNDEFINED]:
@@ -548,13 +575,20 @@ class OCPMediaPlayer(OVOSAbstractApplication):
 
         self.set_player_state(PlayerState.PLAYING)
 
-    def seek(self, position):
+    def seek(self, position: int):
+        """
+        Request playback to go to a specific position in the current media
+        @param position: milliseconds position to seek to
+        """
         if self.active_backend in [PlaybackType.AUDIO_SERVICE,
                                    PlaybackType.UNDEFINED]:
             self.audio_service.set_track_position(position / 1000)
         self.gui["position"] = position
 
     def stop(self):
+        """
+        Request stopping current playback and searching
+        """
         # stop any search still happening
         self.bus.emit(Message("ovos.common_play.search.stop"))
 
@@ -587,9 +621,15 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         self.bus.emit(Message(f'ovos.common_play.{self.active_skill}.stop'))
 
     def stop_audio_service(self):
+        """
+        Call self.audio_service.stop()
+        """
         self.audio_service.stop()
 
     def reset(self):
+        """
+        Reset this instance to clear any media or settings
+        """
         self.stop()
         self.playlist.clear()
         self.media.clear()
@@ -598,6 +638,9 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         self.loop_state = LoopState.NONE
 
     def shutdown(self):
+        """
+        Shutdown this instance and its spawned objects. Remove events.
+        """
         self.stop()
         if self.mpris:
             self.mpris.shutdown()
@@ -759,12 +802,22 @@ class OCPMediaPlayer(OVOSAbstractApplication):
 
     # audio ducking
     def handle_duck_request(self, message):
+        """
+        Pause audio on 'recognizer_loop:record_begin'
+        @param message: Message associated with event
+        """
         if self.state == PlayerState.PLAYING:
             self.pause()
+            self._paused_on_duck = True
 
     def handle_unduck_request(self, message):
-        if self.state == PlayerState.PAUSED:
+        """
+        Resume paused audio on 'recognizer_loop:record_begin'
+        @param message: Message associated with event
+        """
+        if self.state == PlayerState.PAUSED and self._paused_on_duck:
             self.resume()
+            self._paused_on_duck = False
 
     # track data
     def handle_track_length_request(self, message):

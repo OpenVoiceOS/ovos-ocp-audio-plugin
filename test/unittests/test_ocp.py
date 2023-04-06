@@ -246,7 +246,43 @@ class TestOCPPlayer(unittest.TestCase):
         self.assertEqual(self.player.gui.player, self.player)
         self.assertIsInstance(self.player.audio_service, MycroftAudioService)
 
-        # TODO: Test messagebus event registration
+        bus_events = ['recognizer_loop:record_begin',
+                      'recognizer_loop:record_end',
+                      'gui.player.media.service.sync.status',
+                      "gui.player.media.service.get.next",
+                      "gui.player.media.service.get.previous",
+                      "gui.player.media.service.get.repeat",
+                      "gui.player.media.service.get.shuffle",
+                      'ovos.common_play.player.state',
+                      'ovos.common_play.media.state',
+                      'ovos.common_play.play',
+                      'ovos.common_play.pause',
+                      'ovos.common_play.resume',
+                      'ovos.common_play.stop',
+                      'ovos.common_play.next',
+                      'ovos.common_play.previous',
+                      'ovos.common_play.seek',
+                      'ovos.common_play.get_track_length',
+                      'ovos.common_play.set_track_position',
+                      'ovos.common_play.get_track_position',
+                      'ovos.common_play.track_info',
+                      'ovos.common_play.list_backends',
+                      'ovos.common_play.playlist.set',
+                      'ovos.common_play.playlist.clear',
+                      'ovos.common_play.playlist.queue',
+                      'ovos.common_play.duck',
+                      'ovos.common_play.unduck',
+                      'ovos.common_play.shuffle.set',
+                      'ovos.common_play.shuffle.unset',
+                      'ovos.common_play.repeat.set',
+                      'ovos.common_play.repeat.unset',
+                      'ovos.common_play.gui.enable_app_timeout',
+                      'ovos.common_play.gui.set_app_timeout',
+                      'ovos.common_play.gui.timeout.mode'
+                      ]
+
+        for event in bus_events:
+            self.assertEqual(len(self.bus.ee.listeners(event)), 1)
 
         # Test properties
         self.assertEqual(self.player.active_skill, "ovos.common_play")
@@ -347,7 +383,7 @@ class TestOCPPlayer(unittest.TestCase):
         self.player.set_now_playing(valid_dict)
         entry = MediaEntry.from_dict(valid_dict)
         # self.assertEqual(self.player.now_playing.as_dict, valid_dict)
-        self.assertEqual(self.player.now_playing.as_entry(), entry)
+        self.assertEqual(self.player.now_playing, entry)
         self.assertEqual(self.player.playlist.current_track, entry)
         self.assertEqual(self.player.playlist[-1], entry)
         self.player.gui.update_current_track.assert_called_once()
@@ -361,7 +397,7 @@ class TestOCPPlayer(unittest.TestCase):
 
         # Play valid MediaEntry result
         self.player.set_now_playing(valid_track)
-        self.assertEqual(self.player.now_playing.as_entry(), valid_track)
+        self.assertEqual(self.player.now_playing, valid_track)
         self.assertEqual(self.player.playlist.current_track, valid_track)
         self.assertEqual(self.player.playlist[-1], valid_track)
         self.player.gui.update_current_track.assert_called_once()
@@ -649,16 +685,136 @@ class TestOCPPlayer(unittest.TestCase):
         pass
 
     def test_pause(self):
-        # TODO
-        pass
+        real_audio_pause = self.player.audio_service.pause
+        real_player_pause = self.player.mpris.pause
+        real_player_state = self.player.set_player_state
+
+        self.player.audio_service.pause = Mock()
+        self.player.mpris.pause = Mock()
+        self.player.set_player_state = Mock()
+
+        # Test Audio service Pause
+        self.player._paused_on_duck = True
+        self.player.now_playing.playback = PlaybackType.AUDIO_SERVICE
+        self.player.pause()
+        self.player.audio_service.pause.assert_called_once()
+        self.assertFalse(self.player._paused_on_duck)
+        self.player.set_player_state.assert_called_once_with(PlayerState.PAUSED)
+
+        # Test GUI Pause
+        self.player.set_player_state.reset_mock()
+        self.player._paused_on_duck = True
+        self.player.now_playing.playback = PlaybackType.AUDIO
+        self.player.pause()
+        self.assertFalse(self.player._paused_on_duck)
+        self.player.set_player_state.assert_called_once_with(PlayerState.PAUSED)
+        last_message = self.emitted_msgs[-1]
+        self.assertEqual(last_message.msg_type,
+                         "gui.player.media.service.pause")
+
+        # Test Skill Pause
+        self.player.set_player_state.reset_mock()
+        self.player._paused_on_duck = True
+        self.player.now_playing.playback = PlaybackType.SKILL
+        self.player.pause()
+        self.assertFalse(self.player._paused_on_duck)
+        self.player.set_player_state.assert_called_once_with(PlayerState.PAUSED)
+        last_message = self.emitted_msgs[-1]
+        self.assertEqual(last_message.msg_type,
+                         f"ovos.common_play.{self.player.active_skill}.pause")
+
+        # Test MPRIS Pause
+        self.player.set_player_state.reset_mock()
+        self.player._paused_on_duck = True
+        self.player.now_playing.playback = PlaybackType.MPRIS
+        self.player.pause()
+        self.assertFalse(self.player._paused_on_duck)
+        self.player.set_player_state.assert_called_once_with(PlayerState.PAUSED)
+        self.player.mpris.pause.assert_called_once()
+
+        # TODO: Test Undefined playback
+
+        self.player.audio_service.pause.assert_called_once()
+
+        self.player.audio_service.pause = real_audio_pause
+        self.player.mpris.pause = real_player_pause
+        self.player.set_player_state = real_player_state
 
     def test_resume(self):
-        # TODO
-        pass
+        real_audio_resume = self.player.audio_service.resume
+        real_player_resume = self.player.mpris.resume
+        real_player_state = self.player.set_player_state
+
+        self.player.audio_service.resume = Mock()
+        self.player.mpris.resume = Mock()
+        self.player.set_player_state = Mock()
+
+        # Test Audio service Resume
+        self.player.now_playing.playback = PlaybackType.AUDIO_SERVICE
+        self.player.resume()
+        self.player.audio_service.resume.assert_called_once()
+        self.player.set_player_state.assert_called_once_with(PlayerState.PLAYING)
+
+        # Test GUI Resume
+        self.player.set_player_state.reset_mock()
+        self.player.now_playing.playback = PlaybackType.AUDIO
+        self.player.resume()
+        self.player.set_player_state.assert_called_once_with(PlayerState.PLAYING)
+        last_message = self.emitted_msgs[-1]
+        self.assertEqual(last_message.msg_type,
+                         "gui.player.media.service.resume")
+
+        # Test Skill Resume
+        self.player.set_player_state.reset_mock()
+        self.player.now_playing.playback = PlaybackType.SKILL
+        self.player.resume()
+        self.player.set_player_state.assert_called_once_with(PlayerState.PLAYING)
+        last_message = self.emitted_msgs[-1]
+        self.assertEqual(last_message.msg_type,
+                         f"ovos.common_play.{self.player.active_skill}.resume")
+
+        # Test MPRIS Resume
+        self.player.set_player_state.reset_mock()
+        self.player.now_playing.playback = PlaybackType.MPRIS
+        self.player.resume()
+        self.player.set_player_state.assert_called_once_with(PlayerState.PLAYING)
+        self.player.mpris.resume.assert_called_once()
+
+        # TODO: Test Undefined playback
+
+        self.player.audio_service.resume.assert_called_once()
+
+        self.player.audio_service.resume = real_audio_resume
+        self.player.mpris.resume = real_player_resume
+        self.player.set_player_state = real_player_state
 
     def test_seek(self):
-        # TODO
-        pass
+        real_method = self.player.audio_service.set_track_position
+        mock_method = Mock()
+        self.player.audio_service.set_track_position = mock_method
+
+        # Audio Service
+        self.player.now_playing.playback = PlaybackType.AUDIO_SERVICE
+        test_pos = 1234
+        self.player.seek(test_pos)
+        mock_method.assert_called_once_with(1.234)
+        self.assertEqual(self.player.gui["position"], test_pos)
+
+        # Audio
+        self.player.now_playing.playback = PlaybackType.AUDIO
+        test_pos = 10000
+        self.player.seek(test_pos)
+        mock_method.assert_called_once_with(1.234)
+        self.assertEqual(self.player.gui["position"], test_pos)
+
+        # Undefined
+        self.player.now_playing.playback = PlaybackType.UNDEFINED
+        test_pos = 999
+        self.player.seek(test_pos)
+        mock_method.assert_called_with(0.999)
+        self.assertEqual(self.player.gui["position"], test_pos)
+
+        self.player.audio_service.set_track_position = real_method
 
     def test_stop(self):
         # TODO
@@ -684,8 +840,20 @@ class TestOCPPlayer(unittest.TestCase):
         self.player.audio_service.stop = real_stop
 
     def test_reset(self):
-        # TODO
-        pass
+        real_stop = self.player.stop
+        self.player.stop = Mock()
+
+        self.player.reset()
+        self.player.stop.assert_called_once()
+        self.assertEqual(self.player.playlist.entries, list())
+        self.assertIsNone(self.player.playlist.current_track)
+        self.assertEqual(self.player.media.search_playlist, list())
+        self.assertEqual(self.player.media_state, MediaState.NO_MEDIA)
+        self.assertEqual(self.player.state, PlayerState.STOPPED)
+        self.assertFalse(self.player.shuffle)
+        self.assertEqual(self.player.loop_state, LoopState.NONE)
+
+        self.player.stop = real_stop
 
     def test_shutdown(self):
         # TODO
@@ -772,12 +940,61 @@ class TestOCPPlayer(unittest.TestCase):
         pass
 
     def test_handle_duck_request(self):
-        # TODO
-        pass
+        real_pause = self.player.pause
+        self.player.pause = Mock()
+
+        # Duck already paused
+        self.player._paused_on_duck = False
+        self.player.state = PlayerState.PAUSED
+        self.player.handle_duck_request(None)
+        self.player.pause.assert_not_called()
+        self.assertFalse(self.player._paused_on_duck)
+
+        # Duck while stopped
+        self.player.state = PlayerState.STOPPED
+        self.player.handle_duck_request(None)
+        self.player.pause.assert_not_called()
+        self.assertFalse(self.player._paused_on_duck)
+
+        # Duck while playing
+        self.player.state = PlayerState.PLAYING
+        self.player.handle_duck_request(None)
+        self.player.pause.assert_called_once()
+        self.assertTrue(self.player._paused_on_duck)
+
+        self.player.pause = real_pause
 
     def test_handle_unduck_request(self):
-        # TODO
-        pass
+        real_resume = self.player.resume
+        self.player.resume = Mock()
+        self.player._paused_on_duck = False
+
+        # Unduck already playing
+        self.player.state = PlayerState.PLAYING
+        self.player.handle_unduck_request(None)
+        self.player.resume.assert_not_called()
+        self.assertFalse(self.player._paused_on_duck)
+
+        # Unduck while stopped
+        self.player.state = PlayerState.STOPPED
+        self.player.handle_unduck_request(None)
+        self.player.resume.assert_not_called()
+        self.assertFalse(self.player._paused_on_duck)
+
+        # Unduck paused (not from duck)
+        self.player.state = PlayerState.PAUSED
+        self.player.handle_unduck_request(None)
+        self.player.resume.assert_not_called()
+        self.assertFalse(self.player._paused_on_duck)
+
+        # Unduck paused on duck
+        self.player._paused_on_duck = True
+        self.player.state = PlayerState.PAUSED
+        self.player.handle_unduck_request(None)
+        self.player.resume.assert_called_once()
+        self.assertFalse(self.player._paused_on_duck)
+
+        self.player.resume = real_resume
 
     def test_handle_track_length_request(self):
         # TODO
