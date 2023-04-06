@@ -92,10 +92,10 @@ class OCP(OVOSAbstractApplication):
         # bus api shared with intents
         self.add_event("ovos.common_play.search", self.handle_play)
 
-    def handle_home(self, _=None):
+    def handle_home(self, message=None):
         """
         Handle ovos.common_play.home Messages and show the homescreen
-        @param _: message associated with request
+        @param message: message associated with request
         """
         # homescreen / launch from .desktop
         self.gui.show_home(app_mode=True)
