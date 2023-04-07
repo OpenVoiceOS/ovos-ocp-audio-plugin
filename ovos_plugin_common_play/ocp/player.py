@@ -395,7 +395,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         self.track_history.setdefault(self.now_playing.uri, 0)
         self.track_history[self.now_playing.uri] += 1
 
-        LOG.debug(f"Requesting playback: {self.active_backend}")
+        LOG.debug(f"Requesting playback: {repr(self.active_backend)}")
         if self.active_backend == PlaybackType.AUDIO and not is_gui_running():
             LOG.warning("Requested Audio playback via GUI without GUI. "
                         "Choosing Audio Service")
@@ -452,6 +452,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         if self.mpris:
             self.mpris.update_props({"CanGoNext": self.can_next})
             self.mpris.update_props({"CanGoPrevious": self.can_prev})
+        LOG.debug(f"self.active_backend={repr(self.active_backend)}")
 
     def play_shuffle(self):
         """
@@ -716,7 +717,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
             raise ValueError(f"Expected int or MediaState, but got: {state}")
         if state == self.media_state:
             return
-        LOG.info(f"MediaState changed: {repr(state)}")
+        LOG.debug(f"MediaState changed: {repr(state)}")
         self.media_state = state
         if state == MediaState.END_OF_MEDIA:
             self.handle_playback_ended(message)
@@ -729,13 +730,12 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         self.gui.show_playback_error()
 
     def handle_playback_ended(self, message):
-        LOG.debug("Playback ended")
         if self.settings.get("autoplay", True) and \
                 self.active_backend != PlaybackType.MPRIS:
-            LOG.debug("Playing next track")
+            LOG.debug(f"Playing next (backend={repr(self.active_backend)}")
             self.play_next()
             return
-
+        LOG.info("Playback ended")
         self.gui.handle_end_of_playback(message)
 
     # ovos common play bus api requests

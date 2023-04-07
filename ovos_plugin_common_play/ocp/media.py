@@ -508,7 +508,7 @@ class NowPlaying(MediaEntry):
         if state == self.status:
             return
         self.status = state
-        LOG.info(f"TrackState changed: {state}")
+        LOG.info(f"TrackState changed: {repr(state)}")
 
         if state == TrackState.PLAYING_SKILL:
             # skill is handling playback internally
