@@ -473,7 +473,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         End playback if there is no next track, accounting for repeat and
         shuffle settings.
         """
-        if self.active_backend == PlaybackType.MPRIS:
+        if self.active_backend in [PlaybackType.MPRIS]:
             if self.mpris:
                 self.mpris.play_next()
             return
