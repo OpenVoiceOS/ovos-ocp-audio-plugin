@@ -1,14 +1,13 @@
 import json
 import unittest
-from threading import Event
 
 from mycroft_bus_client import Message
 from ovos_utils.messagebus import FakeBus
 from unittest.mock import Mock, MagicMock, patch
 
-from ovos_plugin_common_play import PlayerState
 from ovos_plugin_common_play.ocp.media import MediaEntry
-from ovos_plugin_common_play.ocp.status import MediaType, LoopState, MediaState, PlaybackType, TrackState
+from ovos_plugin_common_play.ocp.status import MediaType, LoopState, \
+    MediaState, PlaybackType, TrackState, PlayerState
 
 valid_search_results = [
     {'media_type': MediaType.MUSIC,
