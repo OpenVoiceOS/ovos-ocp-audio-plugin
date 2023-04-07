@@ -1,5 +1,6 @@
 from typing import Optional, Tuple, List, Union
 
+from mycroft.messagebus import MessageBusClient
 from ovos_plugin_common_play.ocp import OCP_ID
 from ovos_plugin_common_play.ocp.status import *
 from ovos_plugin_common_play.ocp.utils import ocp_plugins, find_mime
@@ -342,18 +343,36 @@ class Playlist(list):
 
 
 class NowPlaying(MediaEntry):
+    def __init__(self, *args, **kwargs):
+        MediaEntry.__init__(self, *args, **kwargs)
+        self._player = None
+
     @property
-    def bus(self):
+    def bus(self) -> MessageBusClient:
+        """
+        Return the MessageBusClient inherited from the bound OCPMediaPlayer
+        """
         return self._player.bus
 
     @property
-    def _settings(self):
+    def _settings(self) -> dict:
+        """
+        Return the dict settings inherited from the bound OCPMediaPlayer
+        """
         return self._player.settings
 
-    def as_entry(self):
+    def as_entry(self) -> MediaEntry:
+        """
+        Return a MediaEntry representation of this object
+        """
         return MediaEntry.from_dict(self.as_dict)
 
     def bind(self, player):
+        """
+        Bind an OCPMediaPlayer object to this NowPlaying instance. Registers
+        messagebus event handlers and defines `self._player`
+        @param player: OCPMediaPlayer instance to bind
+        """
         # needs to start with _ to avoid json serialization errors
         self._player = player
         self._player.add_event("ovos.common_play.track.state",
@@ -374,12 +393,18 @@ class NowPlaying(MediaEntry):
                                self.handle_audio_service_play_start)
 
     def shutdown(self):
+        """
+        Remove NowPlaying events from the MessageBusClient
+        """
         self._player.remove_event("ovos.common_play.track.state")
         self._player.remove_event("ovos.common_play.playback_time")
         self._player.remove_event('gui.player.media.service.get.meta')
         self._player.remove_event('mycroft.audio_only.service.track_info_reply')
 
     def reset(self):
+        """
+        Reset the NowPlaying MediaEntry to default parameters
+        """
         self.title = ""
         self.artist = None
         self.skill_icon = None
@@ -394,18 +419,33 @@ class NowPlaying(MediaEntry):
         self.playback = PlaybackType.UNDEFINED
         self.status = TrackState.DISAMBIGUATION
 
-    def update(self, entry, skipkeys=None, newonly=False):
+    def update(self, entry: dict, skipkeys: list = None, newonly: bool = False):
+        """
+        Update this MediaEntry and emit `gui.player.media.service.set.meta`
+        @param entry: dict or MediaEntry object to update this object with
+        @param skipkeys: list of keys to not change
+        @param newonly: if True, only adds new keys; existing keys are unchanged
+        """
+        if isinstance(entry, MediaEntry):
+            entry = entry.as_dict
         super().update(entry, skipkeys, newonly)
         # uri updates should not be skipped
         if newonly and entry.get("uri"):
             super().update({"uri": entry["uri"]})
         # sync with gui media player on track change
+        if not self._player:
+            LOG.error("Instance not bound! Call `bind` before trying to use "
+                      "the messagebus.")
+            return
         self.bus.emit(Message("gui.player.media.service.set.meta",
                               {"title": self.title,
                                "image": self.image,
                                "artist": self.artist}))
 
     def extract_stream(self):
+        """
+        Get metadata from ocp_plugins and add it to this MediaEntry
+        """
         uri = self.uri
         if not uri:
             raise ValueError("No URI to extract stream from")
@@ -416,15 +456,19 @@ class NowPlaying(MediaEntry):
         meta = ocp_plugins.extract_stream(uri, video)
         # update media entry with new data
         if meta:
-            LOG.debug(f"OCP plugins metadata: {meta}")
+            LOG.info(f"OCP plugins metadata: {meta}")
             self.update(meta, newonly=True)
         elif not any((uri.startswith(s) for s in ["http", "file", "/"])):
             LOG.info(f"OCP WARNING: plugins returned no metadata for uri {uri}")
 
     # events from gui_player/audio_service
     def handle_external_play(self, message):
-        # update metadata unconditionally
-        # otherwise previous song keys might bleed into new track
+        """
+        Handle 'ovos.common_play.play' Messages. Update the metadata with new
+        data received unconditionally, otherwise previous song keys might
+        bleed into the new track
+        @param message: Message associated with request
+        """
         if message.data.get("tracks"):
             # backwards compat / old style
             playlist = message.data["tracks"]
@@ -435,55 +479,96 @@ class NowPlaying(MediaEntry):
             self.update(media, newonly=False)
 
     def handle_player_metadata_request(self, message):
+        """
+        Handle 'gui.player.media.service.get.meta' Messages. Emit a response for
+        the GUI to handle new metadata.
+        @param message: Message associated with request
+        """
         self.bus.emit(message.reply("gui.player.media.service.set.meta",
                                     {"title": self.title,
                                      "image": self.image,
                                      "artist": self.artist}))
 
     def handle_track_state_change(self, message):
-        status = message.data["state"]
-        self.status = status
-        for k in TrackState:
-            if k == status:
-                LOG.info(f"TrackState changed: {repr(k)}")
+        """
+        Handle 'ovos.common_play.track.state' Messages. Update status
+        @param message: Message with updated `state` data
+        @return:
+        """
+        state = message.data.get("state")
+        if state is None:
+            raise ValueError(f"Got state update message with no state: "
+                             f"{message}")
+        if isinstance(state, int):
+            state = TrackState(state)
+        if not isinstance(state, TrackState):
+            raise ValueError(f"Expected int or TrackState, but got: {state}")
 
-        if status == TrackState.PLAYING_SKILL:
+        if state == self.status:
+            return
+        self.status = state
+        LOG.info(f"TrackState changed: {state}")
+
+        if state == TrackState.PLAYING_SKILL:
             # skill is handling playback internally
             pass
-        elif status == TrackState.PLAYING_AUDIOSERVICE:
+        elif state == TrackState.PLAYING_AUDIOSERVICE:
             # audio service is handling playback
             pass
-        elif status == TrackState.PLAYING_VIDEO:
+        elif state == TrackState.PLAYING_VIDEO:
             # ovos common play is handling playback in GUI
             pass
-        elif status == TrackState.PLAYING_AUDIO:
+        elif state == TrackState.PLAYING_AUDIO:
             # ovos common play is handling playback in GUI
             pass
 
-        elif status == TrackState.DISAMBIGUATION:
+        elif state == TrackState.DISAMBIGUATION:
             # alternative results # TODO its this 1 track or a list ?
             pass
-        elif status in [TrackState.QUEUED_SKILL,
+        elif state in [TrackState.QUEUED_SKILL,
                         TrackState.QUEUED_VIDEO,
                         TrackState.QUEUED_AUDIOSERVICE]:
             # audio service is handling playback and this is in playlist
             pass
 
     def handle_media_state_change(self, message):
-        status = message.data["state"]
-        if status == MediaState.END_OF_MEDIA:
+        """
+        Handle 'ovos.common_play.media.state' Messages. If ended, reset.
+        @param message: Message with updated MediaState
+        """
+        state = message.data.get("state")
+        if state is None:
+            raise ValueError(f"Got state update message with no state: "
+                             f"{message}")
+        if isinstance(state, int):
+            state = MediaState(state)
+        if not isinstance(state, MediaState):
+            raise ValueError(f"Expected int or TrackState, but got: {state}")
+        if state == MediaState.END_OF_MEDIA:
             # playback ended, allow next track to change metadata again
             self.reset()
 
     def handle_sync_seekbar(self, message):
-        """ event sent by ovos audio backend plugins """
+        """
+        Handle 'ovos.common_play.playback_time' Messages sent by audio backend
+        @param message: Message with 'length' and 'position' data
+        """
         self.length = message.data["length"]
         self.position = message.data["position"]
 
     def handle_sync_trackinfo(self, message):
+        """
+        Handle 'mycroft.audio.service.track_info_reply' Messages with current
+        media defined in message.data
+        @param message: Message with dict MediaEntry data
+        """
         self.update(message.data)
 
     def handle_audio_service_play(self, message):
+        """
+        Handle 'mycroft.audio.service.play' Messages with list of tracks in data
+        @param message: Message with 'tracks' data
+        """
         tracks = message.data.get("tracks") or []
         # only present in ovos-core
         skill_id = message.context.get("skill_id") or 'mycroft.audio_interface'
@@ -502,6 +587,10 @@ class NowPlaying(MediaEntry):
                 pass
 
     def handle_audio_service_play_start(self, message):
+        """
+        Handle 'mycroft.audio.playing_track' Messages
+        @param message: Message notifying playback has started
+        """
         self.update(
             {"status": TrackState.PLAYING_AUDIOSERVICE,
              "playback": PlaybackType.AUDIO_SERVICE})
