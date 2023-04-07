@@ -687,8 +687,114 @@ class TestOCPPlayer(unittest.TestCase):
         pass
 
     def test_play_next(self):
-        # TODO
-        pass
+        real_mpris = self.player.mpris.play_next
+        real_pause = self.player.pause
+        real_play = self.player.play
+        real_shuffle = self.player.play_shuffle
+        real_gui_end = self.player.gui.handle_end_of_playback
+
+        self.player.mpris.play_next = Mock()
+        self.player.pause = Mock()
+        self.player.play = Mock()
+        self.player.play_shuffle = Mock()
+        self.player.gui.handle_end_of_playback = Mock()
+
+        # MPRIS Next
+        self.player.now_playing.playback = PlaybackType.MPRIS
+        self.player.play_next()
+        self.player.mpris.play_next.assert_called_once()
+
+        # Skill Next
+        self.player.now_playing.playback = PlaybackType.SKILL
+        self.player.play_next()
+        last_message = self.emitted_msgs[-1]
+        self.assertEqual(
+            last_message.msg_type,
+            f"ovos.common_play.{self.player.now_playing.skill_id}.next")
+
+        # Repeat Track
+        self.player.now_playing.playback = PlaybackType.AUDIO
+        self.player.loop_state = LoopState.REPEAT_TRACK
+        self.player.play_next()
+        self.player.pause.assert_called_once()
+        self.player.play.assert_called_once()
+
+        # Shuffle
+        self.player.pause.reset_mock()
+        self.player.play.reset_mock()
+        self.player.loop_state = LoopState.NONE
+        self.player.shuffle = True
+        self.player.play_next()
+        self.player.pause.assert_called_once()
+        self.player.play_shuffle.assert_called_once()
+        self.player.play.assert_called_once()
+
+        # Playlist next track
+        self.player.pause.reset_mock()
+        self.player.play.reset_mock()
+        self.player.shuffle = False
+        self.player.playlist.replace(valid_search_results)
+        self.player.play_next()
+        self.player.pause.assert_called_once()
+        self.player.play.assert_called_once()
+        self.assertEqual(self.player.now_playing, self.player.playlist[1])
+
+        # Playlist repeat
+        self.player.loop_state = LoopState.REPEAT
+        self.player.playlist.set_position(len(self.player.playlist) - 1)
+        self.player.pause.reset_mock()
+        self.player.play.reset_mock()
+        self.player.play_next()
+        self.player.pause.assert_called_once()
+        self.player.play.assert_called_once()
+        self.assertTrue(self.player.playlist.is_first_track)
+
+        # Playlist no repeat
+        self.player.loop_state = LoopState.NONE
+        self.player.playlist.set_position(len(self.player.playlist) - 1)
+        self.player.pause.reset_mock()
+        self.player.play.reset_mock()
+        self.player.play_next()
+        self.player.pause.assert_called_once()
+        self.player.play.assert_not_called()
+        self.player.gui.handle_end_of_playback.assert_called_once()
+
+        # Search results next track
+        self.player.gui.handle_end_of_playback.reset_mock()
+        self.player.playlist.clear()
+        self.player.media.search_playlist.replace(valid_search_results)
+        self.assertEqual(len(self.player.playlist), 0)
+        self.player.pause.reset_mock()
+        self.player.play.reset_mock()
+        self.player.play_next()
+        self.player.pause.assert_called_once()
+        self.player.play.assert_called_once()
+        self.player.gui.handle_end_of_playback.assert_not_called()
+
+        # Search results end
+        self.player.pause.reset_mock()
+        self.player.play.reset_mock()
+        # TODO: should we repeat search results, or skip adding them to the playlist
+        self.player.playlist.clear()
+        self.player.media.search_playlist.set_position(
+            len(self.player.media.search_playlist) - 1)
+        self.assertTrue(self.player.media.search_playlist.is_last_track)
+        self.assertEqual(len(self.player.playlist), 0)
+        self.player.loop_state = LoopState.REPEAT
+        self.player.play_next()
+        self.player.pause.assert_called_once()
+        self.player.play.assert_not_called()
+        self.player.gui.handle_end_of_playback.assert_called_once()
+
+        # TODO: Test with `merge_search` set to False
+
+        self.player.mpris.play_next.assert_called_once()
+
+        self.player.gui.handle_end_of_playback = real_gui_end
+        self.player.play_shuffle = real_shuffle
+        self.player.play = real_play
+        self.player.pause = real_pause
+        self.player.mpris.play_next = real_mpris
 
     def test_play_prev(self):
         # TODO

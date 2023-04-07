@@ -234,7 +234,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
     def set_now_playing(self, track: Union[dict, MediaEntry]):
         """
         Set `track` as the currently playing media, update the playlist, and
-        notify any GUI or MPRIS clients.
+        notify any GUI or MPRIS clients. Adds `track` to `playlist`
         @param track: MediaEntry or dict representation of a MediaEntry to play
         """
         LOG.debug(f"Playing: {track}")
@@ -455,7 +455,8 @@ class OCPMediaPlayer(OVOSAbstractApplication):
 
     def play_shuffle(self):
         """
-        Go to a random position in the playlist and play that MediaEntry.
+        Go to a random position in the playlist and set that MediaEntry as
+        'now_playing` (does NOT call 'play').
         """
         LOG.debug("Shuffle == True")
         if len(self.playlist) > 1 and not self.playlist.is_last_track:
@@ -468,23 +469,26 @@ class OCPMediaPlayer(OVOSAbstractApplication):
 
     def play_next(self):
         """
-        Play the next track in the playlist.
-        If there is no next track, end playback.
+        Play the next track in the playlist or search results.
+        End playback if there is no next track, accounting for repeat and
+        shuffle settings.
         """
-        if self.active_backend in [PlaybackType.MPRIS]:
+        if self.active_backend == PlaybackType.MPRIS:
             if self.mpris:
                 self.mpris.play_next()
             return
         elif self.active_backend in [PlaybackType.SKILL,
                                      PlaybackType.UNDEFINED]:
+            LOG.debug("Defer playing next track to skill")
             self.bus.emit(Message(
                 f'ovos.common_play.{self.now_playing.skill_id}.next'))
             return
         self.pause()  # make more responsive
 
         if self.loop_state == LoopState.REPEAT_TRACK:
-            self.play()
+            LOG.debug("Repeating single track")
         elif self.shuffle:
+            LOG.debug("Shuffling")
             self.play_shuffle()
         elif not self.playlist.is_last_track:
             self.playlist.next_track()
@@ -493,13 +497,14 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         elif not self.media.search_playlist.is_last_track and \
                 self.settings.get("merge_search", True):
             while self.media.search_playlist.current_track in self.playlist:
+                # Don't play media already played from the playlist
                 self.media.search_playlist.next_track()
             self.set_now_playing(self.media.search_playlist.current_track)
             LOG.info(f"Next search index: "
                      f"{self.media.search_playlist.position}")
         else:
             if self.loop_state == LoopState.REPEAT and len(self.playlist):
-                LOG.debug("end of playlist, repeat == True")
+                LOG.info("end of playlist, repeat == True")
                 self.playlist.set_position(0)
             else:
                 LOG.info("requested next, but there aren't any more tracks")
@@ -716,6 +721,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         LOG.debug("Playback ended")
         if self.settings.get("autoplay", True) and \
                 self.active_backend != PlaybackType.MPRIS:
+            LOG.debug("Playing next track")
             self.play_next()
             return
 
