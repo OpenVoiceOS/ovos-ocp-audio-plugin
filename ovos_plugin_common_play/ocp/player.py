@@ -481,7 +481,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
                                      PlaybackType.UNDEFINED]:
             # TODO: This is where Neon playback is failing
             LOG.debug(f"Defer playing next track to skill "
-                      f"(Playback={self.active_backend}")
+                      f"(Playback={self.active_backend})")
             self.bus.emit(Message(
                 f'ovos.common_play.{self.now_playing.skill_id}.next'))
             return

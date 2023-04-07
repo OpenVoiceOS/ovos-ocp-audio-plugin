@@ -27,7 +27,8 @@ class MediaEntry:
         self.artist = artist
         self.skill_id = skill_id
         self.status = status
-        self.playback = playback
+        self.playback = PlaybackType(playback) if isinstance(playback, int) \
+            else playback
         self.image = image or join(dirname(__file__),
                                    "res/ui/images/ocp_bg.png")
         self.position = position

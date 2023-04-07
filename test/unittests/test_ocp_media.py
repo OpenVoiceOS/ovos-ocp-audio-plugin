@@ -16,6 +16,7 @@ valid_search_results = [
      'uri': 'https://freemusicarchive.org/track/07_-_Quantum_Jazz_-_Orbiting_A_Distant_Planet/stream/',
      'title': 'Orbiting A Distant Planet',
      'artist': 'Quantum Jazz',
+     'skill_id': 'skill-free_music_archive.neongeckocom',
      'match_confidence': 65},
     {'media_type': MediaType.MUSIC,
      'playback': PlaybackType.AUDIO,
@@ -37,12 +38,45 @@ valid_search_results = [
 
 
 class TestMediaEntry(unittest.TestCase):
+    def test_init(self):
+        data = valid_search_results[0]
+
+        # Test MediaEntry init
+        entry = MediaEntry(**data)
+        self.assertEqual(entry.title, data['title'])
+        self.assertEqual(entry.uri, data['uri'])
+        self.assertEqual(entry.artist, data['artist'])
+        self.assertEqual(entry.skill_id, data['skill_id'])
+        self.assertEqual(entry.status, TrackState.DISAMBIGUATION)
+        self.assertEqual(entry.playback, data['playback'])
+        self.assertEqual(entry.image, data['image'])
+        self.assertEqual(entry.position, 0)
+        self.assertIsNone(entry.phrase)
+        self.assertIsNone(entry.length)
+        self.assertEqual(entry.skill_icon, data['skill_icon'])
+        self.assertIsInstance(entry.bg_image, str)
+        self.assertFalse(entry.is_cps)
+        self.assertEqual(entry.data, {"media_type": data['media_type']})
+        self.assertEqual(entry.cps_data, dict())
+        self.assertEqual(entry.javascript, "")
+
+        # Test playback passed as int
+        data['playback'] = int(data['playback'])
+        new_entry = MediaEntry(**data)
+        self.assertEqual(entry, new_entry)
+
+        # TODO: Test file URI
+        # TODO: Test defined length
+        # TODO: Test defined background image
+        # TODO: Test defined cps_data
+        # TODO: Test defined javascript
+
     def test_update(self):
         # TODO
         pass
 
     def test_from_dict(self):
-        dict_data = valid_search_results[0]
+        dict_data = valid_search_results[1]
         from_dict = MediaEntry.from_dict(dict_data)
         self.assertIsInstance(from_dict, MediaEntry)
         from_init = MediaEntry(dict_data["title"], dict_data["uri"],
@@ -52,6 +86,11 @@ class TestMediaEntry(unittest.TestCase):
                                skill_icon=dict_data["skill_icon"],
                                artist=dict_data["artist"])
         self.assertEqual(from_init, from_dict)
+
+        # Test int playback
+        dict_data['playback'] = int(dict_data['playback'])
+        new_entry = MediaEntry.from_dict(dict_data)
+        self.assertEqual(from_dict, new_entry)
 
         self.assertIsInstance(MediaEntry.from_dict({}), MediaEntry)
 
