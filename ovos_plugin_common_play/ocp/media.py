@@ -1,6 +1,6 @@
 from typing import Optional, Tuple, List, Union
 
-from mycroft.messagebus import MessageBusClient
+from mycroft_bus_client import MessageBusClient
 from ovos_plugin_common_play.ocp import OCP_ID
 from ovos_plugin_common_play.ocp.status import *
 from ovos_plugin_common_play.ocp.utils import ocp_plugins, find_mime
