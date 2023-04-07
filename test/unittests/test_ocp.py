@@ -1061,8 +1061,78 @@ class TestOCPPlayer(unittest.TestCase):
         self.player.mpris.update_props = real_update_props
 
     def test_handle_player_media_update(self):
-        # TODO
-        pass
+        real_handle_playback_ended = self.player.handle_playback_ended
+        real_handle_invalid_media = self.player.handle_invalid_media
+        real_play_next = self.player.play_next
+
+        self.player.play_next = Mock()
+        self.player.handle_playback_ended = Mock()
+        self.player.handle_invalid_media = Mock()
+        self.player.media_state = MediaState.UNKNOWN
+
+        # Invalid requests
+        with self.assertRaises(ValueError):
+            self.player.handle_player_media_update(
+                Message("", {"not_state": None}))
+        with self.assertRaises(ValueError):
+            self.player.handle_player_media_update(
+                Message("", {"state": None}))
+        with self.assertRaises(ValueError):
+            self.player.handle_player_media_update(
+                Message("", {"state": "UNKNOWN"}))
+        self.player.handle_playback_ended.assert_not_called()
+        self.player.handle_invalid_media.assert_not_called()
+        self.assertEqual(self.player.media_state, MediaState.UNKNOWN)
+
+        # State not changed
+        self.player.handle_player_media_update(
+            Message("", {"state": MediaState.UNKNOWN}))
+        self.assertEqual(self.player.media_state, MediaState.UNKNOWN)
+        self.player.handle_player_media_update(
+            Message("", {"state": 0}))
+        self.assertEqual(self.player.media_state, MediaState.UNKNOWN)
+        self.player.handle_playback_ended.assert_not_called()
+        self.player.handle_invalid_media.assert_not_called()
+        self.player.play_next.assert_not_called()
+
+        # Valid state changes
+        self.player.handle_player_media_update(
+            Message("", {"state": MediaState.NO_MEDIA}))
+        self.assertEqual(self.player.media_state, MediaState.NO_MEDIA)
+        self.player.handle_player_media_update(
+            Message("", {"state": MediaState.LOADING_MEDIA}))
+        self.assertEqual(self.player.media_state, MediaState.LOADING_MEDIA)
+        self.player.handle_player_media_update(
+            Message("", {"state": MediaState.STALLED_MEDIA}))
+        self.assertEqual(self.player.media_state, MediaState.STALLED_MEDIA)
+        self.player.handle_player_media_update(
+            Message("", {"state": MediaState.BUFFERING_MEDIA}))
+        self.assertEqual(self.player.media_state, MediaState.BUFFERING_MEDIA)
+        self.player.handle_player_media_update(
+            Message("", {"state": MediaState.BUFFERED_MEDIA}))
+        self.assertEqual(self.player.media_state, MediaState.BUFFERED_MEDIA)
+        self.player.handle_playback_ended.assert_not_called()
+        self.player.handle_invalid_media.assert_not_called()
+        self.player.play_next.assert_not_called()
+
+        self.player.handle_player_media_update(
+            Message("", {"state": MediaState.END_OF_MEDIA}))
+        self.assertEqual(self.player.media_state, MediaState.END_OF_MEDIA)
+        self.player.handle_playback_ended.assert_called_once()
+        self.player.handle_invalid_media.assert_not_called()
+        self.player.play_next.assert_not_called()
+
+        self.player.handle_player_media_update(
+            Message("", {"state": MediaState.INVALID_MEDIA}))
+        self.assertEqual(self.player.media_state, MediaState.INVALID_MEDIA)
+        self.player.handle_playback_ended.assert_called_once()
+        self.player.handle_invalid_media.assert_called_once()
+        self.player.play_next.assert_called_once()
+        # TODO: Test without autoplay
+
+        self.player.play_next = real_play_next
+        self.player.handle_playback_ended = real_handle_playback_ended
+        self.player.handle_invalid_media = real_handle_invalid_media
 
     def test_handle_invalid_media(self):
         # TODO

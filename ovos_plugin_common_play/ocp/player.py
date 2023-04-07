@@ -479,7 +479,9 @@ class OCPMediaPlayer(OVOSAbstractApplication):
             return
         elif self.active_backend in [PlaybackType.SKILL,
                                      PlaybackType.UNDEFINED]:
-            LOG.debug("Defer playing next track to skill")
+            # TODO: This is where Neon playback is failing
+            LOG.debug(f"Defer playing next track to skill "
+                      f"(Playback={self.active_backend}")
             self.bus.emit(Message(
                 f'ovos.common_play.{self.now_playing.skill_id}.next'))
             return
@@ -700,12 +702,21 @@ class OCPMediaPlayer(OVOSAbstractApplication):
                                      "PlaybackStatus": state2str[state]})
 
     def handle_player_media_update(self, message):
+        """
+        Handles 'ovos.common_play.media.state' messages with media state updates
+        @param message: Message providing new "state" data
+        """
         state = message.data.get("state")
+        if state is None:
+            raise ValueError(f"Got state update message with no state: "
+                             f"{message}")
+        if isinstance(state, int):
+            state = MediaState(state)
+        if not isinstance(state, MediaState):
+            raise ValueError(f"Expected int or MediaState, but got: {state}")
         if state == self.media_state:
             return
-        for k in MediaState:
-            if k == state:
-                LOG.info(f"MediaState changed: {repr(k)}")
+        LOG.info(f"MediaState changed: {repr(state)}")
         self.media_state = state
         if state == MediaState.END_OF_MEDIA:
             self.handle_playback_ended(message)
