@@ -480,9 +480,9 @@ class OCPMediaPlayer(OVOSAbstractApplication):
             return
         elif self.active_backend in [PlaybackType.SKILL,
                                      PlaybackType.UNDEFINED]:
-            # TODO: This is where Neon playback is failing
+            # TODO: Should UNDEFINED be handled as a skill?
             LOG.debug(f"Defer playing next track to skill "
-                      f"(Playback={self.active_backend})")
+                      f"(Playback={repr(self.active_backend)})")
             self.bus.emit(Message(
                 f'ovos.common_play.{self.now_playing.skill_id}.next'))
             return
@@ -707,6 +707,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         Handles 'ovos.common_play.media.state' messages with media state updates
         @param message: Message providing new "state" data
         """
+        LOG.debug(f"backend={repr(self.active_backend)}")
         state = message.data.get("state")
         if state is None:
             raise ValueError(f"Got state update message with no state: "
@@ -730,6 +731,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         self.gui.show_playback_error()
 
     def handle_playback_ended(self, message):
+        # TODO: When we get here, self.active_backend has been reset!
         if self.settings.get("autoplay", True) and \
                 self.active_backend != PlaybackType.MPRIS:
             LOG.debug(f"Playing next (backend={repr(self.active_backend)}")
