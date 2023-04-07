@@ -658,19 +658,29 @@ class OCPMediaPlayer(OVOSAbstractApplication):
 
     # player -> common play
     def handle_player_state_update(self, message):
+        """
+        Handles 'gui.player.media.service.sync.status' and
+        'ovos.common_play.player.state' messages with player state updates
+        @param message: Message providing new "state" data
+        """
         state = message.data.get("state")
+        if state is None:
+            raise ValueError(f"Got state update message with no state: "
+                             f"{message}")
+        if isinstance(state, int):
+            state = PlayerState(state)
+        if not isinstance(state, PlayerState):
+            raise ValueError(f"Expected int or PlayerState, but got: {state}")
         if state == self.state:
             return
-        if state not in PlayerState:
-            LOG.error(f"Got invalid state requested: {state}")
-        for k in PlayerState:
-            if k == state:
-                LOG.info(f"PlayerState changed: {repr(k)}")
+        LOG.info(f"PlayerState changed: {repr(state)}")
         if state == PlayerState.PLAYING:
             self.state = PlayerState.PLAYING
         elif state == PlayerState.PAUSED:
             self.state = PlayerState.PAUSED
-            if self.app_view_timeout_enabled and self.app_view_timeout_mode == "pause":
+            if self.app_view_timeout_enabled and \
+                    self.app_view_timeout_mode == "pause":
+                LOG.debug("Starting GUI pause timeout counter")
                 self.gui.cancel_app_view_timeout()
                 self.gui.schedule_app_view_pause_timeout()
         elif state == PlayerState.STOPPED:

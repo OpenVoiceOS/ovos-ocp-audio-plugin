@@ -871,8 +871,88 @@ class TestOCPPlayer(unittest.TestCase):
         pass
 
     def test_handle_player_state_update(self):
-        # TODO
-        pass
+        real_view_timeout = self.player.gui.cancel_app_view_timeout
+        real_pause_timeout = self.player.gui.schedule_app_view_pause_timeout
+        real_update_props = self.player.mpris.update_props
+        view_timeout = Mock()
+        view_pause = Mock()
+        update_props = Mock()
+        self.player.gui.cancel_app_view_timeout = view_timeout
+        self.player.gui.schedule_app_view_pause_timeout = view_pause
+        self.player.mpris.update_props = update_props
+
+        self.player.settings['app_view_timeout_mode'] = "pause"
+        self.player.settings['app_view_timeout_enabled'] = False
+
+        # Invalid requests
+        with self.assertRaises(ValueError):
+            self.player.handle_player_state_update(
+                Message("", {"not_state": None}))
+        with self.assertRaises(ValueError):
+            self.player.handle_player_state_update(
+                Message("", {"state": None}))
+        with self.assertRaises(ValueError):
+            self.player.handle_player_state_update(
+                Message("", {"state": "Playing"}))
+        view_timeout.assert_not_called()
+        view_pause.assert_not_called()
+        update_props.assert_not_called()
+
+        # State not changed
+        self.player.state = PlayerState.PLAYING
+        self.player.handle_player_state_update(
+            Message("", {"state": PlayerState.PLAYING}))
+        self.player.handle_player_state_update(
+            Message("", {"state": int(PlayerState.PLAYING)}))
+        view_timeout.assert_not_called()
+        view_pause.assert_not_called()
+        update_props.assert_not_called()
+        self.assertEqual(self.player.state, PlayerState.PLAYING)
+
+        # Pause no GUI change
+        self.player.handle_player_state_update(
+            Message("", {"state": PlayerState.PAUSED}))
+        view_timeout.assert_not_called()
+        view_pause.assert_not_called()
+        update_props.assert_called_with({"CanPause": False,
+                                         "CanPlay": True,
+                                         "PlaybackStatus": "Paused"})
+        self.assertEqual(self.player.state, PlayerState.PAUSED)
+
+        # Play
+        self.player.handle_player_state_update(
+            Message("", {"state": PlayerState.PLAYING}))
+        view_timeout.assert_not_called()
+        view_pause.assert_not_called()
+        update_props.assert_called_with({"CanPause": True,
+                                         "CanPlay": False,
+                                         "PlaybackStatus": "Playing"})
+        self.assertEqual(self.player.state, PlayerState.PLAYING)
+
+        # Pause with GUI Change
+        self.player.settings['app_view_timeout_enabled'] = True
+        self.player.handle_player_state_update(
+            Message("", {"state": PlayerState.PAUSED}))
+        view_timeout.assert_called_once()
+        view_pause.assert_called_once()
+        update_props.assert_called_with({"CanPause": False,
+                                         "CanPlay": True,
+                                         "PlaybackStatus": "Paused"})
+        self.assertEqual(self.player.state, PlayerState.PAUSED)
+
+        # Stop
+        self.player.handle_player_state_update(
+            Message("", {"state": PlayerState.STOPPED}))
+        view_timeout.assert_called_once()
+        view_pause.assert_called_once()
+        update_props.assert_called_with({"CanPause": False,
+                                         "CanPlay": False,
+                                         "PlaybackStatus": "Stopped"})
+        self.assertEqual(self.player.state, PlayerState.STOPPED)
+
+        self.player.gui.cancel_app_view_timeout = real_view_timeout
+        self.player.gui.schedule_app_view_pause_timeout = real_pause_timeout
+        self.player.mpris.update_props = real_update_props
 
     def test_handle_player_media_update(self):
         # TODO
