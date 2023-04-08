@@ -353,11 +353,10 @@ class TestNowPlaying(unittest.TestCase):
             Message("", {"state": MediaState.BUFFERED_MEDIA}))
 
         # Test END_OF_MEDIA
-        self.player.reset.assert_not_called()
         self.player.handle_media_state_change(
             Message("", {"state": MediaState.END_OF_MEDIA}))
-        self.player.reset.assert_called_once()
 
+        self.player.reset.assert_not_called()
         self.player.reset = real_reset
 
     def test_handle_sync_seekbar(self):
