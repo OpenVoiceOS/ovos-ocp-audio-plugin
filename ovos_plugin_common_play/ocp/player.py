@@ -475,15 +475,14 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         End playback if there is no next track, accounting for repeat and
         shuffle settings.
         """
-        if self.active_backend in [PlaybackType.MPRIS]:
+        if self.active_backend == PlaybackType.UNDEFINED:
+            LOG.error("self.active_backend is undefined")
+        elif self.active_backend in [PlaybackType.MPRIS]:
             if self.mpris:
                 self.mpris.play_next()
             return
-        elif self.active_backend in [PlaybackType.SKILL,
-                                     PlaybackType.UNDEFINED]:
-            # TODO: Should UNDEFINED be handled as a skill?
-            LOG.debug(f"Defer playing next track to skill "
-                      f"(Playback={repr(self.active_backend)})")
+        elif self.active_backend in [PlaybackType.SKILL]:
+            LOG.debug(f"Defer playing next track to skill")
             self.bus.emit(Message(
                 f'ovos.common_play.{self.now_playing.skill_id}.next'))
             return
