@@ -3,7 +3,7 @@ from os.path import join, dirname
 
 from ovos_plugin_common_play.ocp import OCP_ID
 from time import sleep
-from mycroft_bus_client.message import Message
+from ovos_bus_client.message import Message
 from ovos_config import Configuration
 from ovos_utils.events import EventSchedulerInterface
 from ovos_utils.gui import GUIInterface
