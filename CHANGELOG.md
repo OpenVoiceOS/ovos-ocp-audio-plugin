@@ -2,12 +2,23 @@
 
 ## [Unreleased](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/HEAD)
 
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.5a4...HEAD)
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.5a5...HEAD)
 
 **Fixed bugs:**
 
 - Continue playback on track end [\#66](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/issues/66)
 - Paused Playback resumed on WW [\#22](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/issues/22)
+
+**Merged pull requests:**
+
+- mycroft-bus-client -\> ovos-bus-client [\#72](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/72) ([JarbasAl](https://github.com/JarbasAl))
+
+## [V0.0.5a5](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.5a5) (2023-04-08)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.5a4...V0.0.5a5)
+
+**Fixed bugs:**
+
 - Bugfixes and Unit Tests [\#69](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/69) ([NeonDaniel](https://github.com/NeonDaniel))
 
 ## [V0.0.5a4](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.5a4) (2023-04-05)
