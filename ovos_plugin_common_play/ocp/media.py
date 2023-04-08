@@ -406,6 +406,7 @@ class NowPlaying(MediaEntry):
         """
         Reset the NowPlaying MediaEntry to default parameters
         """
+        LOG.debug("Resetting NowPlaying")
         self.title = ""
         self.artist = None
         self.skill_icon = None
@@ -545,9 +546,10 @@ class NowPlaying(MediaEntry):
             state = MediaState(state)
         if not isinstance(state, MediaState):
             raise ValueError(f"Expected int or TrackState, but got: {state}")
-        if state == MediaState.END_OF_MEDIA:
-            # playback ended, allow next track to change metadata again
-            self.reset()
+        # Don't do anything. Let OCP manage this object's state
+        # if state == MediaState.END_OF_MEDIA:
+        #     # playback ended, allow next track to change metadata again
+        #     self.reset()
 
     def handle_sync_seekbar(self, message):
         """

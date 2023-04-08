@@ -243,6 +243,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
             track = MediaEntry.from_dict(track)
         if not isinstance(track, MediaEntry):
             raise ValueError(f"Expected MediaEntry, but got: {track}")
+        self.now_playing.reset()  # reset now_playing to remove old metadata
         if track.uri:
             # single track entry (MediaEntry)
             self.now_playing.update(track)
@@ -707,7 +708,8 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         Handles 'ovos.common_play.media.state' messages with media state updates
         @param message: Message providing new "state" data
         """
-        LOG.debug(f"backend={repr(self.active_backend)}")
+        LOG.debug(f"backend={repr(self.active_backend)}|"
+                  f"msg_type={message.msg_type}")
         state = message.data.get("state")
         if state is None:
             raise ValueError(f"Got state update message with no state: "
