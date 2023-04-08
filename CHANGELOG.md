@@ -2,7 +2,17 @@
 
 ## [Unreleased](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/HEAD)
 
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.5a3...HEAD)
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.5a4...HEAD)
+
+**Fixed bugs:**
+
+- Continue playback on track end [\#66](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/issues/66)
+- Paused Playback resumed on WW [\#22](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/issues/22)
+- Bugfixes and Unit Tests [\#69](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/69) ([NeonDaniel](https://github.com/NeonDaniel))
+
+## [V0.0.5a4](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.5a4) (2023-04-05)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.5a3...V0.0.5a4)
 
 **Closed issues:**
 
