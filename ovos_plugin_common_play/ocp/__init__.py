@@ -61,14 +61,14 @@ class OCP(OVOSAbstractApplication):
         self.register_ocp_api_events()
         self.register_media_intents()
 
-        self.add_event("mycroft.ready", self.replace_mycroft_cps, once=True)
+        self.add_event("mycroft.ready", self.register_with_core, once=True)
         skills_ready = self.bus.wait_for_response(
             Message("mycroft.skills.is_ready",
                     context={"source": [self.skill_id],
                              "destination": ["skills"]}))
         if skills_ready and skills_ready.data.get("status"):
             self.remove_event("mycroft.ready")
-            self.replace_mycroft_cps(skills_ready)
+            self.register_with_core(skills_ready)
         try:
             # TODO: Should this just happen at install time? A user might not
             #       want this shortcut.
@@ -150,43 +150,19 @@ class OCP(OVOSAbstractApplication):
             LOG.debug(f"registering media type intent: {intent_name}")
             self.media_intents.add_intent(intent_name, samples)
 
-    def replace_mycroft_cps(self, message=None):
+    def register_with_core(self, message=None):
         """
-        Deactivates any Mycroft playback-control skills and ensures OCP intents
-        are registered. Registers a listener so this method is called any time
+        ensures OCP intents are registered. Registers a listener so this method is called any time
         `mycroft.ready` is emitted.
         @param message: `mycroft.ready` message triggering this check
         """
-        mycroft_cps_ids = [
-            # disable mycroft cps, ocp replaces it and intents conflict
-            "skill-playback-control.mycroftai",  # the convention
-            "mycroft-playback-control.mycroftai",  # msm install
-            # (mycroft skills override the repo name ???? )
-            "mycroft-playback-control",
-            "skill-playback-control"  # simple git clone
-        ]
-
-        # disable any loaded mycroft cps skill
-        for skill_id in mycroft_cps_ids:
-            self.bus.emit(Message('skillmanager.deactivate',
-                                  {"skill": skill_id}))
         # register OCP own intents
         self.register_ocp_intents()
 
-        # whenever we detect a skill loading, if its mycroft cps disable it!
-        def unload_mycroft_cps(message):
-            skill_id = message.data["id"]
-            if skill_id in mycroft_cps_ids:
-                self.bus.emit(Message('skillmanager.deactivate',
-                                      {"skill": skill_id}))
-
-        if ("mycroft.skills.loaded", unload_mycroft_cps) not in self.events:
-            self.add_event("mycroft.skills.loaded", unload_mycroft_cps)
-
         # if skills service (re)loads (re)register OCP
-        if ("mycroft.ready", self.replace_mycroft_cps) in self.events:
+        if ("mycroft.ready", self.register_with_core) in self.events:
             LOG.warning("Method already registered!")
-        self.add_event("mycroft.ready",  self.replace_mycroft_cps, once=True)
+        self.add_event("mycroft.ready", self.register_with_core, once=True)
 
     def default_shutdown(self):
         self.player.shutdown()

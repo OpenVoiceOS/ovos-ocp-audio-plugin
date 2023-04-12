@@ -12,8 +12,6 @@ from ovos_utils.messagebus import Message, get_mycroft_bus
 
 from ovos_plugin_common_play.ocp.base import OCPAbstractComponent
 from ovos_plugin_common_play.ocp.media import Playlist
-from ovos_plugin_common_play.ocp.mycroft_cps import \
-    MycroftCommonPlayInterface
 from ovos_plugin_common_play.ocp.status import *
 from ovos_plugin_common_play.ocp.utils import available_extractors
 from ovos_plugin_common_play.ocp.constants import OCP_ID
@@ -304,7 +302,6 @@ class OCPSearch(OCPAbstractComponent):
     def __init__(self, player=None):  # OCPMediaPlayer
         super(OCPSearch, self).__init__(player)
         self.search_playlist = Playlist()
-        self.old_cps = None
         self.ocp_skills = {}
         self.featured_skills = {}
         self.search_lock = RLock()
@@ -313,10 +310,6 @@ class OCPSearch(OCPAbstractComponent):
 
     def bind(self, player):  # OCPMediaPlayer
         self._player = player
-        self.old_cps = MycroftCommonPlayInterface() if \
-            self.settings.get("backwards_compatibility", True) else None
-        if self.old_cps:
-            self.old_cps.bind(player)
         self.add_event("ovos.common_play.skills.detach",
                        self.handle_ocp_skill_detach)
         self.add_event("ovos.common_play.announce",
@@ -381,16 +374,6 @@ class OCPSearch(OCPAbstractComponent):
             query = OCPQuery(query=phrase, media_type=media_type, ocp_search=self,
                              bus=self.bus)
             query.send()
-
-            # old common play will send the messages expected by the official
-            # mycroft stack, but skills are known to over match, dont support
-            # match type, and the GUI can be different for every skill, it may also
-            # cause issues with status tracking and mess up playlists. An
-            # imperfect compatibility layer has been implemented at skill and
-            # audioservice level
-            if self.old_cps:
-                self.old_cps.send_query(phrase, media_type)
-
             query.wait()
 
             # fallback to generic search type

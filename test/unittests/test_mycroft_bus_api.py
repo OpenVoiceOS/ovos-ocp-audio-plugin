@@ -6,7 +6,7 @@ from mycroft.audio.audioservice import AudioService
 from mycroft.configuration.config import Configuration
 from ovos_utils.messagebus import FakeBus
 
-from ovos_plugin_common_play.ocp.mycroft_cps import MycroftAudioService
+from ovos_utils.skills.audioservice import ClassicAudioServiceInterface
 from ovos_plugin_common_play.ocp.status import PlayerState, MediaState, TrackState, PlaybackType
 
 BASE_CONF = {"Audio":
@@ -49,7 +49,7 @@ class TestAudioServiceApi(unittest.TestCase):
 
         cls.bus.on("message", get_msg)
 
-        cls.api = MycroftAudioService(cls.bus)
+        cls.api = ClassicAudioServiceInterface(cls.bus)
 
     @unittest.skip("debug - github actions gets stuck forever here ? works on my machine")
     @patch.dict(Configuration._Configuration__patch, BASE_CONF)

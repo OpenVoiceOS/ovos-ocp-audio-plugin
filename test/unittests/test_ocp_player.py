@@ -57,7 +57,7 @@ class TestOCPPlayer(unittest.TestCase):
         from ovos_plugin_common_play.ocp.search import OCPSearch
         from ovos_plugin_common_play.ocp.media import NowPlaying, Playlist
         from ovos_plugin_common_play.ocp.mpris import MprisPlayerCtl
-        from ovos_plugin_common_play.ocp.mycroft_cps import MycroftAudioService
+        from ovos_utils.skills.audioservice import ClassicAudioServiceInterface
         from ovos_workshop import OVOSAbstractApplication
 
         self.assertIsInstance(self.player, OVOSAbstractApplication)
@@ -79,7 +79,7 @@ class TestOCPPlayer(unittest.TestCase):
         self.assertEqual(self.player.now_playing._player, self.player)
         self.assertEqual(self.player.media._player, self.player)
         self.assertEqual(self.player.gui.player, self.player)
-        self.assertIsInstance(self.player.audio_service, MycroftAudioService)
+        self.assertIsInstance(self.player.audio_service, ClassicAudioServiceInterface)
 
         bus_events = ['recognizer_loop:record_begin',
                       'recognizer_loop:record_end',
