@@ -3,7 +3,7 @@ import unittest
 from os.path import dirname, join
 from unittest.mock import patch
 
-from mycroft_bus_client import Message
+from ovos_bus_client import Message
 
 from ovos_config.config import Configuration
 from mycroft.skills.intent_service import IntentService

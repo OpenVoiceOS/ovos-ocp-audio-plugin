@@ -45,15 +45,14 @@ Item {
     implicitHeight: mainLayout.implicitHeight + Kirigami.Units.largeSpacing * 2
     opacity: opened
 
-    onOpenedChanged: {
-        if (opened) {
-            hideTimer.restart();
-        }
+    function itemKeyFocus() {
+        playPauseButton.forceActiveFocus()
     }
 
-    onFocusChanged: {
-        if(focus) {
-            backButton.forceActiveFocus()
+    onOpenedChanged: {
+        if (opened) {
+            playPauseButton.forceActiveFocus()
+            hideTimer.restart();
         }
     }
 
@@ -93,130 +92,52 @@ Item {
                 id: mainLayout2
                 Layout.fillHeight: true
 
-                Controls.Button {
-                    id: button
-                    Layout.preferredWidth: parent.width > 600 ? Kirigami.Units.iconSizes.large : Kirigami.Units.iconSizes.medium
-                    Layout.preferredHeight: Layout.preferredWidth
-                    highlighted: focus ? 1 : 0
-                    z: 1000
+                VideoPlayerControl {
+                    id: playPauseButton
+                    controlIcon: currentState === MediaPlayer.PlayingState ? Qt.resolvedUrl("../images/media-playback-pause.svg") : Qt.resolvedUrl("../images/media-playback-start.svg")
 
-                    background: Rectangle {
-                        color: Kirigami.Theme.backgroundColor
-                        radius: 5
-                        border.width: 1.25
-                        border.color: Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, 0.25)
-                    }
-
-                    contentItem: Kirigami.Icon {
-                        anchors.fill: parent
-                        anchors.margins: Mycroft.Units.gridUnit
-
-                        source: currentState === MediaPlayer.PlayingState ? Qt.resolvedUrl("../images/media-playback-pause.svg") : Qt.resolvedUrl("../images/media-playback-start.svg")
-
-                        ColorOverlay {
-                            source: parent
-                            anchors.fill: parent
-                            color: Kirigami.Theme.textColor
-                        }
+                    KeyNavigation.up: video
+                    KeyNavigation.right: prevButton
+                    Keys.onReturnPressed: {
+                        clicked()
                     }
 
                     onClicked: {
                         currentState === MediaPlayer.PlayingState ? videoControl.pause() : videoControl.currentState === MediaPlayer.PausedState ? videoControl.resume() : videoControl.play()
                         hideTimer.restart();
                     }
-                    KeyNavigation.up: video
-                    KeyNavigation.left: backButton
-                    KeyNavigation.right: slider
-                    Keys.onReturnPressed: {
-                        clicked()
-                    }
-                    onFocusChanged: {
-                        hideTimer.restart();
-                    }
                 }
 
-                Controls.Button {
-                    id: prevbutton
-                    Layout.preferredWidth: parent.width > 600 ? Kirigami.Units.iconSizes.large : Kirigami.Units.iconSizes.medium
-                    Layout.preferredHeight: Layout.preferredWidth
-                    highlighted: focus ? 1 : 0
-                    z: 1000
+                VideoPlayerControl {
+                    id: prevButton
+                    controlIcon: Qt.resolvedUrl("../images/media-skip-backward.svg")
 
-                    background: Rectangle {
-                        color: Kirigami.Theme.backgroundColor
-                        radius: 5
-                        border.width: 1.25
-                        border.color: Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, 0.25)
-                    }
-
-                    contentItem: Kirigami.Icon {
-                        anchors.fill: parent
-                        anchors.margins: Mycroft.Units.gridUnit
-
-                        source: Qt.resolvedUrl("../images/media-skip-backward.svg")
-
-                        ColorOverlay {
-                            source: parent
-                            anchors.fill: parent
-                            color: Kirigami.Theme.textColor
-                        }
+                    KeyNavigation.up: video
+                    KeyNavigation.left: playPauseButton
+                    KeyNavigation.right: nextButton
+                    Keys.onReturnPressed: {
+                        clicked()
                     }
 
                     onClicked: {
                         videoControl.previous()
                         hideTimer.restart();
                     }
+                }
+
+                VideoPlayerControl {
+                    id: nextButton
+                    controlIcon: Qt.resolvedUrl("../images/media-skip-forward.svg")
 
                     KeyNavigation.up: video
-                    KeyNavigation.left: backButton
+                    KeyNavigation.left: prevButton
                     KeyNavigation.right: slider
                     Keys.onReturnPressed: {
                         clicked()
-                    }
-                    onFocusChanged: {
-                        hideTimer.restart();
-                    }
-                }
-
-                Controls.Button {
-                    id: nextbutton
-                    Layout.preferredWidth: parent.width > 600 ? Kirigami.Units.iconSizes.large : Kirigami.Units.iconSizes.medium
-                    Layout.preferredHeight: Layout.preferredWidth
-                    highlighted: focus ? 1 : 0
-                    z: 1000
-
-                    background: Rectangle {
-                        color: Kirigami.Theme.backgroundColor
-                        radius: 5
-                        border.width: 1.25
-                        border.color: Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, 0.25)
-                    }
-
-                    contentItem: Kirigami.Icon {
-                        anchors.fill: parent
-                        anchors.margins: Mycroft.Units.gridUnit
-
-                        source: Qt.resolvedUrl("../images/media-skip-forward.svg")
-
-
-                        ColorOverlay {
-                            source: parent
-                            anchors.fill: parent
-                            color: Kirigami.Theme.textColor
-                        }
                     }
 
                     onClicked: {
                         videoControl.next()
-                        hideTimer.restart();
-                    }
-                    KeyNavigation.up: video
-                    KeyNavigation.left: backButton
-                    KeyNavigation.right: slider
-                    Keys.onReturnPressed: {
-                        clicked()
-                    }
-                    onFocusChanged: {
                         hideTimer.restart();
                     }
                 }
@@ -233,25 +154,10 @@ Item {
                     property bool navSliderItem
                     property int minimumValue: 0
                     property int maximumValue: 20
+
                     onMoved: {
                         seekControl.seekPosition = value;
                         hideTimer.restart();
-                    }
-
-                    onNavSliderItemChanged: {
-                        if(slider.navSliderItem){
-                            recthandler.color = "red"
-                        } else if (slider.focus) {
-                            recthandler.color = Kirigami.Theme.linkColor
-                        }
-                    }
-
-                    onFocusChanged: {
-                        if(!slider.focus){
-                            recthandler.color = Kirigami.Theme.textColor
-                        } else {
-                            recthandler.color = Kirigami.Theme.linkColor
-                        }
                     }
 
                     handle: Item {
@@ -264,8 +170,8 @@ Item {
                             anchors.verticalCenter: parent.verticalCenter
                             implicitWidth: Kirigami.Units.iconSizes.small + Kirigami.Units.smallSpacing
                             implicitHeight: parent.height / 2
-                            color: Kirigami.Theme.backgroundColor
-                            border.color: Kirigami.Theme.highlightColor
+                            color: slider.activeFocus ? Kirigami.Theme.highlightColor : Kirigami.Theme.backgroundColor
+                            border.color: slider.activeFocus ? Kirigami.Theme.textColor : Kirigami.Theme.highlightColor
                         }
                     }
 
@@ -320,7 +226,8 @@ Item {
                         }
                     }
                     KeyNavigation.up: video
-                    KeyNavigation.left: button
+                    KeyNavigation.left: nextButton
+                    KeyNavigation.right: stopButton
                     Keys.onReturnPressed: {
                         hideTimer.restart();
                         if(!navSliderItem){
@@ -331,12 +238,11 @@ Item {
                     }
 
                     Keys.onLeftPressed: {
-                        console.log("leftPressedonSlider")
                         hideTimer.restart();
                         if(navSliderItem) {
                             videoControl.seek(video.position - 5000)
                         } else {
-                            button.forceActiveFocus()
+                            nextButton.forceActiveFocus()
                         }
                     }
 
@@ -344,50 +250,43 @@ Item {
                         hideTimer.restart();
                         if(navSliderItem) {
                             videoControl.seek(video.position + 5000)
+                        } else {
+                            stopButton.forceActiveFocus()
                         }
                     }
                 }
 
-                Controls.Button {
-                    id: backButton
-                    Layout.preferredWidth: parent.width > 600 ? Kirigami.Units.iconSizes.large : Kirigami.Units.iconSizes.medium
-                    Layout.preferredHeight: Layout.preferredWidth
-                    highlighted: focus ? 1 : 0
-                    z: 1000
+                VideoPlayerControl {
+                    id: stopButton
+                    controlIcon: Qt.resolvedUrl("../images/media-playback-stop.svg")
 
-                    background: Rectangle {
-                        color: Kirigami.Theme.backgroundColor
-                        radius: 5
-                        border.width: 1.25
-                        border.color: Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, 0.25)
-                    }
-
-                    contentItem: Kirigami.Icon {
-                        anchors.fill: parent
-                        anchors.margins: Mycroft.Units.gridUnit
-
-                        source: Qt.resolvedUrl("../images/back.svg")
-
-                        ColorOverlay {
-                            source: parent
-                            anchors.fill: parent
-                            color: Kirigami.Theme.textColor
-                        }
+                    KeyNavigation.up: video
+                    KeyNavigation.left: slider
+                    KeyNavigation.right: exitButton
+                    Keys.onReturnPressed: {
+                        clicked()
                     }
 
                     onClicked: {
-                        triggerGuiEvent("video.media.playback.ended", {})
                         video.stop();
+                        hideTimer.restart();
+                        Mycroft.MycroftController.sendRequest("ovos.common_play.home", {})
                     }
+                }
+
+                VideoPlayerControl {
+                    id: exitButton
+                    controlIcon: "window-close-symbolic"
+
                     KeyNavigation.up: video
-                    KeyNavigation.right: button
+                    KeyNavigation.left: stopButton
                     Keys.onReturnPressed: {
-                        hideTimer.restart();
-                        triggerGuiEvent("video.media.playback.ended", {})
-                        video.stop();
+                        clicked()
                     }
-                    onFocusChanged: {
+                    onClicked: {
+                        video.stop();
                         hideTimer.restart();
+                        Mycroft.MycroftController.sendRequest("system.display.homescreen", {})
                     }
                 }
             }

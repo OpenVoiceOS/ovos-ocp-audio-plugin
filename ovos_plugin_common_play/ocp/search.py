@@ -35,6 +35,7 @@ class OCPQuery:
         self.query = query
         self.media_type = media_type
         self.ocp_search = ocp_search
+        self._search_playlist = None
         self._bus = bus
         self.__dedicated_bus = False
         self.reset()
@@ -69,7 +70,9 @@ class OCPQuery:
     def search_playlist(self) -> Playlist:
         if self.ocp_search:
             return self.ocp_search.search_playlist
-        return Playlist()
+        if self._search_playlist is None:
+            self._search_playlist = Playlist()
+        return self._search_playlist
 
     @property
     def bus(self):

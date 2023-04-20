@@ -179,6 +179,13 @@ Item {
         id: imgbackground
         anchors.fill: parent
         source: root.thumbnail
+
+        MouseArea {
+            anchors.fill: parent
+            onClicked: {
+                genericCloseControl.show()
+            }
+        }
     }
 
     FastBlur {
@@ -461,276 +468,89 @@ Item {
             anchors.bottom: parent.bottom
             anchors.left: parent.left
             anchors.right: parent.right
-            height: horizontalMode ? parent.height * 0.25 : parent.height * 0.20
+            height: root.horizontalMode ? Math.max(Mycroft.Units.gridUnit * 6, parent.height * 0.25) : Math.max(Mycroft.Units.gridUnit * 5, parent.height * 0.20)
+
             color: Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, 0.7)
 
-            Item {
+            RowLayout {
                 id: gridBar
                 anchors.fill: parent
                 anchors.margins: Mycroft.Units.gridUnit
+                spacing: root.horizontalMode ? Mycroft.Units.gridUnit * 0.5 : 1
                 z: 10
 
-                Button {
+                AudioPlayerControl {
                     id: repeatButton
-                    width: Math.round(parent.width / 5) - Mycroft.Units.gridUnit
-                    height: parent.height
-                    anchors.right: prevButton.left
-                    anchors.margins: Mycroft.Units.gridUnit * 0.5
-
-                    SequentialAnimation {
-                        id: repeatButtonAnim
-
-                        PropertyAnimation {
-                            target: repeatButtonBackground
-                            property: "color"
-                            to: HelperJS.isLight(Kirigami.Theme.backgroundColor) ? Qt.darker(Kirigami.Theme.backgroundColor, 1.5) : Qt.lighter(Kirigami.Theme.backgroundColor, 1.5)
-                            duration: 200
-                        }
-
-                        PropertyAnimation {
-                            target: repeatButtonBackground
-                            property: "color"
-                            to: HelperJS.isLight(Kirigami.Theme.backgroundColor) ? Qt.lighter(Kirigami.Theme.backgroundColor, 1.5) : Qt.darker(Kirigami.Theme.backgroundColor, 1.5)
-                            duration: 200
-                        }
-                    }
+                    controlIcon: root.loopStatus === "RepeatTrack" ? Qt.resolvedUrl("images/media-playlist-repeat-track.svg") : Qt.resolvedUrl("images/media-playlist-repeat.svg")
+                    controlIconColor: root.loopStatus === "None" ? Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.3) : Kirigami.Theme.highlightColor
+                    horizontalMode: root.horizontalMode
 
                     onClicked: {
                         repeat()
                     }
-
-                    onPressed: {
-                        repeatButtonAnim.running = true;
-                    }
-
-                    contentItem: Kirigami.Icon {
-                        anchors.fill: parent
-                        anchors.margins: Mycroft.Units.gridUnit
-                        source: root.loopStatus === "RepeatTrack" ? Qt.resolvedUrl("images/media-playlist-repeat-track.svg") : Qt.resolvedUrl("images/media-playlist-repeat.svg")
-
-                        ColorOverlay {
-                            source: parent
-                            anchors.fill: parent
-                            color: root.loopStatus === "None" ? Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.3) : Kirigami.Theme.highlightColor
-                        }
-                    }
-
-                    background: Rectangle {
-                        id: repeatButtonBackground
-                        radius: 5
-                        color:  HelperJS.isLight(Kirigami.Theme.backgroundColor) ? Qt.lighter(Kirigami.Theme.backgroundColor, 1.5) : Qt.darker(Kirigami.Theme.backgroundColor, 1.5)
-                    }
                 }
 
-                Button {
+                AudioPlayerControl {
                     id: prevButton
-                    width: Math.round(parent.width / 5) - Mycroft.Units.gridUnit
-                    height: parent.height
-                    anchors.right: playButton.left
-                    anchors.margins: Mycroft.Units.gridUnit * 0.5
-
-                    SequentialAnimation {
-                        id: prevButtonAnim
-
-                        PropertyAnimation {
-                            target: prevButtonBackground
-                            property: "color"
-                            to: HelperJS.isLight(Kirigami.Theme.backgroundColor) ? Qt.darker(Kirigami.Theme.backgroundColor, 1.5) : Qt.lighter(Kirigami.Theme.backgroundColor, 1.5)
-                            duration: 200
-                        }
-
-                        PropertyAnimation {
-                            target: prevButtonBackground
-                            property: "color"
-                            to: HelperJS.isLight(Kirigami.Theme.backgroundColor) ? Qt.lighter(Kirigami.Theme.backgroundColor, 1.5) : Qt.darker(Kirigami.Theme.backgroundColor, 1.5)
-                            duration: 200
-                        }
-                    }
+                    controlIcon: Qt.resolvedUrl("images/media-skip-backward.svg")
+                    controlIconColor: root.canPrev === true ? Kirigami.Theme.textColor : Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.4)
+                    horizontalMode: root.horizontalMode
 
                     onClicked: {
                         previous()
                     }
-
-                    onPressed: {
-                        prevButtonAnim.running = true;
-                    }
-
-                    contentItem: Kirigami.Icon {
-                        anchors.fill: parent
-                        anchors.margins: Mycroft.Units.gridUnit
-
-                        source: Qt.resolvedUrl("images/media-skip-backward.svg")
-
-                        ColorOverlay {
-                            source: parent
-                            anchors.fill: parent
-                            color: root.canPrev === true ? Kirigami.Theme.textColor : Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.4)
-                        }
-                    }
-
-                    background: Rectangle {
-                        id: prevButtonBackground
-                        radius: 5
-                        color:  HelperJS.isLight(Kirigami.Theme.backgroundColor) ? Qt.lighter(Kirigami.Theme.backgroundColor, 1.5) : Qt.darker(Kirigami.Theme.backgroundColor, 1.5)
-                    }
                 }
 
-                Button {
+                AudioPlayerControl {
                     id: playButton
-                    width: Math.round(parent.width / 5) - Mycroft.Units.gridUnit
-                    height: parent.height
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    anchors.margins: Mycroft.Units.gridUnit * 0.5
-
-                    SequentialAnimation {
-                        id: playButtonAnim
-
-                        PropertyAnimation {
-                            target: playButtonBackground
-                            property: "color"
-                            to: HelperJS.isLight(Kirigami.Theme.backgroundColor) ? Qt.darker(Kirigami.Theme.backgroundColor, 1.5) : Qt.lighter(Kirigami.Theme.backgroundColor, 1.5)
-                            duration: 200
-                        }
-
-                        PropertyAnimation {
-                            target: playButtonBackground
-                            property: "color"
-                            to: HelperJS.isLight(Kirigami.Theme.backgroundColor) ? Qt.lighter(Kirigami.Theme.backgroundColor, 1.5) : Qt.darker(Kirigami.Theme.backgroundColor, 1.5)
-                            duration: 200
-                        }
-                    }
+                    controlIcon: root.currentState === MediaPlayer.PlayingState ? Qt.resolvedUrl("images/media-playback-pause.svg") : Qt.resolvedUrl("images/media-playback-start.svg")
+                    controlIconColor: root.canResume === true ? Kirigami.Theme.textColor : Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.4)
+                    horizontalMode: root.horizontalMode
 
                     onClicked: {
                         root.currentState === MediaPlayer.PlayingState ? root.pause() : root.currentState === MediaPlayer.PausedState ? root.resume() : root.play()
                     }
+                }
 
-                    onPressed: {
-                        playButtonAnim.running = true;
-                    }
+                AudioPlayerControl {
+                    id: stopButton
+                    controlIcon: Qt.resolvedUrl("images/media-playback-stop.svg")
+                    controlIconColor: Kirigami.Theme.textColor
+                    horizontalMode: root.horizontalMode
 
-                    contentItem: Kirigami.Icon {
-                        anchors.fill: parent
-                        anchors.margins: Mycroft.Units.gridUnit
-                        source: root.currentState === MediaPlayer.PlayingState ? Qt.resolvedUrl("images/media-playback-pause.svg") : Qt.resolvedUrl("images/media-playback-start.svg")
-
-                        ColorOverlay {
-                            source: parent
-                            anchors.fill: parent
-                            color: root.canResume === true ? Kirigami.Theme.textColor : Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.4)
+                    onClicked: {
+                        if(root.currentState === MediaPlayer.PlayingState) {
+                            root.stop()
                         }
-                    }
-
-                    background: Rectangle {
-                        id: playButtonBackground
-                        radius: 5
-                        color: HelperJS.isLight(Kirigami.Theme.backgroundColor) ? Qt.lighter(Kirigami.Theme.backgroundColor, 1.5) : Qt.darker(Kirigami.Theme.backgroundColor, 1.5)
                     }
                 }
 
-                Button {
+                AudioPlayerControl {
                     id: nextButton
-                    width: Math.round(parent.width / 5) - Mycroft.Units.gridUnit
-                    height: parent.height
-                    anchors.left: playButton.right
-                    anchors.margins: Mycroft.Units.gridUnit * 0.5
-
-                    SequentialAnimation {
-                        id: nextButtonAnim
-
-                        PropertyAnimation {
-                            target: nextButtonBackground
-                            property: "color"
-                            to: HelperJS.isLight(Kirigami.Theme.backgroundColor) ? Qt.darker(Kirigami.Theme.backgroundColor, 1.5) : Qt.lighter(Kirigami.Theme.backgroundColor, 1.5)
-                            duration: 200
-                        }
-
-                        PropertyAnimation {
-                            target: nextButtonBackground
-                            property: "color"
-                            to: HelperJS.isLight(Kirigami.Theme.backgroundColor) ? Qt.lighter(Kirigami.Theme.backgroundColor, 1.5) : Qt.darker(Kirigami.Theme.backgroundColor, 1.5)
-                            duration: 200
-                        }
-                    }
+                    controlIcon: Qt.resolvedUrl("images/media-skip-forward.svg")
+                    controlIconColor: root.canNext === true ? Kirigami.Theme.textColor : Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.4)
+                    horizontalMode: root.horizontalMode
 
                     onClicked: {
                         next()
                     }
-
-                    onPressed: {
-                        nextButtonAnim.running = true;
-                    }
-
-                    contentItem: Kirigami.Icon {
-                        anchors.fill: parent
-                        anchors.margins: Mycroft.Units.gridUnit
-                        source: Qt.resolvedUrl("images/media-skip-forward.svg")
-
-                        ColorOverlay {
-                            source: parent
-                            anchors.fill: parent
-                            color: root.canNext === true ? Kirigami.Theme.textColor : Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.4)
-                        }
-                    }
-
-                    background: Rectangle {
-                        id: nextButtonBackground
-                        radius: 5
-                        color: HelperJS.isLight(Kirigami.Theme.backgroundColor) ? Qt.lighter(Kirigami.Theme.backgroundColor, 1.5) : Qt.darker(Kirigami.Theme.backgroundColor, 1.5)
-                    }
                 }
 
-                Button {
+                AudioPlayerControl {
                     id: shuffleButton
-                    width: Math.round(parent.width / 5) - Mycroft.Units.gridUnit
-                    height: parent.height
-                    anchors.left: nextButton.right
-                    anchors.margins: Mycroft.Units.gridUnit * 0.5
-
-                    SequentialAnimation {
-                        id: shuffleButtonAnim
-
-                        PropertyAnimation {
-                            target: shuffleButtonBackground
-                            property: "color"
-                            to: HelperJS.isLight(Kirigami.Theme.backgroundColor) ? Qt.darker(Kirigami.Theme.backgroundColor, 1.5) : Qt.lighter(Kirigami.Theme.backgroundColor, 1.5)
-                            duration: 200
-                        }
-
-                        PropertyAnimation {
-                            target: shuffleButtonBackground
-                            property: "color"
-                            to: HelperJS.isLight(Kirigami.Theme.backgroundColor) ? Qt.lighter(Kirigami.Theme.backgroundColor, 1.5) : Qt.darker(Kirigami.Theme.backgroundColor, 1.5)
-                            duration: 200
-                        }
-                    }
+                    controlIcon: Qt.resolvedUrl("images/media-playlist-shuffle.svg")
+                    controlIconColor: root.shuffleStatus === false ? Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.3) : Kirigami.Theme.highlightColor
+                    horizontalMode: root.horizontalMode
 
                     onClicked: {
                         shuffle()
                     }
-
-                    onPressed: {
-                        shuffleButtonAnim.running = true;
-                    }
-
-                    contentItem: Kirigami.Icon {
-                        anchors.fill: parent
-                        anchors.margins: Mycroft.Units.gridUnit
-                        source: Qt.resolvedUrl("images/media-playlist-shuffle.svg")
-
-                        ColorOverlay {
-                            source: parent
-                            anchors.fill: parent
-                            color: root.shuffleStatus === false ? Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.3) : Kirigami.Theme.highlightColor
-                        }
-                    }
-
-                    background: Rectangle {
-                        id: shuffleButtonBackground
-                        radius: 5
-                        color: HelperJS.isLight(Kirigami.Theme.backgroundColor) ? Qt.lighter(Kirigami.Theme.backgroundColor, 1.5) : Qt.darker(Kirigami.Theme.backgroundColor, 1.5)
-                    }
                 }
             }
         }
+    }
+
+    GenericCloseControl {
+        id: genericCloseControl
     }
 }

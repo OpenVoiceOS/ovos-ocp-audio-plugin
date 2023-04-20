@@ -7,6 +7,7 @@ import QtGraphicalEffects 1.0
 import Mycroft 1.0 as Mycroft
 import QtMultimedia 5.12
 import "." as Local
+import "code/helper.js" as HelperJS
 
 Mycroft.Delegate {
     id: root
@@ -82,9 +83,72 @@ Mycroft.Delegate {
         }
     }
 
+    Item {
+        id: topBarArea
+        height: Mycroft.Units.gridUnit * 3
+        anchors.top: parent.top
+        anchors.left: parent.left
+        anchors.right: parent.right
+
+        Rectangle {
+            id: pageTitleIconArea
+            width: Mycroft.Units.gridUnit * 3
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            anchors.left: parent.left
+            color: Kirigami.Theme.highlightColor
+
+            Kirigami.Icon {
+                id: pageTitleIcon
+                anchors.centerIn: parent
+                width: Mycroft.Units.gridUnit * 1.8
+                height: Mycroft.Units.gridUnit * 1.8
+                source: HelperJS.isLight(Kirigami.Theme.backgroundColor) ? Qt.resolvedUrl("images/ocp-dark.png") : Qt.resolvedUrl("images/ocp-light.png")
+            }
+        }
+
+        Rectangle {
+            id: topBarAreaCloseDashboardButton
+            anchors.right: parent.right
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            width: Mycroft.Units.gridUnit * 4
+            color: Kirigami.Theme.highlightColor
+
+            Kirigami.Icon {
+                id: closeIcon
+                anchors.centerIn: parent
+                width: Mycroft.Units.gridUnit * 1.8
+                height: Mycroft.Units.gridUnit * 1.8
+                source: "window-close-symbolic"
+
+                ColorOverlay {
+                    anchors.fill: parent
+                    source: parent
+                    color: Kirigami.Theme.textColor
+                }
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: {
+                    Mycroft.MycroftController.sendRequest("system.display.homescreen", {})
+                }
+            }
+        }
+
+        Kirigami.Separator {
+            id: topBarSeparator
+            anchors.bottom: parent.bottom
+            anchors.left: parent.left
+            anchors.right: parent.right
+            color: Kirigami.Theme.highlightColor
+        }
+    }
+
     StackLayout {
         id: homescreenStackLayout
-        anchors.top: parent.top
+        anchors.top: topBarArea.bottom
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: displayBottomBar ? bottomBar.top : parent.bottom
