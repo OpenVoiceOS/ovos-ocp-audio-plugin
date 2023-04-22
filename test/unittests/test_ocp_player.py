@@ -1,7 +1,7 @@
 import json
 import unittest
 
-from mycroft_bus_client import Message
+from ovos_bus_client.client import Message
 from ovos_utils.messagebus import FakeBus
 from unittest.mock import Mock, patch
 
