@@ -341,6 +341,27 @@ class OCP(OVOSAbstractApplication):
             # dont include "video only" in search query
             phrase = self.remove_voc(phrase, "video_only")
 
+        # TODO - also model below under media_intents as extracted keywords
+        # TODO - allow voc_match/remove_voc to work with list of samples vs voc file name
+        # TODO - bus api to register keywords in player
+        skill_kwords = {}
+        requested_skill = None
+        for skill_id, kws in skill_kwords.items():
+            if self.voc_match(phrase, skill_id):
+                # dont include skill name (eg, bandcamp) in search query
+                phrase = self.remove_voc(phrase, skill_id)
+                requested_skill = skill_id
+                break
+
+        player_kwords = {}
+        requested_player = None
+        for player_id, kws in player_kwords.items():
+            if self.voc_match(phrase, player_id):
+                # dont include player name (eg, sonos) in search query
+                phrase = self.remove_voc(phrase, player_id)
+                requested_player = player_id
+                break
+
         # Now we place a query on the messsagebus for anyone who wants to
         # attempt to service a 'play.request' message.
         results = []
