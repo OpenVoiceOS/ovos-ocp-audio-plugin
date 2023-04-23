@@ -1,73 +1,16 @@
 # Changelog
 
-## [0.0.5](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/0.0.5) (2023-04-20)
+## [0.0.6a1](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/0.0.6a1) (2023-04-23)
 
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.5a7...0.0.5)
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.5...0.0.6a1)
+
+**Implemented enhancements:**
+
+- Replace mycroft\_bus\_client with ovos\_bus\_client [\#80](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/80) ([goldyfruit](https://github.com/goldyfruit))
 
 **Merged pull requests:**
 
 - Fix automation typos [\#77](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/77) ([NeonDaniel](https://github.com/NeonDaniel))
-
-## [V0.0.5a7](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.5a7) (2023-04-20)
-
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.5a6...V0.0.5a7)
-
-**Merged pull requests:**
-
-- Update Automations and Dependencies [\#76](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/76) ([NeonDaniel](https://github.com/NeonDaniel))
-
-## [V0.0.5a6](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.5a6) (2023-04-08)
-
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.5a5...V0.0.5a6)
-
-**Fixed bugs:**
-
-- Continue playback on track end [\#66](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/issues/66)
-- Paused Playback resumed on WW [\#22](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/issues/22)
-
-**Merged pull requests:**
-
-- mycroft-bus-client -\> ovos-bus-client [\#72](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/72) ([JarbasAl](https://github.com/JarbasAl))
-
-## [V0.0.5a5](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.5a5) (2023-04-08)
-
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.5a4...V0.0.5a5)
-
-**Fixed bugs:**
-
-- Bugfixes and Unit Tests [\#69](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/69) ([NeonDaniel](https://github.com/NeonDaniel))
-
-## [V0.0.5a4](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.5a4) (2023-04-05)
-
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.5a3...V0.0.5a4)
-
-**Closed issues:**
-
-- \[BUG\] No clear way of exiting the music application [\#55](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/issues/55)
-
-## [V0.0.5a3](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.5a3) (2023-04-01)
-
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.5a2...V0.0.5a3)
-
-**Merged pull requests:**
-
-- Add exit button, simplfy buttons management and stop button [\#68](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/68) ([AIIX](https://github.com/AIIX))
-
-## [V0.0.5a2](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.5a2) (2023-03-15)
-
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.5a1...V0.0.5a2)
-
-**Merged pull requests:**
-
-- fix OCPQuery playlist [\#63](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/63) ([emphasize](https://github.com/emphasize))
-
-## [V0.0.5a1](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.5a1) (2023-03-14)
-
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.4...V0.0.5a1)
-
-**Merged pull requests:**
-
-- Dutch \(nl-nl\) translations [\#59](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/59) ([timonvanhasselt](https://github.com/timonvanhasselt))
 
 
 
