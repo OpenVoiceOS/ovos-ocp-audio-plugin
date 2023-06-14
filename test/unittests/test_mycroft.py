@@ -120,10 +120,7 @@ class TestCPS(unittest.TestCase):
              'at_least_one': [], 'optional': []}
         ]
         for intent in cps_intents:
-            match = (msg for msg in self.bus.emitted_msgs if
-                     msg['type'] == intent['type'] and
-                     msg['data'] == intent['data'])
-            self.assertTrue(any(match))
+            self.assertIn(intent, intents.registered_intents)
 
         # load ocp
         self.bus.emitted_msgs = []
@@ -186,10 +183,7 @@ class TestCPS(unittest.TestCase):
              'data': {}}
         ]
         for intent in ocp_msgs:
-            match = (msg for msg in self.bus.emitted_msgs if
-                     msg['type'] == intent['type'] and
-                     msg['data'] == intent['data'])
-            self.assertTrue(any(match))
+            self.assertNotIn(intent, intents.registered_intents)
 
         # assert that mycroft common play intents unloaded
         detach_msg = {'type': 'detach_skill',
