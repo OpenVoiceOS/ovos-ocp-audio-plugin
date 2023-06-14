@@ -1,8 +1,21 @@
 # Changelog
 
-## [0.0.6a1](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/0.0.6a1) (2023-04-23)
+## [0.0.6a2](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/0.0.6a2) (2023-06-14)
 
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.5...0.0.6a1)
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.6a1...0.0.6a2)
+
+**Closed issues:**
+
+- All media play requests loop \(silently\) until ovos restart [\#84](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/issues/84)
+- self.active\_backend is undefined when fallback is triggered [\#82](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/issues/82)
+
+**Merged pull requests:**
+
+- Refactor init to resolve deprecation warnings [\#85](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/85) ([NeonDaniel](https://github.com/NeonDaniel))
+
+## [V0.0.6a1](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.6a1) (2023-04-23)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.5...V0.0.6a1)
 
 **Implemented enhancements:**
 
