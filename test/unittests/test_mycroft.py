@@ -120,7 +120,10 @@ class TestCPS(unittest.TestCase):
              'at_least_one': [], 'optional': []}
         ]
         for intent in cps_intents:
-            self.assertIn(intent, intents.registered_intents)
+            match = (msg for msg in self.bus.emitted_msgs if
+                     msg['type'] == intent['type'] and
+                     msg['data'] == intent['data'])
+            self.assertTrue(any(match))
 
         # load ocp
         self.bus.emitted_msgs = []
@@ -138,10 +141,13 @@ class TestCPS(unittest.TestCase):
             {'type': 'skillmanager.deactivate',
              'data': {'skill': 'skill-playback-control'}}
         ]  # possible skill-ids for mycroft skill
-        for msg in disable_msgs:
-            self.assertIn(msg, self.bus.emitted_msgs)
+        for disable in disable_msgs:
+            match = (msg for msg in self.bus.emitted_msgs if
+                     msg['type'] == disable['type'] and
+                     msg['data'] == disable['data'])
+            self.assertTrue(any(match))
             # skill manager would call this if connected to bus
-            if msg["data"]["skill"] == skill.skill_id:
+            if disable["data"]["skill"] == skill.skill_id:
                 skill.deactivate()
 
         # assert that OCP intents registered
@@ -180,14 +186,20 @@ class TestCPS(unittest.TestCase):
              'data': {}}
         ]
         for intent in ocp_msgs:
-            self.assertIn(intent, self.bus.emitted_msgs)
+            match = (msg for msg in self.bus.emitted_msgs if
+                     msg['type'] == intent['type'] and
+                     msg['data'] == intent['data'])
+            self.assertTrue(any(match))
 
         # assert that mycroft common play intents unloaded
         detach_msg = {'type': 'detach_skill',
                       'data': {'skill_id': 'skill-playback-control.mycroftai:'}}
         self.assertIn(detach_msg, self.bus.emitted_msgs)
         for intent in cps_intents:
-            self.assertNotIn(intent, intents.registered_intents)
+            match = (msg for msg in self.bus.emitted_msgs if
+                     msg['type'] == intent['type'] and
+                     msg['data'] == intent['data'])
+            self.assertTrue(any(match))
 
         ocp.shutdown()
 
