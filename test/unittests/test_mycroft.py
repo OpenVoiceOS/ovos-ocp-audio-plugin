@@ -93,7 +93,10 @@ class TestCPS(unittest.TestCase):
                                         'skill_playback_control_mycroftaiResume']], 'optional': []}}
         ]
         for intent in cps_msgs:
-            self.assertIn(intent, self.bus.emitted_msgs)
+            match = (msg for msg in self.bus.emitted_msgs if
+                     msg['type'] == intent['type'] and
+                     msg['data'] == intent['data'])
+            self.assertTrue(any(match))
 
         # assert that mycroft common play intents loaded
         cps_intents = [
