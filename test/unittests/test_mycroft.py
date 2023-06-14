@@ -190,10 +190,7 @@ class TestCPS(unittest.TestCase):
                       'data': {'skill_id': 'skill-playback-control.mycroftai:'}}
         self.assertIn(detach_msg, self.bus.emitted_msgs)
         for intent in cps_intents:
-            match = (msg for msg in self.bus.emitted_msgs if
-                     msg['type'] == intent['type'] and
-                     msg['data'] == intent['data'])
-            self.assertTrue(any(match))
+            self.assertNotIn(intent, intents.registered_intents)
 
         ocp.shutdown()
 
