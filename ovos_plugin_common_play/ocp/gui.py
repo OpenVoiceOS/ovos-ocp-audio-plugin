@@ -24,11 +24,11 @@ class OCPMediaPlayerGUI(GUIInterface):
     def __init__(self):
         # the skill_id is chosen so the namespace matches the regular bus api
         # ie, the gui event "XXX" is sent in the bus as "ovos.common_play.XXX"
-        super(OCPMediaPlayerGUI, self).__init__(skill_id=OCP_ID)
+        gui_config = Configuration().get("gui") or {}
+        super(OCPMediaPlayerGUI, self).__init__(skill_id=OCP_ID,
+                                                config=gui_config)
         self.ocp_skills = {}  # skill_id: meta
-        core_config = Configuration()
-        enclosure_config = core_config.get("gui") or {}
-        self.active_extension = enclosure_config.get("extension", "generic")
+        self.active_extension = gui_config.get("extension", "generic")
         self.notification_timeout = None
         self.search_mode_is_app = False
         self.persist_home_display = False
@@ -45,7 +45,8 @@ class OCPMediaPlayerGUI(GUIInterface):
                               self.handle_play_from_search)
         self.player.add_event('ovos.common_play.skill.play',
                               self.handle_play_skill_featured_media)
-        self.event_scheduler_interface = EventSchedulerInterface(name=OCP_ID, bus=self.bus)
+        self.event_scheduler_interface = \
+            EventSchedulerInterface(skill_id=OCP_ID, bus=self.bus)
 
     @property
     def video_backend(self):
