@@ -46,7 +46,7 @@ class OCP(OVOSAbstractApplication):
         # settings = settings or OCPSettings()
         res_dir = join(dirname(__file__), "res")
         super().__init__(skill_id=skill_id, resources_dir=res_dir,
-                         bus=bus, lang=lang, gui=OCPMediaPlayerGUI())
+                         bus=bus, lang=lang, gui=OCPMediaPlayerGUI(bus=bus))
         if settings:
             LOG.debug(f"Updating settings from value passed at init")
             self.settings.merge(settings)
@@ -56,7 +56,8 @@ class OCP(OVOSAbstractApplication):
                                      lang=self.lang,
                                      settings=self.settings,
                                      resources_dir=res_dir,
-                                     gui=self.gui)
+                                     gui=self.gui,
+                                     skill_id=OCP_ID)
         self.media_intents = IntentContainer()
         self.register_ocp_api_events()
         self.register_media_intents()

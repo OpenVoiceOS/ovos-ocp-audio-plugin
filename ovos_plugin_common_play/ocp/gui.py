@@ -21,12 +21,13 @@ class VideoPlayerBackend(str, enum.Enum):
 
 
 class OCPMediaPlayerGUI(GUIInterface):
-    def __init__(self):
+    def __init__(self, bus=None):
         # the skill_id is chosen so the namespace matches the regular bus api
         # ie, the gui event "XXX" is sent in the bus as "ovos.common_play.XXX"
         gui_config = Configuration().get("gui") or {}
         ui_dirs = {"qt5": f"{dirname(__file__)}/res/ui"}
-        super(OCPMediaPlayerGUI, self).__init__(skill_id=OCP_ID,
+        super(OCPMediaPlayerGUI, self).__init__(bus=bus,
+                                                skill_id=OCP_ID,
                                                 ui_directories=ui_dirs,
                                                 config=gui_config)
         self.ocp_skills = {}  # skill_id: meta
