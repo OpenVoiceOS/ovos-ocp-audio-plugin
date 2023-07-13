@@ -23,7 +23,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
     def __init__(self, bus=None, settings=None, lang=None, gui=None,
                  resources_dir=None):
         resources_dir = resources_dir or join(dirname(__file__), "res")
-        gui = gui or OCPMediaPlayerGUI()
+        gui = gui or OCPMediaPlayerGUI(bus=bus)
 
         # Define things referenced in `bind`
         self.now_playing: NowPlaying = NowPlaying()
