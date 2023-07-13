@@ -21,9 +21,9 @@ from ovos_plugin_common_play.ocp.constants import OCP_ID
 
 class OCPMediaPlayer(OVOSAbstractApplication):
     def __init__(self, bus=None, settings=None, lang=None, gui=None,
-                 resources_dir=None):
+                 resources_dir=None, skill_id=OCP_ID, **kwargs):
         resources_dir = resources_dir or join(dirname(__file__), "res")
-        gui = gui or OCPMediaPlayerGUI()
+        gui = gui or OCPMediaPlayerGUI(bus=bus)
 
         # Define things referenced in `bind`
         self.now_playing: NowPlaying = NowPlaying()
@@ -37,8 +37,8 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         self._audio_backend = None
         self.track_history = {}  # Dict of track URI to play count
 
-        super().__init__(OCP_ID, bus=bus,
-                         gui=gui, resources_dir=resources_dir, lang=lang)
+        super().__init__(skill_id=skill_id, bus=bus, gui=gui,
+                         resources_dir=resources_dir, lang=lang, **kwargs)
         if settings:
             self.settings.merge(settings)
 

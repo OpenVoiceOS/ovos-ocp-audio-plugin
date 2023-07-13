@@ -11,7 +11,7 @@ from ovos_plugin_common_play.ocp.status import MediaType, PlayerState
 
 class TestOCP(unittest.TestCase):
     bus = FakeBus()
-    ocp = OCP(bus)
+    ocp = OCP(bus=bus, skill_id="TEST_OCP")
 
     @classmethod
     def setUpClass(cls) -> None:
