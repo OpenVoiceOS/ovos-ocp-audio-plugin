@@ -47,6 +47,8 @@ jobs:
           sudo apt-get update
           sudo apt install python3-dev
           python -m pip install build wheel
+          pip install wheel "cython<3.0.0"  # TODO: cython patching https://github.com/yaml/pyyaml/issues/724
+          pip install --no-build-isolation pyyaml~=5.4  # TODO: patching https://github.com/yaml/pyyaml/issues/724
       - name: Install core repo
         run: |
           sudo apt install libssl-dev libfann-dev portaudio19-dev libpulse-dev
