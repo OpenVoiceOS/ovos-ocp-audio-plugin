@@ -58,24 +58,24 @@ class OCPMediaPlayerGUI(GUIInterface):
 
     @property
     def home_screen_page(self):
-        return join(self.player.res_dir, "ui", "Home.qml")
+        return "Home"
     
     @property
     def disambiguation_playlists_page(self):
-        return join(self.player.res_dir, "ui", "SuggestionsView.qml")
+        return "SuggestionsView"
 
     @property
     def audio_player_page(self):
-        return join(self.player.res_dir, "ui", "OVOSAudioPlayer.qml")
+        return "OVOSAudioPlayer"
 
     @property
     def audio_service_page(self):
-        return join(self.player.res_dir, "ui", "OVOSSyncPlayer.qml")
+        return "OVOSSyncPlayer"
 
     @property
     def video_player_page(self):
-        qtav = join(self.player.res_dir, "ui", "OVOSVideoPlayerQtAv.qml")
-        native = join(self.player.res_dir, "ui", "OVOSVideoPlayer.qml")
+        qtav = "OVOSVideoPlayerQtAv"
+        native = "OVOSVideoPlayer"
         has_qtav = is_qtav_available()
         if has_qtav:
             LOG.info("QtAV detected")
@@ -96,11 +96,11 @@ class OCPMediaPlayerGUI(GUIInterface):
 
     @property
     def web_player_page(self):
-        return join(self.player.res_dir, "ui", "OVOSWebPlayer.qml")
+        return "OVOSWebPlayer"
 
     @property
     def player_loader_page(self):
-        return join(self.player.res_dir, "ui", "PlayerLoader.qml")
+        return "PlayerLoader"
 
     def shutdown(self):
         self.bus.remove("ovos.common_play.playback_time",
