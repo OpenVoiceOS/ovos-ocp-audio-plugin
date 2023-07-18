@@ -21,3 +21,5 @@ Search 1.0 Search.qml
 SpectrumWaveDelegate 1.0 SpectrumWaveDelegate.qml
 SuggestionsView 1.0 SuggestionsView.qml
 VideoPlayerControl 1.0 VideoPlayerControl.qml
+views views
+delegates delegates
