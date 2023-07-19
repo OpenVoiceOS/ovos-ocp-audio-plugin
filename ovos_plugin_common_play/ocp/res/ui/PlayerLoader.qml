@@ -28,7 +28,7 @@ Mycroft.Delegate {
         z: -1
     }
 
-    property var pageToLoad: sessionData.playerBackend + ".qml"
+    property var pageToLoad: "./" + sessionData.playerBackend + ".qml"
 
     contentItem: Loader {
         id: rootLoader
@@ -44,6 +44,6 @@ Mycroft.Delegate {
             mainLoaderView.skillBackgroundSource = null
         }
 
-        rootLoader.setSource(sessionData.playerBackend + ".qml")
+        rootLoader.setSource(pageToLoad)
     }    
 }
