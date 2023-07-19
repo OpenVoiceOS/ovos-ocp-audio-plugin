@@ -1,8 +1,16 @@
 # Changelog
 
-## [0.0.6a4](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/0.0.6a4) (2023-07-13)
+## [0.0.6a5](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/0.0.6a5) (2023-07-19)
 
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.6a3...0.0.6a4)
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.6a4...0.0.6a5)
+
+**Merged pull requests:**
+
+- Update GUI to pass resource names instead of paths [\#90](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/90) ([NeonDaniel](https://github.com/NeonDaniel))
+
+## [V0.0.6a4](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.6a4) (2023-07-13)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.6a3...V0.0.6a4)
 
 **Fixed bugs:**
 
