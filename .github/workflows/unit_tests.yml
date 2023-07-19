@@ -45,22 +45,15 @@ jobs:
       - name: Install System Dependencies
         run: |
           sudo apt-get update
-          sudo apt install python3-dev
-          python -m pip install build wheel
-          pip install wheel "cython<3.0.0"  # TODO: cython patching https://github.com/yaml/pyyaml/issues/724
-          pip install --no-build-isolation pyyaml~=5.4  # TODO: patching https://github.com/yaml/pyyaml/issues/724
-      - name: Install core repo
-        run: |
-          sudo apt install libssl-dev libfann-dev portaudio19-dev libpulse-dev
-          pip install ovos-core[skills_lgpl]
+          sudo apt install python3-dev libssl-dev libfann-dev portaudio19-dev libpulse-dev
+          python -m pip install -r requirements/test.txt
       - name: Install OCP
         run: |
-          pip install .
+          pip install -e .
       - name: Install test dependencies
         run: |
           pip install ./test/ovos-test-mycroft-audio-plugin
           pip install ./test/ovos-test-ocp-audio-plugin
-          pip install pytest pytest-timeout pytest-cov
       - name: Run unittests
         run: |
           pytest --cov=ovos_plugin_common_play --cov-report xml test/unittests
