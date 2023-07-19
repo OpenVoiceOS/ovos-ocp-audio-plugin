@@ -1,0 +1,15 @@
+build
+wheel
+pytest~=7.1
+pytest-timeout~=2.1
+pytest-cov~=4.1
+ovos-core~=0.0.7
+
+# TODO: Below patching skills_lgpl pyyaml dependency per https://github.com/yaml/pyyaml/issues/724
+adapt-parser~=0.5
+padacioso~=0.1.2
+ovos-lingua-franca~=0.4, >=0.4.2
+PyYAML~=6.0
+ovos_workshop~=0.0.10
+padatious~=0.4.8
+fann2==1.0.7

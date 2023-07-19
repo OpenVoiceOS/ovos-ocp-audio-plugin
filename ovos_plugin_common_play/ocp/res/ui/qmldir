@@ -1,0 +1,25 @@
+AudioPlayerControl 1.0 AudioPlayerControl.qml
+ConfigDelegateLayoutItem 1.0 ConfigDelegateLayoutItem.qml
+ConfigOptionDelegate 1.0 ConfigOptionDelegate.qml
+ConfigSliderDelegate 1.0 ConfigSliderDelegate.qml
+ConfigSwitchDelegate 1.0 ConfigSwitchDelegate.qml
+Disambiguation 1.0 Disambiguation.qml
+GenericCloseControl 1.0 GenericCloseControl.qml
+Home 1.0 Home.qml
+NowPlayingHomeBar 1.0 NowPlayingHomeBar.qml
+OCPSkillsView 1.0 OCPSkillsView.qml
+OVOSAudioPlayer 1.0 OVOSAudioPlayer.qml
+OVOSSeekControl 1.0 OVOSSeekControl.qml
+OVOSSeekControlQtAv 1.0 OVOSSeekControlQtAv.qml
+OVOSSyncPlayer 1.0 OVOSSyncPlayer.qml
+OVOSVideoPlayer 1.0 OVOSVideoPlayer.qml
+OVOSVideoPlayerQtAv 1.0 OVOSVideoPlayerQtAv.qml
+OVOSWebPlayer 1.0 OVOSWebPlayer.qml
+PlayerLoader 1.0 PlayerLoader.qml
+Playlist 1.0 Playlist.qml
+Search 1.0 Search.qml
+SpectrumWaveDelegate 1.0 SpectrumWaveDelegate.qml
+SuggestionsView 1.0 SuggestionsView.qml
+VideoPlayerControl 1.0 VideoPlayerControl.qml
+views views
+delegates delegates
