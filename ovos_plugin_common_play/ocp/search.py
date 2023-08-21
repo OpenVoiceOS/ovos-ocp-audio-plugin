@@ -54,6 +54,10 @@ class OCPQuery:
         self.searching = False
         self.search_start = 0
         self.query_timeouts = self.settings.get("min_timeout", 5)
+        if self.settings.get("playback_mode") in [PlaybackMode.FORCE_AUDIOSERVICE, PlaybackMode.AUDIO_ONLY]:
+            self.has_gui = False
+        else:
+            self.has_gui = is_gui_running() or is_gui_connected(self.bus)
 
     @property
     def settings(self) -> dict:
@@ -179,7 +183,6 @@ class OCPQuery:
                         "enough!")
 
                 # populate search playlist
-                has_gui = is_gui_running() or is_gui_connected(self.bus)
                 results = message.data.get("results", [])
                 for idx, res in enumerate(results):
                     if self.media_type not in [MediaType.ADULT, MediaType.HENTAI]:
@@ -212,7 +215,7 @@ class OCPQuery:
                         continue
 
                     # filter video results if GUI not connected
-                    if not has_gui:
+                    if not self.has_gui:
                         # force allowed stream types to be played audio only
                         if res.get("media_type", "") in self.cast2audio:
                             LOG.debug("unable to use GUI, "
