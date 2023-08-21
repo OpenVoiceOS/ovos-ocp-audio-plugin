@@ -1,8 +1,16 @@
 # Changelog
 
-## [0.0.6a6](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/0.0.6a6) (2023-08-21)
+## [0.0.6a7](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/0.0.6a7) (2023-08-21)
 
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.6a5...0.0.6a6)
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.6a6...0.0.6a7)
+
+**Merged pull requests:**
+
+- OCPQuery: Only check if the gui is connected once [\#96](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/96) ([Ramblurr](https://github.com/Ramblurr))
+
+## [V0.0.6a6](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.6a6) (2023-08-21)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.6a5...V0.0.6a6)
 
 **Fixed bugs:**
 
