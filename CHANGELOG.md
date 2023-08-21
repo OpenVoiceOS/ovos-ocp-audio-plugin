@@ -1,8 +1,25 @@
 # Changelog
 
-## [0.0.6a5](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/0.0.6a5) (2023-07-19)
+## [0.0.6a6](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/0.0.6a6) (2023-08-21)
 
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.6a4...0.0.6a5)
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.6a5...0.0.6a6)
+
+**Fixed bugs:**
+
+- Allow `PlaybackType.SKILL` search results to be played when there is no GUI [\#95](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/95) ([Ramblurr](https://github.com/Ramblurr))
+
+**Closed issues:**
+
+- OCP search results are not processed fast enough because `is_gui_connected(..)` takes too long [\#93](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/issues/93)
+- OCP skills supporting PlaybackType.SKILL cannot be played when there is no GUI [\#92](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/issues/92)
+
+**Merged pull requests:**
+
+- Handle race condition between `ovos.common_play.query.response` and `ovos.common_play.skill.search_end` [\#94](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/94) ([Ramblurr](https://github.com/Ramblurr))
+
+## [V0.0.6a5](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.6a5) (2023-07-19)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.6a4...V0.0.6a5)
 
 **Merged pull requests:**
 
