@@ -378,7 +378,7 @@ class OCP(OVOSAbstractApplication):
             LOG.info("unable to use GUI, filtering non-audio results")
             # filter video only streams
             results = [r for r in results
-                       if r["playback"] == PlaybackType.AUDIO]
+                       if r["playback"] in [PlaybackType.AUDIO, PlaybackType.SKILL]]
         LOG.debug(f"Returning {len(results)} results")
         return results
 
