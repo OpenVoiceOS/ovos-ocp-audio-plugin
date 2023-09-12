@@ -1,8 +1,16 @@
 # Changelog
 
-## [0.0.6a7](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/0.0.6a7) (2023-08-21)
+## [0.0.6a8](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/0.0.6a8) (2023-09-12)
 
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.6a6...0.0.6a7)
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.6a7...0.0.6a8)
+
+**Implemented enhancements:**
+
+- Add standalone launcher [\#97](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/97) ([Ramblurr](https://github.com/Ramblurr))
+
+## [V0.0.6a7](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.6a7) (2023-08-21)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.6a6...V0.0.6a7)
 
 **Merged pull requests:**
 
