@@ -87,6 +87,11 @@ setup(
         'Programming Language :: Python :: 3.6',
     ],
     keywords='ovos audio plugin',
-    entry_points={'mycroft.plugin.audioservice': PLUGIN_ENTRY_POINT,
-                  'mycroft.plugin.audioservice.config': PLUGIN_CONFIG_ENTRY_POINT}
+    entry_points = {
+        "mycroft.plugin.audioservice": PLUGIN_ENTRY_POINT,
+        "mycroft.plugin.audioservice.config": PLUGIN_CONFIG_ENTRY_POINT,
+        "console_scripts": [
+            "ovos-ocp-standalone=ovos_plugin_common_play.launcher:main"
+        ],
+    }
 )
