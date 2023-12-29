@@ -2,7 +2,7 @@ import json
 import unittest
 from unittest.mock import patch
 
-from mycroft.audio.audioservice import AudioService
+from ovos_utils.skills.audioservice import ClassicAudioServiceInterface
 from ovos_config.config import Configuration
 from ovos_utils.messagebus import FakeBus
 
@@ -49,7 +49,7 @@ class TestOCPLoad(unittest.TestCase):
 
         self.bus.on("message", get_msg)
 
-        self.audio = AudioService(self.bus)
+        self.audio = ClassicAudioServiceInterface(self.bus)
 
     def test_native_ocp(self):
         # assert that OCP is the selected default backend

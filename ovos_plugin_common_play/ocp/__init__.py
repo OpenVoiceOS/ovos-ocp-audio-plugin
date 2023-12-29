@@ -8,7 +8,7 @@ from ovos_plugin_common_play.ocp.status import *
 from ovos_utils.gui import can_use_gui
 from ovos_utils.log import LOG
 from ovos_plugin_common_play.ocp.utils import create_desktop_file
-from ovos_utils.messagebus import Message
+from ovos_bus_client.message import Message
 from ovos_workshop import OVOSAbstractApplication
 from padacioso import IntentContainer
 from ovos_utils.intents.intent_service_interface import IntentQueryApi

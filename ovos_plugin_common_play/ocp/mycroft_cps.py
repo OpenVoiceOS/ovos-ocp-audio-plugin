@@ -5,7 +5,8 @@ from os.path import abspath
 from ovos_bus_client.message import dig_for_message
 
 from ovos_plugin_common_play.ocp.constants import OCP_ID
-from ovos_utils.messagebus import Message, wait_for_reply
+from ovos_bus_client.message import Message
+from ovos_bus_client.util import wait_for_reply
 
 from ovos_plugin_common_play.ocp.base import OCPAbstractComponent
 from ovos_plugin_common_play.ocp.status import *
