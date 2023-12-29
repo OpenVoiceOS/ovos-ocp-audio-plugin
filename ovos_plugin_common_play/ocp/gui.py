@@ -6,7 +6,7 @@ from time import sleep
 from ovos_bus_client.message import Message
 from ovos_config import Configuration
 from ovos_utils.events import EventSchedulerInterface
-from ovos_utils.gui import GUIInterface
+from ovos_bus_client.apis.gui import GUIInterface
 from ovos_utils.log import LOG
 
 from ovos_plugin_common_play.ocp.status import *

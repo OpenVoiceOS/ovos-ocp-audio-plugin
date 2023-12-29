@@ -8,7 +8,8 @@ from typing import List
 from ovos_config.locations import get_xdg_config_save_path
 from ovos_utils.gui import is_gui_connected, is_gui_running
 from ovos_utils.log import LOG
-from ovos_utils.messagebus import Message, get_mycroft_bus
+from ovos_bus_client.message import Message
+from ovos_bus_client.util import get_mycroft_bus
 
 from ovos_plugin_common_play.ocp.base import OCPAbstractComponent
 from ovos_plugin_common_play.ocp.media import Playlist

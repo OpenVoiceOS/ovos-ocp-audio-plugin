@@ -6,7 +6,7 @@ from time import sleep
 
 from ovos_utils.gui import is_gui_connected, is_gui_running
 from ovos_utils.log import LOG
-from ovos_utils.messagebus import Message
+from ovos_bus_client.message import Message
 from ovos_config import Configuration
 
 from ovos_plugin_common_play.ocp.gui import OCPMediaPlayerGUI
