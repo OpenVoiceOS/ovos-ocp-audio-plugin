@@ -11,7 +11,6 @@ from ovos_plugin_common_play.ocp.utils import create_desktop_file
 from ovos_bus_client.message import Message
 from ovos_workshop import OVOSAbstractApplication
 from padacioso import IntentContainer
-from ovos_utils.intents.intent_service_interface import IntentQueryApi
 from threading import Event, Lock
 
 
@@ -104,19 +103,6 @@ class OCP(OVOSAbstractApplication):
     def register_ocp_intents(self, message=None):
         with self._intent_registration_lock:
             if not self._intents_event.is_set():
-                missing = True
-                LOG.debug("Intents register event not set")
-            else:
-                # check list of registered intents
-                # if needed register ocp intents again
-                # this accounts for restarts etc
-                i = IntentQueryApi(self.bus)
-                intents = i.get_padatious_manifest()
-                missing = not any((e.startswith(f"{self.skill_id}:")
-                                  for e in intents))
-                LOG.debug(f'missing={missing} | {intents}')
-
-            if missing:
                 LOG.info(f"OCP intents missing, registering for {self}")
                 self.register_intent("play.intent", self.handle_play)
                 self.register_intent("read.intent", self.handle_read)
