@@ -455,7 +455,7 @@ class NowPlaying(MediaEntry):
             video = True
         else:
             video = False
-        meta = ocp_plugins.extract_stream(uri, video)
+        meta = ocp_plugins().extract_stream(uri, video)
         # update media entry with new data
         if meta:
             LOG.info(f"OCP plugins metadata: {meta}")
