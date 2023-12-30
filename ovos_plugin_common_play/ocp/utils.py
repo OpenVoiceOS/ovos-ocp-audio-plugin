@@ -12,7 +12,6 @@ from ovos_ocp_files_plugin.plugin import OCPFilesMetadataExtractor
 _plugins = None
 
 
-@module_property
 def _ocp_plugins():
     global _plugins
     _plugins = _plugins or StreamHandler()
