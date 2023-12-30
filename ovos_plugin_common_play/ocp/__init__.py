@@ -12,6 +12,7 @@ from ovos_bus_client.message import Message
 from ovos_workshop import OVOSAbstractApplication
 from padacioso import IntentContainer
 from threading import Event, Lock
+from ovos_plugin_common_play.ocp.utils import ocp_plugins
 
 
 class OCP(OVOSAbstractApplication):
@@ -75,6 +76,7 @@ class OCP(OVOSAbstractApplication):
             create_desktop_file()
         except:  # permission errors and stuff
             pass
+        ocp_plugins()  # trigger a load + caching of OCP plugins
 
     def handle_ping(self, message):
         """
