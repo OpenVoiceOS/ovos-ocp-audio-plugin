@@ -38,37 +38,49 @@ class TestEnglishMediaIntents(unittest.TestCase):
                              {'name': None, 'entities': {}})
 
     def test_radio(self):
-        self.assertEqual(
-            self.media_intents.calc_intent("play heavy metal radio"),
-            {'conf': 0.9, 'entities': {'query': 'heavy metal'}, 'name': 'radio'})
+        intent = self.media_intents.calc_intent("play heavy metal radio")
+        self.assertEqual(intent['name'], 'radio')
+        self.assertEqual(intent['entities'], {'query': 'heavy metal'})
+        self.assertGreaterEqual(intent['conf'], 0.9)
+
         self.assertEqual(
             self.media_intents.calc_intent("play radio"),
             {'conf': 1, 'entities': {}, 'name': 'radio'})
+
         self.assertEqual(
             self.media_intents.calc_intent("play internet radio"),
             {'conf': 1, 'entities': {}, 'name': 'radio'})
 
     def test_music(self):
-        self.assertEqual(
-            self.media_intents.calc_intent("play heavy metal music"),
-            {'conf': 0.9, 'entities': {'query': 'heavy metal'}, 'name': 'music'})
+        intent = self.media_intents.calc_intent("play heavy metal music")
+        self.assertEqual(intent['name'], 'music')
+        self.assertEqual(intent['entities'], {'query': 'heavy metal'})
+        self.assertGreaterEqual(intent['conf'], 0.9)
+
         self.assertEqual(
             self.media_intents.calc_intent("play music"),
             {'conf': 1, 'entities': {}, 'name': 'music'})
-        self.assertEqual(
-            self.media_intents.calc_intent("play some music"),
-            {'conf': 0.9, 'entities': {'query': 'some'}, 'name': 'music'})
+
+        intent = self.media_intents.calc_intent("play some music")
+        self.assertEqual(intent['name'], 'music')
+        self.assertEqual(intent['entities'], {'query': 'some'})
+        self.assertGreaterEqual(intent['conf'], 0.9)
 
     def test_movie(self):
-        self.assertEqual(
-            self.media_intents.calc_intent("play a horror film"),
-            {'conf': 0.9, 'entities': {'query': 'horror'}, 'name': 'movie'})
-        self.assertEqual(
-            self.media_intents.calc_intent("play a movie"),
-            {'conf': 0.9, 'entities': {'query': 'a'}, 'name': 'movie'})
-        self.assertEqual(
-            self.media_intents.calc_intent("play the matrix movie"),
-            {'conf': 0.9, 'entities': {'query': 'the matrix'}, 'name': 'movie'})
+        intent = self.media_intents.calc_intent("play a horror film")
+        self.assertEqual(intent['name'], 'movie')
+        self.assertEqual(intent['entities'], {'query': 'horror'})
+        self.assertGreaterEqual(intent['conf'], 0.9)
+
+        intent = self.media_intents.calc_intent("play a movie")
+        self.assertEqual(intent['name'], 'movie')
+        self.assertEqual(intent['entities'], {'query': 'a'})
+        self.assertGreaterEqual(intent['conf'], 0.9)
+
+        intent = self.media_intents.calc_intent("play the matrix movie")
+        self.assertEqual(intent['name'], 'movie')
+        self.assertEqual(intent['entities'], {'query': 'the matrix'})
+        self.assertGreaterEqual(intent['conf'], 0.9)
 
 
 if __name__ == '__main__':

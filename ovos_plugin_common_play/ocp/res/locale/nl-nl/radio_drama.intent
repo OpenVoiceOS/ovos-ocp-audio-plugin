@@ -1,7 +1,3 @@
-# auto translated from en-us to nl-nl
-Radiodrama
-Speel radiotheater
-Radiotheater
-Speel radiodrama
-Start radiotheater
-Begin radiodrama
+(speel|start) (radio voorstelling|radio drama) {{query}}
+(speel|start) {{query}} (radio voorstelling|radio drama)
+(speel|start) (radio voorstelling|radio drama)

@@ -1,4 +1,4 @@
-from mycroft.audio.services import AudioBackend
+from ovos_plugin_manager.templates.audio import AudioBackend
 
 
 class TestMycroftAudioService(AudioBackend):

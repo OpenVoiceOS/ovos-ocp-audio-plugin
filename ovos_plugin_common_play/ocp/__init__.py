@@ -8,11 +8,11 @@ from ovos_plugin_common_play.ocp.status import *
 from ovos_utils.gui import can_use_gui
 from ovos_utils.log import LOG
 from ovos_plugin_common_play.ocp.utils import create_desktop_file
-from ovos_utils.messagebus import Message
+from ovos_bus_client.message import Message
 from ovos_workshop import OVOSAbstractApplication
 from padacioso import IntentContainer
-from ovos_utils.intents.intent_service_interface import IntentQueryApi
 from threading import Event, Lock
+from ovos_plugin_common_play.ocp.utils import ocp_plugins
 
 
 class OCP(OVOSAbstractApplication):
@@ -42,12 +42,11 @@ class OCP(OVOSAbstractApplication):
         "hentai": MediaType.HENTAI
     }
 
-    def __init__(self, bus=None, lang=None, settings=None):
+    def __init__(self, bus=None, lang=None, settings=None, skill_id=OCP_ID):
         # settings = settings or OCPSettings()
         res_dir = join(dirname(__file__), "res")
-        gui = OCPMediaPlayerGUI()
-        super().__init__(skill_id=OCP_ID, resources_dir=res_dir,
-                         bus=bus, lang=lang, gui=gui)
+        super().__init__(skill_id=skill_id, resources_dir=res_dir,
+                         bus=bus, lang=lang, gui=OCPMediaPlayerGUI(bus=bus))
         if settings:
             LOG.debug(f"Updating settings from value passed at init")
             self.settings.merge(settings)
@@ -57,7 +56,8 @@ class OCP(OVOSAbstractApplication):
                                      lang=self.lang,
                                      settings=self.settings,
                                      resources_dir=res_dir,
-                                     gui=self.gui)
+                                     gui=self.gui,
+                                     skill_id=OCP_ID)
         self.media_intents = IntentContainer()
         self.register_ocp_api_events()
         self.register_media_intents()
@@ -71,39 +71,40 @@ class OCP(OVOSAbstractApplication):
             self.remove_event("mycroft.ready")
             self.replace_mycroft_cps(skills_ready)
         try:
+            # TODO: Should this just happen at install time? A user might not
+            #       want this shortcut.
             create_desktop_file()
         except:  # permission errors and stuff
             pass
+        ocp_plugins()  # trigger a load + caching of OCP plugins
 
     def handle_ping(self, message):
+        """
+        Handle ovos.common_play.ping Messages and emit a response
+        @param message: message associated with request
+        """
         self.bus.emit(message.reply("ovos.common_play.pong"))
 
     def register_ocp_api_events(self):
+        """
+        Register messagebus handlers for OCP events
+        """
         self.add_event("ovos.common_play.ping", self.handle_ping)
         self.add_event('ovos.common_play.home', self.handle_home)
         # bus api shared with intents
         self.add_event("ovos.common_play.search", self.handle_play)
 
-    def handle_home(self):
+    def handle_home(self, message=None):
+        """
+        Handle ovos.common_play.home Messages and show the homescreen
+        @param message: message associated with request
+        """
         # homescreen / launch from .desktop
         self.gui.show_home(app_mode=True)
 
     def register_ocp_intents(self, message=None):
         with self._intent_registration_lock:
             if not self._intents_event.is_set():
-                missing = True
-                LOG.debug("Intents register event not set")
-            else:
-                # check list of registered intents
-                # if needed register ocp intents again
-                # this accounts for restarts etc
-                i = IntentQueryApi(self.bus)
-                intents = i.get_padatious_manifest()
-                missing = not any((e.startswith(f"{self.skill_id}:")
-                                  for e in intents))
-                LOG.debug(f'missing={missing} | {intents}')
-
-            if missing:
                 LOG.info(f"OCP intents missing, registering for {self}")
                 self.register_intent("play.intent", self.handle_play)
                 self.register_intent("read.intent", self.handle_read)
@@ -207,6 +208,10 @@ class OCP(OVOSAbstractApplication):
 
     # playback control intents
     def handle_open(self, message):
+        """
+        Handle open.intent
+        @param message: Message associated with intent match
+        """
         self.gui.show_home(app_mode=True)
 
     def handle_next(self, message):
@@ -218,14 +223,23 @@ class OCP(OVOSAbstractApplication):
     def handle_pause(self, message):
         self.player.pause()
 
+    def handle_stop(self, message=None):
+        # will stop any playback in GUI and AudioService
+        try:
+            return self.player.stop()
+        except:
+            pass
+
     def handle_resume(self, message):
         """Resume playback if paused"""
+        # TODO: Should this also handle "stopped"?
         if self.player.state == PlayerState.PAUSED:
             self.player.resume()
         else:
+            LOG.info(f"Asked to resume while not paused. state={self.player.state}")
             query = self.get_response("play.what")
             if query:
-                message["utterance"] = query
+                message.data["utterance"] = query
                 self.handle_play(message)
 
     def handle_play(self, message):
@@ -299,13 +313,6 @@ class OCP(OVOSAbstractApplication):
             self.enclosure.mouth_reset()  # TODO display music icon in mk1
             self.set_context("Playing")
 
-    def handle_stop(self, message=None):
-        # will stop any playback in GUI and AudioService
-        try:
-            return self.player.stop()
-        except:
-            pass
-
     # helper methods
     def _search(self, phrase, utterance, media_type):
         self.enclosure.mouth_think()
@@ -359,11 +366,17 @@ class OCP(OVOSAbstractApplication):
             LOG.info("unable to use GUI, filtering non-audio results")
             # filter video only streams
             results = [r for r in results
-                       if r["playback"] == PlaybackType.AUDIO]
+                       if r["playback"] in [PlaybackType.AUDIO, PlaybackType.SKILL]]
         LOG.debug(f"Returning {len(results)} results")
         return results
 
-    def _should_resume(self, phrase):
+    def _should_resume(self, phrase: str) -> bool:
+        """
+        Check if a "play" request should resume playback or be handled as a new
+        session.
+        @param phrase: Extracted playback phrase
+        @return: True if player should resume, False if this is a new request
+        """
         if self.player.state == PlayerState.PAUSED:
             if not phrase.strip() or \
                     self.voc_match(phrase, "Resume", exact=True) or \

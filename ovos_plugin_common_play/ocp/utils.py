@@ -7,7 +7,14 @@ from typing import List
 from ovos_plugin_manager.ocp import StreamHandler
 from ovos_plugin_common_play.ocp.status import TrackState, PlaybackType
 from ovos_ocp_files_plugin.plugin import OCPFilesMetadataExtractor
-ocp_plugins = StreamHandler()
+
+_plugins = None
+
+
+def ocp_plugins():
+    global _plugins
+    _plugins = _plugins or StreamHandler()
+    return _plugins
 
 
 def is_qtav_available():
@@ -32,7 +39,7 @@ def available_extractors() -> List[str]:
     @return: List of supported SEI prefixes
     """
     return ["/", "http:", "https:", "file:"] + \
-           [f"{sei}//" for sei in ocp_plugins.supported_seis]
+           [f"{sei}//" for sei in ocp_plugins().supported_seis]
 
 
 def extract_metadata(uri):

@@ -3,10 +3,10 @@ from os.path import join, dirname
 from threading import Lock
 from ovos_plugin_common_play.ocp import OCP_ID
 from time import sleep
-from mycroft_bus_client.message import Message
+from ovos_bus_client.message import Message
 from ovos_config import Configuration
 from ovos_utils.events import EventSchedulerInterface
-from ovos_utils.gui import GUIInterface
+from ovos_bus_client.apis.gui import GUIInterface
 from ovos_utils.log import LOG
 
 from ovos_plugin_common_play.ocp.status import *
@@ -21,14 +21,17 @@ class VideoPlayerBackend(str, enum.Enum):
 
 
 class OCPMediaPlayerGUI(GUIInterface):
-    def __init__(self):
+    def __init__(self, bus=None):
         # the skill_id is chosen so the namespace matches the regular bus api
         # ie, the gui event "XXX" is sent in the bus as "ovos.common_play.XXX"
-        super(OCPMediaPlayerGUI, self).__init__(skill_id=OCP_ID)
+        gui_config = Configuration().get("gui") or {}
+        ui_dirs = {"qt5": f"{dirname(__file__)}/res/ui"}
+        super(OCPMediaPlayerGUI, self).__init__(bus=bus,
+                                                skill_id=OCP_ID,
+                                                ui_directories=ui_dirs,
+                                                config=gui_config)
         self.ocp_skills = {}  # skill_id: meta
-        core_config = Configuration()
-        enclosure_config = core_config.get("gui") or {}
-        self.active_extension = enclosure_config.get("extension", "generic")
+        self.active_extension = gui_config.get("extension", "generic")
         self.notification_timeout = None
         self.search_mode_is_app = False
         self.persist_home_display = False
@@ -50,7 +53,8 @@ class OCPMediaPlayerGUI(GUIInterface):
                               self.handle_play_skill_featured_media)
         self.player.add_event('gui.page_gained_focus',
                               self.handle_page_displayed)
-        self.event_scheduler_interface = EventSchedulerInterface(name=OCP_ID, bus=self.bus)
+        self.event_scheduler_interface = \
+            EventSchedulerInterface(skill_id=OCP_ID, bus=self.bus)
 
     def add_page_load_callback(self, ocp_page_id, callback, once=True):
         self._callbacks[ocp_page_id] = (callback, once)
@@ -73,24 +77,24 @@ class OCPMediaPlayerGUI(GUIInterface):
 
     @property
     def home_screen_page(self):
-        return join(self.player.res_dir, "ui", "Home.qml")
+        return "Home"
     
     @property
     def disambiguation_playlists_page(self):
-        return join(self.player.res_dir, "ui", "SuggestionsView.qml")
+        return "SuggestionsView"
 
     @property
     def audio_player_page(self):
-        return join(self.player.res_dir, "ui", "OVOSAudioPlayer.qml")
+        return "OVOSAudioPlayer"
 
     @property
     def audio_service_page(self):
-        return join(self.player.res_dir, "ui", "OVOSSyncPlayer.qml")
+        return "OVOSSyncPlayer"
 
     @property
     def video_player_page(self):
-        qtav = join(self.player.res_dir, "ui", "OVOSVideoPlayerQtAv.qml")
-        native = join(self.player.res_dir, "ui", "OVOSVideoPlayer.qml")
+        qtav = "OVOSVideoPlayerQtAv"
+        native = "OVOSVideoPlayer"
         has_qtav = is_qtav_available()
         if has_qtav:
             LOG.info("QtAV detected")
@@ -111,11 +115,11 @@ class OCPMediaPlayerGUI(GUIInterface):
 
     @property
     def web_player_page(self):
-        return join(self.player.res_dir, "ui", "OVOSWebPlayer.qml")
+        return "OVOSWebPlayer"
 
     @property
     def player_loader_page(self):
-        return join(self.player.res_dir, "ui", "PlayerLoader.qml")
+        return "PlayerLoader"
 
     def shutdown(self):
         self.bus.remove("ovos.common_play.playback_time",

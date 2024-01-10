@@ -8,7 +8,7 @@ from dbus_next.message import Message as DbusMessage, \
     MessageType as DbusMessageType
 from dbus_next.service import ServiceInterface, method, dbus_property, PropertyAccess
 from ovos_utils.log import LOG
-from mycroft_bus_client.message import Message
+from ovos_bus_client.message import Message
 from ovos_plugin_common_play.ocp.status import TrackState, PlaybackType, \
     PlayerState, LoopState
 

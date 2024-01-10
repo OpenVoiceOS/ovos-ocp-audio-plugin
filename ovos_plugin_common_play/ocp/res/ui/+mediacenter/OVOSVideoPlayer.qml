@@ -63,7 +63,7 @@ Item {
 
     Keys.onDownPressed: {
         controlBarItem.opened = true
-        controlBarItem.forceActiveFocus()
+        controlBarItem.itemKeyFocus()
     }
 
     Keys.onLeftPressed: {

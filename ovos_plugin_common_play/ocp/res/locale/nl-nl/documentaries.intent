@@ -1,12 +1,5 @@
-# auto translated from en-us to nl-nl
-Een documentaire beginnen
-Begin met query, documentaires
-Begin met documentaire
-Documenten
-Begin met documentaires
-Speel een documentaire
-Begin met query, documentaire
-Speel documentaire
-Begin een documentaire
-Speel documentaires
-Documentair
+(kijk|start|begin|begin met|speel) een documentaire 
+{{query}} documentaire
+documentaire {{query}}
+(kijk|start|begin|begin met|speel) {{query}} documentaire
+(kijk|start|begin|begin met|speel) documentaire {{query}}

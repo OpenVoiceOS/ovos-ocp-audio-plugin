@@ -44,14 +44,14 @@ Mycroft.Delegate {
         z: -1
     }
 
-    property var pageToLoad: sessionData.playerBackend
+    property var pageToLoad: "./" + sessionData.playerBackend + ".qml"
 
     contentItem: Loader {
         id: rootLoader
     }
 
     onPageToLoadChanged: {
-        console.log(sessionData.playerBackend)
+        console.log(pageToLoad)
         // Check if the page to load is in the backround allowed players list
 
         if (backgroundAllowedPlayers.indexOf(pageToLoad) !== -1) {
@@ -62,8 +62,7 @@ Mycroft.Delegate {
 
         // If the full url is: file:///home/mycroft/.local/share/mycroft/skills/ovos-skill-mpd-player/ui/Player.qml
         // insert a +mediacenter to get: file:///home/mycroft/.local/share/mycroft/skills/ovos-skill-mpd-player/ui/+mediacenter/Player.qml on sessionData.playerBackend
-        var player_path = sessionData.playerBackend
-        var mediacenter_player_path = player_path.replace("ui/", "ui/+mediacenter/")
+        var mediacenter_player_path = pageToLoad.replace("ui/", "ui/+mediacenter/")
         console.log("Loading player: " + mediacenter_player_path)
         rootLoader.setSource(mediacenter_player_path)
         rootLoader.item.forceActiveFocus()
