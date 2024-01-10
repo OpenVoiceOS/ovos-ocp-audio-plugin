@@ -1,8 +1,21 @@
 # Changelog
 
-## [0.0.6a14](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/0.0.6a14) (2024-01-08)
+## [0.0.6a15](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/0.0.6a15) (2024-01-10)
 
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.6a13...0.0.6a14)
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.6a14...0.0.6a15)
+
+**Closed issues:**
+
+- `StreamHandler` initialized on import [\#54](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/issues/54)
+- Emit messagebus event on Intent match [\#20](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/issues/20)
+
+**Merged pull requests:**
+
+- Update news.intent [\#83](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/83) ([timonvanhasselt](https://github.com/timonvanhasselt))
+
+## [V0.0.6a14](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.6a14) (2024-01-08)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.6a13...V0.0.6a14)
 
 **Merged pull requests:**
 
