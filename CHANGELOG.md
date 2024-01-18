@@ -1,8 +1,21 @@
 # Changelog
 
-## [0.0.6a15](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/0.0.6a15) (2024-01-10)
+## [0.0.6a16](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/0.0.6a16) (2024-01-18)
 
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.6a14...0.0.6a15)
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.6a15...0.0.6a16)
+
+**Fixed bugs:**
+
+- OCP GUI stays up until dismissed after playing a single track [\#98](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/issues/98)
+- settings storage seems to be ambiguous [\#43](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/issues/43)
+
+**Merged pull requests:**
+
+- Add upper version pin for ovos-utils [\#106](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/106) ([NeonDaniel](https://github.com/NeonDaniel))
+
+## [V0.0.6a15](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.6a15) (2024-01-10)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.6a14...V0.0.6a15)
 
 **Closed issues:**
 
