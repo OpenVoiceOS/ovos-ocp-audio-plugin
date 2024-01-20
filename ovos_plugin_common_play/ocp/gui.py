@@ -1,6 +1,6 @@
 import enum
 from os.path import join, dirname
-
+from threading import Lock
 from ovos_plugin_common_play.ocp import OCP_ID
 from time import sleep
 from ovos_bus_client.message import Message
@@ -36,6 +36,9 @@ class OCPMediaPlayerGUI(GUIInterface):
         self.search_mode_is_app = False
         self.persist_home_display = False
         self.event_scheduler_interface = None
+        self._expected_ocp_page = None
+        self._callbacks = {}  # page_id:  (callback, once_bool)
+        self._lock = Lock()
 
     def bind(self, player):
         self.player = player
@@ -48,8 +51,24 @@ class OCPMediaPlayerGUI(GUIInterface):
                               self.handle_play_from_search)
         self.player.add_event('ovos.common_play.skill.play',
                               self.handle_play_skill_featured_media)
+        self.player.add_event('gui.page_gained_focus',
+                              self.handle_page_displayed)
         self.event_scheduler_interface = \
             EventSchedulerInterface(skill_id=OCP_ID, bus=self.bus)
+
+    def add_page_load_callback(self, ocp_page_id, callback, once=True):
+        self._callbacks[ocp_page_id] = (callback, once)
+
+    def handle_page_displayed(self, message):
+        skill_id = message.data.get('skill_id', "") or message.data.get('namespace', "")
+        if skill_id != OCP_ID:
+            return
+        with self._lock:
+            if self._expected_ocp_page in self._callbacks:
+                callback, once = self._callbacks[self._expected_ocp_page]
+                if once:
+                    self._callbacks.pop(self._expected_ocp_page)
+                callback()
 
     @property
     def video_backend(self):
@@ -205,7 +224,9 @@ class OCPMediaPlayerGUI(GUIInterface):
         # when ocp is opened
         
         # Timeout is used to ensure that ocp is fully closed once the timeout has expired
-        
+
+        self._expected_ocp_page = page_requested
+
         sleep(0.2)
         player_status = self.player.state
         state2str = {PlayerState.PLAYING: "Playing", PlayerState.PAUSED: "Paused", PlayerState.STOPPED: "Stopped"}
@@ -392,13 +413,15 @@ class OCPMediaPlayerGUI(GUIInterface):
         self.player.media.replace(playlist)
         self["displaySuggestionBar"] = False
 
-        self.manage_display("disambiguation")
 
         # Model and page are heavy wait for them to load
-        # Calling event has no listners on first boot
+        # Calling event has no listeners on first boot
         # As page has never been loaded in GUI stack before
-        sleep(1.5)
-        self._show_suggestion_disambiguation()
+        # update data only when page finished loading
+
+        self.add_page_load_callback("disambiguation", self._show_suggestion_disambiguation,
+                                    once=True)
+        self.manage_display("disambiguation")
 
     # audio_only service -> gui
     def handle_sync_seekbar(self, message):
