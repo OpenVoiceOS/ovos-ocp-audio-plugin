@@ -49,6 +49,13 @@ def required(requirements_file):
         return [pkg for pkg in requirements
                 if pkg.strip() and not pkg.startswith("#")]
 
+
+def get_description():
+    with open(os.path.join(BASEDIR, "README.md"), "r") as f:
+        long_description = f.read()
+    return long_description
+
+
 PLUGIN_ENTRY_POINT = 'ovos_common_play=ovos_plugin_common_play'
 PLUGIN_CONFIG_ENTRY_POINT = 'ovos_common_play.config=ovos_plugin_common_play:OCPPluginConfig'
 
@@ -57,6 +64,8 @@ setup(
     name='ovos_plugin_common_play',
     version=get_version(),
     description='OVOS common play audio service adapter plugin',
+    long_description=get_description(),
+    long_description_content_type="text/markdown",
     url='https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin',
     author='JarbasAi',
     author_email='jarbasai@mailfence.com',
@@ -87,6 +96,11 @@ setup(
         'Programming Language :: Python :: 3.6',
     ],
     keywords='ovos audio plugin',
-    entry_points={'mycroft.plugin.audioservice': PLUGIN_ENTRY_POINT,
-                  'mycroft.plugin.audioservice.config': PLUGIN_CONFIG_ENTRY_POINT}
+    entry_points = {
+        "mycroft.plugin.audioservice": PLUGIN_ENTRY_POINT,
+        "mycroft.plugin.audioservice.config": PLUGIN_CONFIG_ENTRY_POINT,
+        "console_scripts": [
+            "ovos-ocp-standalone=ovos_plugin_common_play.launcher:main"
+        ],
+    }
 )

@@ -1,7 +1,7 @@
 import json
 import unittest
 
-from mycroft_bus_client import Message
+from ovos_bus_client import Message
 from ovos_utils.messagebus import FakeBus
 from unittest.mock import Mock, MagicMock
 
@@ -11,7 +11,7 @@ from ovos_plugin_common_play.ocp.status import MediaType, PlayerState
 
 class TestOCP(unittest.TestCase):
     bus = FakeBus()
-    ocp = OCP(bus)
+    ocp = OCP(bus=bus, skill_id="TEST_OCP")
 
     @classmethod
     def setUpClass(cls) -> None:

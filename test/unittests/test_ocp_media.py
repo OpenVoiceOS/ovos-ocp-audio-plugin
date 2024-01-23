@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import Mock
 
-from mycroft_bus_client import Message
+from ovos_bus_client import Message
 
 from ovos_plugin_common_play.ocp.media import MediaEntry, Playlist, NowPlaying
 from ovos_plugin_common_play.ocp.status import MediaType, PlaybackType, TrackState, MediaState

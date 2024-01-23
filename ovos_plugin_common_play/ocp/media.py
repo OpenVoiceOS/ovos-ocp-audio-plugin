@@ -1,12 +1,12 @@
 from typing import Optional, Tuple, List, Union
 
-from mycroft_bus_client import MessageBusClient
+from ovos_bus_client.client import MessageBusClient
 from ovos_plugin_common_play.ocp import OCP_ID
 from ovos_plugin_common_play.ocp.status import *
 from ovos_plugin_common_play.ocp.utils import ocp_plugins, find_mime
 from ovos_utils.json_helper import merge_dict
 from ovos_utils.log import LOG
-from ovos_utils.messagebus import Message
+from ovos_bus_client.message import Message
 from os.path import join, dirname
 from dbus_next.service import Variant
 
@@ -455,7 +455,7 @@ class NowPlaying(MediaEntry):
             video = True
         else:
             video = False
-        meta = ocp_plugins.extract_stream(uri, video)
+        meta = ocp_plugins().extract_stream(uri, video)
         # update media entry with new data
         if meta:
             LOG.info(f"OCP plugins metadata: {meta}")

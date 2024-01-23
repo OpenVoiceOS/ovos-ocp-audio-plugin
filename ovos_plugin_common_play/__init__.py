@@ -2,7 +2,7 @@ from pprint import pformat
 from ovos_bus_client import Message
 from ovos_utils.log import LOG
 
-from ovos_plugin_common_play.ocp import OCP
+from ovos_plugin_common_play.ocp import OCP, OCP_ID
 from ovos_plugin_common_play.ocp.status import *
 from ovos_plugin_common_play.ocp.utils import extract_metadata
 from ovos_plugin_common_play.ocp.base import OCPAudioPlayerBackend
@@ -38,14 +38,16 @@ class OCPAudioBackend(OCPAudioPlayerBackend):
             if not self.bus.wait_for_response(Message("ovos.common_play.ping"),
                                               "ovos.common_play.pong"):
                 try:
-                    self.ocp = OCP(bus=self.bus, settings=self.config)
+                    self.ocp = OCP(bus=self.bus, settings=self.config,
+                                   skill_id=OCP_ID)
                 except Exception as e:
                     # otherwise stack trace is swallowed by plugin loader
                     LOG.exception(e)
                     raise
         else:
             try:
-                self.ocp = OCP(bus=self.bus, settings=self.config)
+                self.ocp = OCP(bus=self.bus, settings=self.config,
+                               skill_id=OCP_ID)
             except Exception as e:
                 # otherwise stack trace is swallowed by plugin loader
                 LOG.exception(e)

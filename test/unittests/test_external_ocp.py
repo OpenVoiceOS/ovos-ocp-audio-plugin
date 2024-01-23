@@ -2,13 +2,10 @@ import json
 import unittest
 from unittest.mock import patch
 
-import mycroft
-from mycroft.audio.audioservice import AudioService
+from ovos_audio.service import AudioService
 from ovos_utils.messagebus import FakeBus
 
-# Patch Configuration in the audioservice module to ensure its patched
 from ovos_config.config import Configuration
-mycroft.audio.audioservice.Configuration = Configuration
 
 
 BASE_CONF = {"Audio":

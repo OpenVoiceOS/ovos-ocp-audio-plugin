@@ -8,11 +8,11 @@ from ovos_plugin_common_play.ocp.status import *
 from ovos_utils.gui import can_use_gui
 from ovos_utils.log import LOG
 from ovos_plugin_common_play.ocp.utils import create_desktop_file
-from ovos_utils.messagebus import Message
+from ovos_bus_client.message import Message
 from ovos_workshop import OVOSAbstractApplication
 from padacioso import IntentContainer
-from ovos_utils.intents.intent_service_interface import IntentQueryApi
 from threading import Event, Lock
+from ovos_plugin_common_play.ocp.utils import ocp_plugins
 
 
 class OCP(OVOSAbstractApplication):
@@ -42,11 +42,11 @@ class OCP(OVOSAbstractApplication):
         "hentai": MediaType.HENTAI
     }
 
-    def __init__(self, bus=None, lang=None, settings=None):
+    def __init__(self, bus=None, lang=None, settings=None, skill_id=OCP_ID):
         # settings = settings or OCPSettings()
         res_dir = join(dirname(__file__), "res")
-        super().__init__(skill_id=OCP_ID, resources_dir=res_dir,
-                         bus=bus, lang=lang, gui=OCPMediaPlayerGUI())
+        super().__init__(skill_id=skill_id, resources_dir=res_dir,
+                         bus=bus, lang=lang, gui=OCPMediaPlayerGUI(bus=bus))
         if settings:
             LOG.debug(f"Updating settings from value passed at init")
             self.settings.merge(settings)
@@ -56,7 +56,8 @@ class OCP(OVOSAbstractApplication):
                                      lang=self.lang,
                                      settings=self.settings,
                                      resources_dir=res_dir,
-                                     gui=self.gui)
+                                     gui=self.gui,
+                                     skill_id=OCP_ID)
         self.media_intents = IntentContainer()
         self.register_ocp_api_events()
         self.register_media_intents()
@@ -75,6 +76,7 @@ class OCP(OVOSAbstractApplication):
             create_desktop_file()
         except:  # permission errors and stuff
             pass
+        ocp_plugins()  # trigger a load + caching of OCP plugins
 
     def handle_ping(self, message):
         """
@@ -103,19 +105,6 @@ class OCP(OVOSAbstractApplication):
     def register_ocp_intents(self, message=None):
         with self._intent_registration_lock:
             if not self._intents_event.is_set():
-                missing = True
-                LOG.debug("Intents register event not set")
-            else:
-                # check list of registered intents
-                # if needed register ocp intents again
-                # this accounts for restarts etc
-                i = IntentQueryApi(self.bus)
-                intents = i.get_padatious_manifest()
-                missing = not any((e.startswith(f"{self.skill_id}:")
-                                  for e in intents))
-                LOG.debug(f'missing={missing} | {intents}')
-
-            if missing:
                 LOG.info(f"OCP intents missing, registering for {self}")
                 self.register_intent("play.intent", self.handle_play)
                 self.register_intent("read.intent", self.handle_read)
@@ -377,7 +366,7 @@ class OCP(OVOSAbstractApplication):
             LOG.info("unable to use GUI, filtering non-audio results")
             # filter video only streams
             results = [r for r in results
-                       if r["playback"] == PlaybackType.AUDIO]
+                       if r["playback"] in [PlaybackType.AUDIO, PlaybackType.SKILL]]
         LOG.debug(f"Returning {len(results)} results")
         return results
 

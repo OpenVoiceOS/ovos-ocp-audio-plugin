@@ -2,8 +2,8 @@ import json
 import unittest
 from unittest.mock import patch
 
-from mycroft.audio.audioservice import AudioService
-from mycroft.configuration.config import Configuration
+from ovos_audio.service import AudioService
+from ovos_config import Configuration
 from ovos_utils.messagebus import FakeBus
 
 from ovos_plugin_common_play.ocp.mycroft_cps import MycroftAudioService

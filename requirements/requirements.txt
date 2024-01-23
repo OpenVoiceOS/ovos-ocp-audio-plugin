@@ -1,10 +1,7 @@
-ovos-plugin-manager >= 0.0.22, < 0.1.0
-ovos-bus-client>=0.0.3, < 0.1.0
-ovos-utils>=0.0.32, < 0.1.0
-ovos_workshop >=0.0.11, < 0.1.0
-
-ovos_audio_plugin_simple
+ovos-plugin-manager >= 0.0.25, < 0.1.0
+ovos-bus-client>=0.0.7, < 0.1.0
+ovos-utils>=0.0.38,<1.0.0
+ovos_workshop >=0.0.15, < 0.1.0
 ovos-ocp-files-plugin~=0.13
 padacioso~=0.1, >=0.1.1
 dbus-next
-
