@@ -12,7 +12,8 @@ from ovos_bus_client.util import get_mycroft_bus
 
 from ovos_plugin_common_play.ocp.base import OCPAbstractComponent
 from ovos_plugin_common_play.ocp.media import Playlist
-from ovos_utils.ocp import available_extractors, OCP_ID, MediaType, TrackState, PlaybackType, PlaybackMode
+from ovos_utils.ocp import OCP_ID, MediaType, TrackState, PlaybackType, PlaybackMode
+from ovos_plugin_manager.ocp import available_extractors
 
 
 class OCPQuery:

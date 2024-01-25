@@ -12,6 +12,7 @@ from padacioso import IntentContainer
 
 from ovos_workshop import OVOSAbstractApplication
 from ovos_workshop.decorators.ocp import *
+from ovos_plugin_manager.ocp import load_stream_extractors
 
 
 class OCP(OVOSAbstractApplication):
@@ -75,7 +76,7 @@ class OCP(OVOSAbstractApplication):
             create_desktop_file()
         except:  # permission errors and stuff
             pass
-        ocp_plugins()  # trigger a load + caching of OCP plugins
+        load_stream_extractors()  # trigger a load + caching of OCP plugins
 
     def handle_ping(self, message):
         """
