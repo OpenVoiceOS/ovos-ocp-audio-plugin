@@ -1,13 +1,11 @@
-import mimetypes
 import shutil
 from os import makedirs
 from os.path import expanduser, isfile, join, dirname, exists
 from typing import List
 
 from ovos_plugin_manager.ocp import StreamHandler
-from ovos_plugin_common_play.ocp.status import TrackState, PlaybackType
 from ovos_ocp_files_plugin.plugin import OCPFilesMetadataExtractor
-
+from ovos_utils.ocp import find_mime, TrackState, PlaybackType
 _plugins = None
 
 
@@ -21,15 +19,6 @@ def is_qtav_available():
     return exists("/usr/include/qt/QtAV") or \
            exists("/usr/lib/qt/qml/QtAV") or \
            exists("/usr/lib/libQtAV.so")
-
-
-def find_mime(uri):
-    """ Determine mime type. """
-    mime = mimetypes.guess_type(uri)
-    if mime:
-        return mime
-    else:
-        return None
 
 
 def available_extractors() -> List[str]:

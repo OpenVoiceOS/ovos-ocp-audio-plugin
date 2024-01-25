@@ -1,18 +1,17 @@
 from os.path import join, dirname, isfile
+from threading import Event, Lock
 
-from ovos_plugin_common_play.ocp.constants import OCP_ID
-from ovos_workshop.decorators.ocp import *
 from ovos_plugin_common_play.ocp.gui import OCPMediaPlayerGUI
 from ovos_plugin_common_play.ocp.player import OCPMediaPlayer
-from ovos_plugin_common_play.ocp.status import *
+from ovos_plugin_common_play.ocp.utils import create_desktop_file
 from ovos_utils.gui import can_use_gui
 from ovos_utils.log import LOG
-from ovos_plugin_common_play.ocp.utils import create_desktop_file
-from ovos_bus_client.message import Message
-from ovos_workshop import OVOSAbstractApplication
+from ovos_utils.messagebus import Message
+from ovos_utils.ocp import OCP_ID
 from padacioso import IntentContainer
-from threading import Event, Lock
-from ovos_plugin_common_play.ocp.utils import ocp_plugins
+
+from ovos_workshop import OVOSAbstractApplication
+from ovos_workshop.decorators.ocp import *
 
 
 class OCP(OVOSAbstractApplication):
@@ -175,7 +174,7 @@ class OCP(OVOSAbstractApplication):
         # if skills service (re)loads (re)register OCP
         if ("mycroft.ready", self.replace_mycroft_cps) in self.events:
             LOG.warning("Method already registered!")
-        self.add_event("mycroft.ready",  self.replace_mycroft_cps, once=True)
+        self.add_event("mycroft.ready", self.replace_mycroft_cps, once=True)
 
     def default_shutdown(self):
         self.player.shutdown()
@@ -284,11 +283,11 @@ class OCP(OVOSAbstractApplication):
             if self.gui:
                 if self.gui.active_extension == "smartspeaker":
                     self.gui.display_notification("Sorry, no matches found", style="warning")
-            
+
             self.speak_dialog("cant.play",
                               data={"phrase": phrase,
                                     "media_type": media_type})
-            
+
             if self.gui:
                 if "smartspeaker" not in self.gui.active_extension:
                     if not self.gui.persist_home_display:
@@ -302,14 +301,14 @@ class OCP(OVOSAbstractApplication):
             if self.gui:
                 if self.gui.active_extension == "smartspeaker":
                     self.gui.display_notification("Found a match", style="success")
-            
+
             best = self.player.media.select_best(results)
             self.player.play_media(best, results)
 
             if self.gui:
                 if self.gui.active_extension == "smartspeaker":
                     self.gui.clear_notification()
-            
+
             self.enclosure.mouth_reset()  # TODO display music icon in mk1
             self.set_context("Playing")
 
