@@ -1,7 +1,7 @@
 import enum
 from os.path import join, dirname
 
-from ovos_plugin_common_play.ocp import OCP_ID
+from ovos_utils.ocp import OCP_ID, MediaType, PlayerState, LoopState, PlaybackType
 from time import sleep
 from ovos_bus_client.message import Message
 from ovos_config import Configuration
@@ -9,7 +9,6 @@ from ovos_utils.events import EventSchedulerInterface
 from ovos_bus_client.apis.gui import GUIInterface
 from ovos_utils.log import LOG
 
-from ovos_plugin_common_play.ocp.status import *
 from ovos_plugin_common_play.ocp.utils import is_qtav_available
 from threading import Timer
 

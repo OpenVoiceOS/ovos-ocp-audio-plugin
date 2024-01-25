@@ -1,14 +1,13 @@
+from os.path import join, dirname
 from typing import Optional, Tuple, List, Union
 
+from dbus_next.service import Variant
 from ovos_bus_client.client import MessageBusClient
-from ovos_plugin_common_play.ocp import OCP_ID
-from ovos_plugin_common_play.ocp.status import *
-from ovos_plugin_common_play.ocp.utils import ocp_plugins, find_mime
+from ovos_plugin_common_play.ocp.utils import ocp_plugins
 from ovos_utils.json_helper import merge_dict
 from ovos_utils.log import LOG
 from ovos_bus_client.message import Message
-from os.path import join, dirname
-from dbus_next.service import Variant
+from ovos_utils.ocp import OCP_ID, MediaState, find_mime, TrackState, PlaybackType
 
 
 # TODO subclass from dict (?)
@@ -528,8 +527,8 @@ class NowPlaying(MediaEntry):
             # alternative results # TODO its this 1 track or a list ?
             pass
         elif state in [TrackState.QUEUED_SKILL,
-                        TrackState.QUEUED_VIDEO,
-                        TrackState.QUEUED_AUDIOSERVICE]:
+                       TrackState.QUEUED_VIDEO,
+                       TrackState.QUEUED_AUDIOSERVICE]:
             # audio service is handling playback and this is in playlist
             pass
 
@@ -597,5 +596,3 @@ class NowPlaying(MediaEntry):
         self.update(
             {"status": TrackState.PLAYING_AUDIOSERVICE,
              "playback": PlaybackType.AUDIO_SERVICE})
-
-

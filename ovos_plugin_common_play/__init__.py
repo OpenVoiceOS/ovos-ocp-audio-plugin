@@ -1,11 +1,10 @@
 from pprint import pformat
-from ovos_bus_client import Message
-from ovos_utils.log import LOG
 
-from ovos_plugin_common_play.ocp import OCP, OCP_ID
-from ovos_plugin_common_play.ocp.status import *
-from ovos_plugin_common_play.ocp.utils import extract_metadata
+from ovos_bus_client import Message
+from ovos_plugin_common_play.ocp import OCP
 from ovos_plugin_common_play.ocp.base import OCPAudioPlayerBackend
+from ovos_utils.ocp import *
+from ovos_utils.log import LOG
 
 
 class OCPAudioBackend(OCPAudioPlayerBackend):

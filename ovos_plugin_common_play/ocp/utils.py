@@ -1,45 +1,20 @@
-import mimetypes
 import shutil
 from os import makedirs
 from os.path import expanduser, isfile, join, dirname, exists
 from typing import List
 
-from ovos_plugin_manager.ocp import StreamHandler
-from ovos_plugin_common_play.ocp.status import TrackState, PlaybackType
 from ovos_ocp_files_plugin.plugin import OCPFilesMetadataExtractor
-
-_plugins = None
+from ovos_plugin_manager.ocp import load_stream_extractors, available_extractors
 
 
 def ocp_plugins():
-    global _plugins
-    _plugins = _plugins or StreamHandler()
-    return _plugins
+    return load_stream_extractors()
 
 
 def is_qtav_available():
     return exists("/usr/include/qt/QtAV") or \
-           exists("/usr/lib/qt/qml/QtAV") or \
-           exists("/usr/lib/libQtAV.so")
-
-
-def find_mime(uri):
-    """ Determine mime type. """
-    mime = mimetypes.guess_type(uri)
-    if mime:
-        return mime
-    else:
-        return None
-
-
-def available_extractors() -> List[str]:
-    """
-    Get a list of supported Stream Extractor Identifiers. Note that these look
-    like but are not URI schemes.
-    @return: List of supported SEI prefixes
-    """
-    return ["/", "http:", "https:", "file:"] + \
-           [f"{sei}//" for sei in ocp_plugins().supported_seis]
+        exists("/usr/lib/qt/qml/QtAV") or \
+        exists("/usr/lib/libQtAV.so")
 
 
 def extract_metadata(uri):

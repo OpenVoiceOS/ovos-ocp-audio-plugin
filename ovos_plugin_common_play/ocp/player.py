@@ -1,22 +1,21 @@
 import random
 from os.path import join, dirname
+from time import sleep
 from typing import List, Union
 
-from time import sleep
-
-from ovos_utils.gui import is_gui_connected, is_gui_running
-from ovos_utils.log import LOG
 from ovos_bus_client.message import Message
-from ovos_config import Configuration
-
 from ovos_plugin_common_play.ocp.gui import OCPMediaPlayerGUI
 from ovos_plugin_common_play.ocp.media import Playlist, MediaEntry, NowPlaying
 from ovos_plugin_common_play.ocp.mpris import MprisPlayerCtl
-from ovos_plugin_common_play.ocp.search import OCPSearch
-from ovos_plugin_common_play.ocp.status import *
 from ovos_plugin_common_play.ocp.mycroft_cps import MycroftAudioService
+from ovos_plugin_common_play.ocp.search import OCPSearch
+from ovos_utils.gui import is_gui_connected, is_gui_running
+from ovos_utils.log import LOG
+from ovos_utils.messagebus import Message
+from ovos_utils.ocp import OCP_ID, LoopState, MediaState, PlayerState, TrackState, PlaybackType, PlaybackMode
+
+from ovos_config import Configuration
 from ovos_workshop import OVOSAbstractApplication
-from ovos_plugin_common_play.ocp.constants import OCP_ID
 
 
 class OCPMediaPlayer(OVOSAbstractApplication):
@@ -368,7 +367,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         available = [k for k, v in backends.items()
                      if cfg[k].get("type", "") != "ovos_common_play"]
         preferred = self.settings.get("preferred_audio_services") or \
-            ["vlc", "mplayer", "simple"]
+                    ["vlc", "mplayer", "simple"]
         for b in preferred:
             if b in available:
                 return b
@@ -883,7 +882,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         self.bus.emit(message.response(data))
 
     # app timeout
-    @property    
+    @property
     def app_view_timeout_enabled(self):
         return self.settings.get("app_view_timeout_enabled", False)
 

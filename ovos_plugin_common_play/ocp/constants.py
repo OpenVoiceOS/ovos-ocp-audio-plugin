@@ -1,1 +1,1 @@
-OCP_ID = "ovos.common_play"
+from ovos_utils.ocp import OCP_ID

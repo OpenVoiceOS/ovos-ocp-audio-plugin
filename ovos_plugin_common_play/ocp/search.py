@@ -1,6 +1,5 @@
 import random
 import time
-
 from os.path import join, isfile
 from threading import RLock, Lock
 from typing import List
@@ -13,11 +12,8 @@ from ovos_bus_client.util import get_mycroft_bus
 
 from ovos_plugin_common_play.ocp.base import OCPAbstractComponent
 from ovos_plugin_common_play.ocp.media import Playlist
-from ovos_plugin_common_play.ocp.mycroft_cps import \
-    MycroftCommonPlayInterface
-from ovos_plugin_common_play.ocp.status import *
-from ovos_plugin_common_play.ocp.utils import available_extractors
-from ovos_plugin_common_play.ocp.constants import OCP_ID
+from ovos_utils.ocp import OCP_ID, MediaType, TrackState, PlaybackType, PlaybackMode
+from ovos_plugin_manager.ocp import available_extractors
 
 
 class OCPQuery:
@@ -220,7 +216,7 @@ class OCPQuery:
                         # force allowed stream types to be played audio only
                         if res.get("media_type", "") in self.cast2audio:
                             LOG.debug("unable to use GUI, "
-                                    "forcing result to play audio only")
+                                      "forcing result to play audio only")
                             res["playback"] = PlaybackType.AUDIO
                             res["match_confidence"] -= 10
                             results[idx] = res
@@ -254,8 +250,8 @@ class OCPQuery:
                                 self.gui.display_notification("Parsing your results")
                             else:
                                 self.gui["footer_text"] = "Timeout!\n " \
-                                    "selecting best result\n" \
-                                    " "
+                                                          "selecting best result\n" \
+                                                          " "
 
                 elif self.searching:
                     for res in message.data.get("results", []):
@@ -306,7 +302,7 @@ class OCPQuery:
                     self.gui.display_notification("Selecting best result")
                 else:
                     self.gui["footer_text"] = "Received search responses from all " \
-                        "skills!\nselecting best result"
+                                              "skills!\nselecting best result"
 
             self.searching = False
         if self.gui:
@@ -326,8 +322,7 @@ class OCPSearch(OCPAbstractComponent):
 
     def bind(self, player):  # OCPMediaPlayer
         self._player = player
-        self.old_cps = MycroftCommonPlayInterface() if \
-            self.settings.get("backwards_compatibility", True) else None
+        self.old_cps = None
         if self.old_cps:
             self.old_cps.bind(player)
         self.add_event("ovos.common_play.skills.detach",
