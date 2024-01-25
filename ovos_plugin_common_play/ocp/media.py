@@ -5,7 +5,7 @@ from ovos_bus_client.message import Message
 from ovos_utils.json_helper import merge_dict
 from ovos_utils.log import LOG
 from ovos_utils.ocp import MediaEntry as _ME, Playlist
-from ovos_utils.ocp import OCP_ID, MediaState, TrackState, PlaybackType
+from ovos_utils.ocp import OCP_ID, MediaState, TrackState, PlaybackType, MediaType
 
 from ovos_plugin_common_play.ocp.utils import ocp_plugins
 
@@ -15,7 +15,7 @@ class MediaEntry(_ME):
                  image=None, match_confidence=0,
                  playback=PlaybackType.UNDEFINED,
                  status=TrackState.DISAMBIGUATION, phrase=None,
-                 position=0, length=None, bg_image=None, skill_icon=None,
+                 position=0, length=0, bg_image=None, skill_icon=None,
                  artist=None, is_cps=False, cps_data=None, javascript="",
                  **kwargs):
         uri = uri or ""
@@ -29,7 +29,8 @@ class MediaEntry(_ME):
             skill_icon=skill_icon or join(dirname(__file__), "res/ui/images/ocp.png"),
             javascript=javascript,
             uri=f'file://{uri}' if uri.startswith('/') else uri,
-            skill_id=skill_id
+            skill_id=skill_id,
+            media_type=kwargs.get("media_type") or MediaType.GENERIC
         )
         self.artist = artist
         self.position = position

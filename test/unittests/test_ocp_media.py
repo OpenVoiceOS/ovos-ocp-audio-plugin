@@ -3,8 +3,9 @@ from unittest.mock import Mock
 
 from ovos_bus_client import Message
 
-from ovos_plugin_common_play.ocp.media import MediaEntry, Playlist, NowPlaying
+from ovos_plugin_common_play.ocp.media import MediaEntry, NowPlaying
 from ovos_plugin_common_play.ocp.status import MediaType, PlaybackType, TrackState, MediaState
+from ovos_utils.ocp import MediaEntry as RealMediaEntry, Playlist
 from ovos_utils.messagebus import FakeBus
 
 
@@ -52,7 +53,6 @@ class TestMediaEntry(unittest.TestCase):
         self.assertEqual(entry.image, data['image'])
         self.assertEqual(entry.position, 0)
         self.assertIsNone(entry.phrase)
-        self.assertIsNone(entry.length)
         self.assertEqual(entry.skill_icon, data['skill_icon'])
         self.assertIsInstance(entry.bg_image, str)
         self.assertFalse(entry.is_cps)
@@ -78,12 +78,13 @@ class TestMediaEntry(unittest.TestCase):
     def test_from_dict(self):
         dict_data = valid_search_results[1]
         from_dict = MediaEntry.from_dict(dict_data)
-        self.assertIsInstance(from_dict, MediaEntry)
+        self.assertIsInstance(from_dict, RealMediaEntry)
         from_init = MediaEntry(dict_data["title"], dict_data["uri"],
                                image=dict_data["image"],
                                match_confidence=dict_data["match_confidence"],
                                playback=PlaybackType.AUDIO,
                                skill_icon=dict_data["skill_icon"],
+                               media_type=dict_data["media_type"],
                                artist=dict_data["artist"])
         self.assertEqual(from_init, from_dict)
 
@@ -92,7 +93,7 @@ class TestMediaEntry(unittest.TestCase):
         new_entry = MediaEntry.from_dict(dict_data)
         self.assertEqual(from_dict, new_entry)
 
-        self.assertIsInstance(MediaEntry.from_dict({}), MediaEntry)
+        self.assertIsInstance(MediaEntry.from_dict({}), RealMediaEntry)
 
     def test_info(self):
         # TODO
@@ -128,10 +129,11 @@ class TestPlaylist(unittest.TestCase):
         # Playlist of dicts
         pl = Playlist(valid_search_results)
         self.assertEqual(pl.position, 0)
+        self.assertEqual(len(pl), len(valid_search_results))
         self.assertEqual(len(pl.entries), len(valid_search_results))
         for entry in pl.entries:
-            self.assertIsInstance(entry, MediaEntry)
-        self.assertIsInstance(pl.current_track, MediaEntry)
+            self.assertIsInstance(entry, RealMediaEntry)
+        self.assertIsInstance(pl.current_track, RealMediaEntry)
         self.assertTrue(pl.is_first_track)
         self.assertFalse(pl.is_last_track)
 
@@ -178,34 +180,34 @@ class TestPlaylist(unittest.TestCase):
     def test_validate_position(self):
         # Test empty playlist
         pl = Playlist()
-        pl._position = 0
+        pl.position = 0
         pl._validate_position()
         self.assertEqual(pl.position, 0)
-        pl._position = -1
+        pl.position = -1
         pl._validate_position()
         self.assertEqual(pl.position, 0)
-        pl._position = 1
+        pl.position = 1
         pl._validate_position()
         self.assertEqual(pl.position, 0)
 
         # Test playlist of len 1
         pl = Playlist([valid_search_results[0]])
-        pl._position = 0
+        pl.position = 0
         pl._validate_position()
         self.assertEqual(pl.position, 0)
-        pl._position = 1
+        pl.position = 1
         pl._validate_position()
         self.assertEqual(pl.position, 0)
 
         # Test playlist of len>1
         pl = Playlist(valid_search_results)
-        pl._position = 0
+        pl.position = 0
         pl._validate_position()
         self.assertEqual(pl.position, 0)
-        pl._position = 1
+        pl.position = 1
         pl._validate_position()
         self.assertEqual(pl.position, 1)
-        pl._position = 10
+        pl.position = 10
         pl._validate_position()
         self.assertEqual(pl.position, 0)
 
