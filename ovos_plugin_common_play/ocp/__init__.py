@@ -3,7 +3,6 @@ from threading import Event, Lock
 
 from ovos_plugin_common_play.ocp.gui import OCPMediaPlayerGUI
 from ovos_plugin_common_play.ocp.player import OCPMediaPlayer
-from ovos_plugin_common_play.ocp.utils import create_desktop_file
 from ovos_utils.gui import can_use_gui
 from ovos_utils.log import LOG
 from ovos_utils.messagebus import Message
@@ -70,12 +69,7 @@ class OCP(OVOSAbstractApplication):
         if skills_ready and skills_ready.data.get("status"):
             self.remove_event("mycroft.ready")
             self.replace_mycroft_cps(skills_ready)
-        try:
-            # TODO: Should this just happen at install time? A user might not
-            #       want this shortcut.
-            create_desktop_file()
-        except:  # permission errors and stuff
-            pass
+
         load_stream_extractors()  # trigger a load + caching of OCP plugins
 
     def handle_ping(self, message):
