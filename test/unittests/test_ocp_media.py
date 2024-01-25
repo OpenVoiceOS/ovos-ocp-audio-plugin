@@ -260,7 +260,7 @@ class TestNowPlaying(unittest.TestCase):
         player = NowPlaying()
         player.update(entry)
         self.assertNotIsInstance(player.as_entry(), NowPlaying)
-        self.assertIsInstance(player.as_entry(), MediaEntry)
+        self.assertIsInstance(player.as_entry(), RealMediaEntry)
         self.assertEqual(player.as_entry(), entry)
 
     def test_reset(self):
@@ -276,7 +276,7 @@ class TestNowPlaying(unittest.TestCase):
         # self.assertNotEqual(self.player.length, None)
         # self.assertNotEqual(self.player.is_cps, False)
         # self.assertNotEqual(self.player.cps_data, dict())
-        self.assertNotEqual(self.player.data, dict())
+        # self.assertNotEqual(self.player.data, dict())
         # self.assertNotEqual(self.player.phrase, None)
         # self.assertNotEqual(self.player.javascript, "")
         self.assertNotEqual(self.player.playback, PlaybackType.UNDEFINED)

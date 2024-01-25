@@ -54,6 +54,14 @@ class NowPlaying(MediaEntry):
         self._player = None
 
     @property
+    def as_dict(self) -> dict:
+        """
+        Return a dict reporesentation of this MediaEntry
+        """
+        return {k: v for k, v in self.__dict__.items()
+                if not k.startswith("_")}
+
+    @property
     def bus(self) -> MessageBusClient:
         """
         Return the MessageBusClient inherited from the bound OCPMediaPlayer
