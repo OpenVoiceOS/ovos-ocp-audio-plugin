@@ -1,6 +1,6 @@
 from os.path import join, dirname, isfile
 from threading import Event, Lock
-
+from ovos_config import Configuration
 from ovos_plugin_common_play.ocp.gui import OCPMediaPlayerGUI
 from ovos_plugin_common_play.ocp.player import OCPMediaPlayer
 from ovos_utils.gui import can_use_gui
@@ -117,6 +117,14 @@ class OCP(OVOSAbstractApplication):
         NOTE: uses the same format as mycroft .intent files, language
         support is handled the same way
         """
+        # TODO - default to True in ovos-core 0.1.0
+        # more info: https://github.com/OpenVoiceOS/ovos-core/pull/456
+        moved_to_pipelines = Configuration().get("intents", {}).get("experimental_ocp_pipeline")
+        if moved_to_pipelines:
+            LOG.info("Using Classic OCP with experimental OCP pipeline")
+            LOG.debug("skipping Classic OCP intent registering")
+            return
+
         locale_folder = join(dirname(__file__), "res", "locale", self.lang)
         intents = self.intent2media
         if self.settings.get("adult_content", False):
