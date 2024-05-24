@@ -59,16 +59,20 @@ class OCP(OVOSAbstractApplication):
                                      skill_id=OCP_ID)
         self.media_intents = IntentContainer()
         self.register_ocp_api_events()
-        self.register_media_intents()
 
-        self.add_event("mycroft.ready", self.replace_mycroft_cps, once=True)
-        skills_ready = self.bus.wait_for_response(
-            Message("mycroft.skills.is_ready",
-                    context={"source": [self.skill_id],
-                             "destination": ["skills"]}))
-        if skills_ready and skills_ready.data.get("status"):
-            self.remove_event("mycroft.ready")
-            self.replace_mycroft_cps(skills_ready)
+        if self.using_new_pipeline:
+            LOG.info("Using Classic OCP with experimental OCP pipeline")
+        else:
+            self.register_media_intents()
+
+            self.add_event("mycroft.ready", self.replace_mycroft_cps, once=True)
+            skills_ready = self.bus.wait_for_response(
+                Message("mycroft.skills.is_ready",
+                        context={"source": [self.skill_id],
+                                 "destination": ["skills"]}))
+            if skills_ready and skills_ready.data.get("status"):
+                self.remove_event("mycroft.ready")
+                self.replace_mycroft_cps(skills_ready)
 
         load_stream_extractors()  # trigger a load + caching of OCP plugins
 
@@ -96,7 +100,18 @@ class OCP(OVOSAbstractApplication):
         # homescreen / launch from .desktop
         self.gui.show_home(app_mode=True)
 
+    @property
+    def using_new_pipeline(self) -> bool:
+        # TODO - default to True in ovos-core 0.1.0
+        # more info: https://github.com/OpenVoiceOS/ovos-core/pull/456
+        moved_to_pipelines = Configuration().get("intents", {}).get("experimental_ocp_pipeline")
+        return moved_to_pipelines
+
     def register_ocp_intents(self, message=None):
+        if self.using_new_pipeline:
+            LOG.debug("skipping Classic OCP intent registration")
+            return
+
         with self._intent_registration_lock:
             if not self._intents_event.is_set():
                 LOG.info(f"OCP intents missing, registering for {self}")
@@ -117,12 +132,8 @@ class OCP(OVOSAbstractApplication):
         NOTE: uses the same format as mycroft .intent files, language
         support is handled the same way
         """
-        # TODO - default to True in ovos-core 0.1.0
-        # more info: https://github.com/OpenVoiceOS/ovos-core/pull/456
-        moved_to_pipelines = Configuration().get("intents", {}).get("experimental_ocp_pipeline")
-        if moved_to_pipelines:
-            LOG.info("Using Classic OCP with experimental OCP pipeline")
-            LOG.debug("skipping Classic OCP intent registering")
+        if self.using_new_pipeline:
+            LOG.debug("skipping Classic OCP media type intents registration")
             return
 
         locale_folder = join(dirname(__file__), "res", "locale", self.lang)
