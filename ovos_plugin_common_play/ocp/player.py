@@ -249,7 +249,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         if not isinstance(track, (MediaEntry, Playlist)):
             raise ValueError(f"Expected MediaEntry/Playlist, but got: {track}")
         self.now_playing.reset()  # reset now_playing to remove old metadata
-        if track.uri:
+        if isinstance(track, MediaEntry):
             # single track entry (MediaEntry)
             self.now_playing.update(track)
             # copy now_playing (without event handlers) to playlist
@@ -267,11 +267,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
             else:
                 # If there's no URI, the skill might be handling playback so
                 # now_playing should still be updated
-                self.now_playing.update(track)
-        else:
-            # If there's no URI, the skill might be handling playback so
-            # now_playing should still be updated
-            self.now_playing.update(track)
+                self.now_playing.update(self.playlist.as_dict)
 
         # sync playlist position
         self.playlist.goto_track(self.now_playing)
