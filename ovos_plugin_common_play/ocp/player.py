@@ -317,8 +317,8 @@ class OCPMediaPlayer(OVOSAbstractApplication):
 
     # media controls
     def play_media(self, track: Union[dict, MediaEntry],
-                   disambiguation: Union[Playlist, dict, List[Union[dict, MediaEntry]]] = None,
-                   playlist: Union[Playlist, dict, List[Union[dict, MediaEntry]]] = None):
+                   disambiguation: List[Union[dict, MediaEntry]] = None,
+                   playlist: List[Union[dict, MediaEntry]] = None):
         """
         Start playing the requested media, replacing any current playback.
         @param track: dict or MediaEntry to start playing
@@ -327,11 +327,6 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         """
         if isinstance(track, dict):
             track = MediaEntry.from_dict(track)
-        if playlist and isinstance(playlist, dict):
-            playlist = Playlist.from_dict(playlist)
-        if disambiguation and isinstance(disambiguation, dict):
-            disambiguation = Playlist.from_dict(disambiguation)
-
         if not isinstance(track, MediaEntry):
             raise TypeError(f"Expected MediaEntry, got: {track}")
         if self.mpris:
