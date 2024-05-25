@@ -241,8 +241,8 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         if isinstance(track, dict):
             LOG.debug("Handling dict track")
             track = dict2entry(track)
-        if not isinstance(track, MediaEntry):
-            raise ValueError(f"Expected MediaEntry, but got: {track}")
+        if not isinstance(track, (MediaEntry, Playlist)):
+            raise ValueError(f"Expected MediaEntry/Playlist, but got: {track}")
         self.now_playing.reset()  # reset now_playing to remove old metadata
         if track.uri:
             # single track entry (MediaEntry)
@@ -326,7 +326,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         """
         if isinstance(track, dict):
             track = dict2entry(track)
-        if not isinstance(track, MediaEntry):
+        if not isinstance(track, (MediaEntry, Playlist)):
             raise TypeError(f"Expected MediaEntry, got: {track}")
         if self.mpris:
             self.mpris.stop()
