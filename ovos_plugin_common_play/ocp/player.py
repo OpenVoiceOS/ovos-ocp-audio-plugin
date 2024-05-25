@@ -18,6 +18,11 @@ from ovos_utils.ocp import OCP_ID, Playlist, LoopState, MediaState, PlayerState,
     MediaEntry
 from ovos_workshop import OVOSAbstractApplication
 
+try:
+    from ovos_utils.ocp import dict2entry
+except ImportError:  # older utils version
+    dict2entry = MediaEntry.from_dict
+
 
 class OCPMediaPlayer(OVOSAbstractApplication):
     def __init__(self, bus=None, settings=None, lang=None, gui=None,
@@ -240,11 +245,11 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         LOG.debug(f"Playing: {track}")
         if isinstance(track, dict):
             LOG.debug("Handling dict track")
-            track = MediaEntry.from_dict(track)
-        if not isinstance(track, MediaEntry):
-            raise ValueError(f"Expected MediaEntry, but got: {track}")
+            track = dict2entry(track)
+        if not isinstance(track, (MediaEntry, Playlist)):
+            raise ValueError(f"Expected MediaEntry/Playlist, but got: {track}")
         self.now_playing.reset()  # reset now_playing to remove old metadata
-        if track.uri:
+        if isinstance(track, MediaEntry):
             # single track entry (MediaEntry)
             self.now_playing.update(track)
             # copy now_playing (without event handlers) to playlist
@@ -262,11 +267,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
             else:
                 # If there's no URI, the skill might be handling playback so
                 # now_playing should still be updated
-                self.now_playing.update(track)
-        else:
-            # If there's no URI, the skill might be handling playback so
-            # now_playing should still be updated
-            self.now_playing.update(track)
+                self.now_playing.update(self.playlist.as_dict)
 
         # sync playlist position
         self.playlist.goto_track(self.now_playing)

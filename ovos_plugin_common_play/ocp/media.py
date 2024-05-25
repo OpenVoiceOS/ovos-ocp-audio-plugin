@@ -1,5 +1,5 @@
 from os.path import join, dirname
-
+from typing import Union
 from ovos_bus_client.client import MessageBusClient
 from ovos_bus_client.message import Message
 from ovos_utils.json_helper import merge_dict
@@ -134,7 +134,7 @@ class NowPlaying(MediaEntry):
         self.playback = PlaybackType.UNDEFINED
         self.status = TrackState.DISAMBIGUATION
 
-    def update(self, entry: dict, skipkeys: list = None, newonly: bool = False):
+    def update(self, entry: Union[dict, MediaEntry], skipkeys: list = None, newonly: bool = False):
         """
         Update this MediaEntry and emit `gui.player.media.service.set.meta`
         @param entry: dict or MediaEntry object to update this object with
