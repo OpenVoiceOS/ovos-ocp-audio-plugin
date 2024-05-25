@@ -15,7 +15,7 @@ from ovos_utils.gui import is_gui_connected, is_gui_running
 from ovos_utils.log import LOG
 from ovos_utils.messagebus import Message
 from ovos_utils.ocp import OCP_ID, Playlist, LoopState, MediaState, PlayerState, TrackState, PlaybackType, PlaybackMode, \
-    MediaEntry
+    MediaEntry, dict2entry
 from ovos_workshop import OVOSAbstractApplication
 
 
@@ -240,7 +240,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         LOG.debug(f"Playing: {track}")
         if isinstance(track, dict):
             LOG.debug("Handling dict track")
-            track = MediaEntry.from_dict(track)
+            track = dict2entry(track)
         if not isinstance(track, MediaEntry):
             raise ValueError(f"Expected MediaEntry, but got: {track}")
         self.now_playing.reset()  # reset now_playing to remove old metadata
@@ -325,7 +325,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         @param playlist: list of tracks in the current playlist
         """
         if isinstance(track, dict):
-            track = MediaEntry.from_dict(track)
+            track = dict2entry(track)
         if not isinstance(track, MediaEntry):
             raise TypeError(f"Expected MediaEntry, got: {track}")
         if self.mpris:
