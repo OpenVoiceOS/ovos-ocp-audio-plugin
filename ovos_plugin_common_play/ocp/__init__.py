@@ -74,7 +74,8 @@ class OCP(OVOSAbstractApplication):
                 self.remove_event("mycroft.ready")
                 self.replace_mycroft_cps(skills_ready)
 
-        load_stream_extractors()  # trigger a load + caching of OCP plugins
+        # report available plugins to ovos-core pipeline
+        self.handle_get_SEIs(Message("ovos.common_play.SEI.get"))
 
     def handle_ping(self, message):
         """
@@ -87,10 +88,32 @@ class OCP(OVOSAbstractApplication):
         """
         Register messagebus handlers for OCP events
         """
+        self.add_event('ovos.common_play.SEI.get', self.handle_get_SEIs)
         self.add_event("ovos.common_play.ping", self.handle_ping)
         self.add_event('ovos.common_play.home', self.handle_home)
         # bus api shared with intents
         self.add_event("ovos.common_play.search", self.handle_play)
+
+    def handle_get_SEIs(self, message):
+        """report available StreamExtractorIds
+
+        Ported from ovos-media to accommodate migration period
+        and making old OCP compatible with the new pipeline
+
+        OCP plugins handle specific SEIs and return a real stream / extra metadata
+
+        this moves parsing to playback time instead of search time
+
+        SEIs are identifiers of the format "{SEI}//{uri}"
+        that might be present in media results
+
+        seis are NOT uris, a uri comes after {SEI}//
+
+        eg. for the youtube plugin a skill can return
+          "youtube//https://youtube.com/watch?v=wChqNkd6F24"
+        """
+        xtract = load_stream_extractors()  # @lru_cache, its a lazy loaded singleton
+        self.bus.emit(message.response({"SEI": xtract.supported_seis}))
 
     def handle_home(self, message=None):
         """
