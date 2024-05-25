@@ -327,7 +327,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         if isinstance(track, dict):
             track = dict2entry(track)
         if not isinstance(track, (MediaEntry, Playlist)):
-            raise TypeError(f"Expected MediaEntry, got: {track}")
+            raise TypeError(f"Expected MediaEntry/Playlist, got: {track}")
         if self.mpris:
             self.mpris.stop()
         if self.state == PlayerState.PLAYING:
