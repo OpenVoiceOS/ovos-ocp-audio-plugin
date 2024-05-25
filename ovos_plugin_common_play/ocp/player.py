@@ -601,6 +601,9 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         # stop any search still happening
         self.bus.emit(Message("ovos.common_play.search.stop"))
 
+        LOG.debug("clearing playlist")
+        self.playlist.clear()  # needed to ensure next track doesnt track due to autoplay
+
         LOG.debug("Stopping playback")
         if self.active_backend in [PlaybackType.AUDIO_SERVICE,
                                    PlaybackType.UNDEFINED]:
@@ -731,8 +734,9 @@ class OCPMediaPlayer(OVOSAbstractApplication):
 
     def handle_playback_ended(self, message):
         # TODO: When we get here, self.active_backend has been reset!
-        if self.settings.get("autoplay", True) and \
-                self.active_backend != PlaybackType.MPRIS:
+        if (self.settings.get("autoplay", True) and \
+                self.active_backend != PlaybackType.MPRIS and
+                len(self.playlist.entries)):
             LOG.debug(f"Playing next (backend={repr(self.active_backend)}")
             self.play_next()
             return
