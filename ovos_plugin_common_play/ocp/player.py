@@ -326,9 +326,12 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         @param playlist: list of tracks in the current playlist
         """
         if isinstance(track, dict):
-            track = MediaEntry.from_dict(track)
-        if not isinstance(track, MediaEntry):
-            raise TypeError(f"Expected MediaEntry, got: {track}")
+            track = dict2entry(track)
+        if not isinstance(track, (MediaEntry, Playlist)):
+            raise TypeError(f"Expected MediaEntry/Playlist, got: {track}")
+        if isinstance(track, Playlist) and not playlist:
+            playlist = track
+            track = playlist[0]
         if self.mpris:
             self.mpris.stop()
         if self.state == PlayerState.PLAYING:
