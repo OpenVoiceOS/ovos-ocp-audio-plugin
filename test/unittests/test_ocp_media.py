@@ -3,7 +3,7 @@ from unittest.mock import Mock
 
 from ovos_bus_client import Message
 
-from ovos_plugin_common_play.ocp.media import MediaEntry, NowPlaying, Playlist
+from ovos_plugin_common_play.ocp.media import MediaEntry, NowPlaying, Playlist, _ME as RealMediaEntry
 from ovos_plugin_common_play.ocp.status import MediaType, PlaybackType, TrackState, MediaState
 from ovos_utils.messagebus import FakeBus
 
@@ -77,7 +77,7 @@ class TestMediaEntry(unittest.TestCase):
     def test_from_dict(self):
         dict_data = valid_search_results[1]
         from_dict = MediaEntry.from_dict(dict_data)
-        self.assertIsInstance(from_dict, MediaEntry)
+        self.assertIsInstance(from_dict, RealMediaEntry)
         from_init = MediaEntry(dict_data["title"], dict_data["uri"],
                                image=dict_data["image"],
                                match_confidence=dict_data["match_confidence"],
@@ -92,7 +92,7 @@ class TestMediaEntry(unittest.TestCase):
         new_entry = MediaEntry.from_dict(dict_data)
         self.assertEqual(from_dict, new_entry)
 
-        self.assertIsInstance(MediaEntry.from_dict({}), MediaEntry)
+        self.assertIsInstance(MediaEntry.from_dict({}), RealMediaEntry)
 
     def test_info(self):
         # TODO
@@ -131,8 +131,8 @@ class TestPlaylist(unittest.TestCase):
         self.assertEqual(len(pl), len(valid_search_results))
         self.assertEqual(len(pl.entries), len(valid_search_results))
         for entry in pl.entries:
-            self.assertIsInstance(entry, MediaEntry)
-        self.assertIsInstance(pl.current_track, MediaEntry)
+            self.assertIsInstance(entry, RealMediaEntry)
+        self.assertIsInstance(pl.current_track, RealMediaEntry)
         self.assertTrue(pl.is_first_track)
         self.assertFalse(pl.is_last_track)
 
@@ -259,7 +259,7 @@ class TestNowPlaying(unittest.TestCase):
         player = NowPlaying()
         player.update(entry)
         self.assertNotIsInstance(player.as_entry(), NowPlaying)
-        self.assertIsInstance(player.as_entry(), MediaEntry)
+        self.assertIsInstance(player.as_entry(), RealMediaEntry)
         self.assertEqual(player.as_entry(), entry)
 
     def test_reset(self):
