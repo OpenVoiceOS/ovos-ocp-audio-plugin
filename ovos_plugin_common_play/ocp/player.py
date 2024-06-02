@@ -19,7 +19,7 @@ from ovos_plugin_common_play.ocp.mycroft_cps import MycroftAudioService
 from ovos_plugin_common_play.ocp.search import OCPSearch
 
 try:
-    from ovos_workshop.decorators.ocp import dict2entry
+    from ovos_utils.ocp import dict2entry
 except ImportError:  # older utils version
     dict2entry = MediaEntry.from_dict
 
