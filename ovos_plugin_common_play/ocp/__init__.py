@@ -6,12 +6,14 @@ from ovos_plugin_common_play.ocp.player import OCPMediaPlayer
 from ovos_utils.gui import can_use_gui
 from ovos_utils.log import LOG
 from ovos_utils.messagebus import Message
-from ovos_utils.ocp import OCP_ID
+
 from padacioso import IntentContainer
 
 from ovos_workshop import OVOSAbstractApplication
 from ovos_workshop.decorators.ocp import *
 from ovos_plugin_manager.ocp import load_stream_extractors
+
+from ovos_plugin_common_play.ocp.constants import OCP_ID
 
 
 class OCP(OVOSAbstractApplication):

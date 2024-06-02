@@ -1,13 +1,13 @@
 from os.path import join, isfile
 
 from ovos_bus_client.message import Message
-from ovos_plugin_common_play.ocp.utils import extract_metadata
-from ovos_utils.log import LOG
-from ovos_utils.ocp import MediaState, PlayerState, OCP_ID, TrackState
-
-
 from ovos_config.locations import get_xdg_config_save_path
 from ovos_plugin_manager.templates.audio import AudioBackend
+from ovos_utils.log import LOG
+from ovos_workshop.decorators.ocp import MediaState, PlayerState, TrackState
+
+from ovos_plugin_common_play.ocp.constants import OCP_ID
+from ovos_plugin_common_play.ocp.utils import extract_metadata
 
 
 class OCPAbstractComponent:

@@ -1,9 +1,7 @@
 import shutil
 from os import makedirs
 from os.path import expanduser, isfile, join, dirname, exists
-from typing import List
 
-from ovos_ocp_files_plugin.plugin import OCPFilesMetadataExtractor
 from ovos_plugin_manager.ocp import load_stream_extractors, available_extractors
 
 
@@ -19,6 +17,7 @@ def is_qtav_available():
 
 def extract_metadata(uri):
     # backwards compat
+    from ovos_ocp_files_plugin.plugin import OCPFilesMetadataExtractor
     return OCPFilesMetadataExtractor.extract_metadata(uri)
 
 

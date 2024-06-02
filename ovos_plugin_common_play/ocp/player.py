@@ -4,22 +4,22 @@ from time import sleep
 from typing import List, Union
 
 from ovos_bus_client.message import Message
-
 from ovos_config import Configuration
-from ovos_plugin_common_play.ocp.gui import OCPMediaPlayerGUI
-from ovos_plugin_common_play.ocp.media import NowPlaying
-from ovos_plugin_common_play.ocp.mpris import MprisPlayerCtl
-from ovos_plugin_common_play.ocp.mycroft_cps import MycroftAudioService
-from ovos_plugin_common_play.ocp.search import OCPSearch
 from ovos_utils.gui import is_gui_connected, is_gui_running
 from ovos_utils.log import LOG
 from ovos_utils.messagebus import Message
-from ovos_utils.ocp import OCP_ID, Playlist, LoopState, MediaState, PlayerState, TrackState, PlaybackType, PlaybackMode, \
-    MediaEntry
 from ovos_workshop import OVOSAbstractApplication
+from ovos_workshop.decorators.ocp import LoopState, MediaState, PlayerState, TrackState, PlaybackType, PlaybackMode
+
+from ovos_plugin_common_play.ocp.constants import OCP_ID
+from ovos_plugin_common_play.ocp.gui import OCPMediaPlayerGUI
+from ovos_plugin_common_play.ocp.media import NowPlaying, Playlist, MediaEntry
+from ovos_plugin_common_play.ocp.mpris import MprisPlayerCtl
+from ovos_plugin_common_play.ocp.mycroft_cps import MycroftAudioService
+from ovos_plugin_common_play.ocp.search import OCPSearch
 
 try:
-    from ovos_utils.ocp import dict2entry
+    from ovos_workshop.decorators.ocp import dict2entry
 except ImportError:  # older utils version
     dict2entry = MediaEntry.from_dict
 
