@@ -126,7 +126,11 @@ class OCP(OVOSAbstractApplication):
     @property
     def using_new_pipeline(self) -> bool:
         # this is no longer configurable, most of this repo is dead code
-        return True
+        # only check for min version for default ovos-config to contain OCP pipeline
+        from ovos_config.version import VERSION_BUILD, VERSION_ALPHA, VERSION_MAJOR, VERSION_MINOR
+        if VERSION_BUILD > 13 or VERSION_MAJOR >= 1 or VERSION_MINOR >= 1:
+            return True
+        return VERSION_BUILD == 13 and VERSION_ALPHA >= 14
 
     def register_ocp_intents(self, message=None):
         if self.using_new_pipeline:
