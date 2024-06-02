@@ -53,7 +53,7 @@ except ImportError:
             @param newonly: if True, only adds new keys; existing keys are unchanged
             """
             skipkeys = skipkeys or []
-            if isinstance(entry, MediaEntry):
+            if isinstance(entry, _ME):
                 entry = entry.as_dict
             entry = entry or {}
             for k, v in entry.items():
@@ -124,7 +124,7 @@ except ImportError:
                 return find_mime(self.uri)
 
         def __eq__(self, other):
-            if isinstance(other, MediaEntry):
+            if isinstance(other, _ME):
                 other = other.infocard
             # dict comparison
             return other == self.infocard
@@ -189,7 +189,7 @@ except ImportError:
             for e in self:
                 if isinstance(e, dict):
                     e = MediaEntry.from_dict(e)
-                if isinstance(e, MediaEntry):
+                if isinstance(e, _ME):
                     entries.append(e)
             return entries
 
@@ -244,7 +244,7 @@ except ImportError:
             Sort the Playlist by `match_confidence` with high confidence first
             """
             self.sort(
-                key=lambda k: k.match_confidence if isinstance(k, (MediaEntry, Playlist))
+                key=lambda k: k.match_confidence if isinstance(k, (_ME, Playlist))
                 else k.get("match_confidence", 0), reverse=True)
 
         def add_entry(self, entry: 'MediaEntry', index: int = -1) -> None:
@@ -261,7 +261,7 @@ except ImportError:
             if isinstance(entry, dict):
                 entry = MediaEntry.from_dict(entry)
 
-            assert isinstance(entry, (MediaEntry, Playlist))
+            assert isinstance(entry, (_ME, Playlist))
 
             if index == -1:
                 index = len(self)
@@ -281,7 +281,7 @@ except ImportError:
                 return
             if isinstance(entry, dict):
                 entry = MediaEntry.from_dict(entry)
-            assert isinstance(entry, MediaEntry)
+            assert isinstance(entry, _ME)
             for idx, e in enumerate(self.entries):
                 if e == entry:
                     self.pop(idx)
@@ -314,15 +314,15 @@ except ImportError:
             if isinstance(track, dict):
                 track = MediaEntry.from_dict(track)
 
-            assert isinstance(track, (MediaEntry, Playlist))
+            assert isinstance(track, (_ME, Playlist))
 
-            if isinstance(track, MediaEntry):
+            if isinstance(track, _ME):
                 requested_uri = track.uri
             else:
                 requested_uri = track.title
 
             for idx, t in enumerate(self):
-                if isinstance(t, MediaEntry):
+                if isinstance(t, _ME):
                     pl_entry_uri = t.uri
                 else:
                     pl_entry_uri = t.title
@@ -357,7 +357,7 @@ except ImportError:
         def __contains__(self, item):
             if isinstance(item, dict):
                 item = MediaEntry.from_dict(item)
-            if isinstance(item, MediaEntry):
+            if isinstance(item, _ME):
                 for e in self.entries:
                     if e.uri == item.uri:
                         return True
@@ -495,7 +495,7 @@ class NowPlaying(MediaEntry):
         @param skipkeys: list of keys to not change
         @param newonly: if True, only adds new keys; existing keys are unchanged
         """
-        if isinstance(entry, MediaEntry):
+        if isinstance(entry, _ME):
             entry = entry.as_dict
         super().update(entry, skipkeys, newonly)
         # uri updates should not be skipped
