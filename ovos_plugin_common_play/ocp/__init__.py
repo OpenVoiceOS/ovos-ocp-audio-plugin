@@ -125,10 +125,8 @@ class OCP(OVOSAbstractApplication):
 
     @property
     def using_new_pipeline(self) -> bool:
-        # TODO - default to True in ovos-core 0.1.0
-        # more info: https://github.com/OpenVoiceOS/ovos-core/pull/456
-        moved_to_pipelines = Configuration().get("intents", {}).get("experimental_ocp_pipeline")
-        return moved_to_pipelines
+        # this is no longer configurable, most of this repo is dead code
+        return True
 
     def register_ocp_intents(self, message=None):
         if self.using_new_pipeline:
