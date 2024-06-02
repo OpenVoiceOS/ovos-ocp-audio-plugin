@@ -4,16 +4,17 @@ from os.path import join, isfile
 from threading import RLock, Lock
 from typing import List
 
-from ovos_config.locations import get_xdg_config_save_path
-from ovos_utils.gui import is_gui_connected, is_gui_running
-from ovos_utils.log import LOG
 from ovos_bus_client.message import Message
 from ovos_bus_client.util import get_mycroft_bus
+from ovos_config.locations import get_xdg_config_save_path
+from ovos_plugin_manager.ocp import available_extractors
+from ovos_utils.gui import is_gui_connected, is_gui_running
+from ovos_utils.log import LOG
+from ovos_workshop.decorators.ocp import MediaType, PlaybackType, PlaybackMode
 
 from ovos_plugin_common_play.ocp.base import OCPAbstractComponent
+from ovos_plugin_common_play.ocp.constants import OCP_ID
 from ovos_plugin_common_play.ocp.media import Playlist
-from ovos_utils.ocp import OCP_ID, MediaType, TrackState, PlaybackType, PlaybackMode
-from ovos_plugin_manager.ocp import available_extractors
 
 
 class OCPQuery:

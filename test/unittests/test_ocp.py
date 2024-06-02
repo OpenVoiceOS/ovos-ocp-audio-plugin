@@ -41,9 +41,6 @@ class TestOCP(unittest.TestCase):
         self.bus.once('mycroft.skills.is_ready', _handle_skills_check)
         self.bus.emit(Message('mycroft.ready'))
 
-        self.assertTrue(self.ocp._intents_event.is_set())
-
-        # TODO: Test messagebus event registration
 
     def test_ping(self):
         resp = self.bus.wait_for_response(Message("ovos.common_play.ping"),
@@ -78,7 +75,7 @@ class TestOCP(unittest.TestCase):
         movie = "play a movie"
         news = "play the latest news"
         unknown = "play something"
-
+        self.ocp.register_media_intents()
         self.assertEqual(self.ocp.classify_media(music), MediaType.MUSIC)
         self.assertEqual(self.ocp.classify_media(movie), MediaType.MOVIE)
         self.assertEqual(self.ocp.classify_media(news), MediaType.NEWS)

@@ -3,9 +3,8 @@ from unittest.mock import Mock
 
 from ovos_bus_client import Message
 
-from ovos_plugin_common_play.ocp.media import MediaEntry, NowPlaying
+from ovos_plugin_common_play.ocp.media import MediaEntry, NowPlaying, Playlist, _ME as RealMediaEntry
 from ovos_plugin_common_play.ocp.status import MediaType, PlaybackType, TrackState, MediaState
-from ovos_utils.ocp import MediaEntry as RealMediaEntry, Playlist
 from ovos_utils.messagebus import FakeBus
 
 

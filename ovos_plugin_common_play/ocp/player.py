@@ -4,19 +4,19 @@ from time import sleep
 from typing import List, Union
 
 from ovos_bus_client.message import Message
-
 from ovos_config import Configuration
-from ovos_plugin_common_play.ocp.gui import OCPMediaPlayerGUI
-from ovos_plugin_common_play.ocp.media import NowPlaying
-from ovos_plugin_common_play.ocp.mpris import MprisPlayerCtl
-from ovos_plugin_common_play.ocp.mycroft_cps import MycroftAudioService
-from ovos_plugin_common_play.ocp.search import OCPSearch
 from ovos_utils.gui import is_gui_connected, is_gui_running
 from ovos_utils.log import LOG
 from ovos_utils.messagebus import Message
-from ovos_utils.ocp import OCP_ID, Playlist, LoopState, MediaState, PlayerState, TrackState, PlaybackType, PlaybackMode, \
-    MediaEntry
 from ovos_workshop import OVOSAbstractApplication
+from ovos_workshop.decorators.ocp import LoopState, MediaState, PlayerState, TrackState, PlaybackType, PlaybackMode
+
+from ovos_plugin_common_play.ocp.constants import OCP_ID
+from ovos_plugin_common_play.ocp.gui import OCPMediaPlayerGUI
+from ovos_plugin_common_play.ocp.media import NowPlaying, Playlist, MediaEntry, _ME
+from ovos_plugin_common_play.ocp.mpris import MprisPlayerCtl
+from ovos_plugin_common_play.ocp.mycroft_cps import MycroftAudioService
+from ovos_plugin_common_play.ocp.search import OCPSearch
 
 try:
     from ovos_utils.ocp import dict2entry
@@ -246,10 +246,10 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         if isinstance(track, dict):
             LOG.debug("Handling dict track")
             track = dict2entry(track)
-        if not isinstance(track, (MediaEntry, Playlist)):
+        if not isinstance(track, (_ME, Playlist)):
             raise ValueError(f"Expected MediaEntry/Playlist, but got: {track}")
         self.now_playing.reset()  # reset now_playing to remove old metadata
-        if isinstance(track, MediaEntry):
+        if isinstance(track, _ME):
             # single track entry (MediaEntry)
             self.now_playing.update(track)
             # copy now_playing (without event handlers) to playlist
@@ -327,7 +327,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         """
         if isinstance(track, dict):
             track = dict2entry(track)
-        if not isinstance(track, (MediaEntry, Playlist)):
+        if not isinstance(track, (_ME, Playlist)):
             raise TypeError(f"Expected MediaEntry/Playlist, got: {track}")
         if isinstance(track, Playlist) and not playlist:
             playlist = track

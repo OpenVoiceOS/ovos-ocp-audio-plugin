@@ -6,12 +6,14 @@ from ovos_plugin_common_play.ocp.player import OCPMediaPlayer
 from ovos_utils.gui import can_use_gui
 from ovos_utils.log import LOG
 from ovos_utils.messagebus import Message
-from ovos_utils.ocp import OCP_ID
+
 from padacioso import IntentContainer
 
 from ovos_workshop import OVOSAbstractApplication
 from ovos_workshop.decorators.ocp import *
 from ovos_plugin_manager.ocp import load_stream_extractors
+
+from ovos_plugin_common_play.ocp.constants import OCP_ID
 
 
 class OCP(OVOSAbstractApplication):
@@ -125,10 +127,15 @@ class OCP(OVOSAbstractApplication):
 
     @property
     def using_new_pipeline(self) -> bool:
-        # TODO - default to True in ovos-core 0.1.0
-        # more info: https://github.com/OpenVoiceOS/ovos-core/pull/456
-        moved_to_pipelines = Configuration().get("intents", {}).get("experimental_ocp_pipeline")
-        return moved_to_pipelines
+        # this is no longer configurable, most of this repo is dead code
+        # keep this check to allow smooth updates from the couple alpha versions this was live
+        if Configuration().get("intents", {}).get("experimental_ocp_pipeline"):
+            return True
+        # check for min version for default ovos-config to contain OCP pipeline
+        from ovos_config.version import VERSION_BUILD, VERSION_ALPHA, VERSION_MAJOR, VERSION_MINOR
+        if VERSION_BUILD > 13 or VERSION_MAJOR >= 1 or VERSION_MINOR >= 1:
+            return True
+        return VERSION_BUILD == 13 and VERSION_ALPHA >= 14
 
     def register_ocp_intents(self, message=None):
         if self.using_new_pipeline:
