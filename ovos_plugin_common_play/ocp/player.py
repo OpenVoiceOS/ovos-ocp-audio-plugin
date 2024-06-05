@@ -1,7 +1,7 @@
 import random
 from os.path import join, dirname
 from time import sleep
-from typing import List, Union
+from typing import List, Union, Optional
 
 from ovos_bus_client.message import Message
 from ovos_config import Configuration
@@ -17,7 +17,7 @@ from ovos_plugin_common_play.ocp.media import NowPlaying, Playlist, MediaEntry, 
 from ovos_plugin_common_play.ocp.mpris import MprisPlayerCtl
 from ovos_plugin_common_play.ocp.mycroft_cps import MycroftAudioService
 from ovos_plugin_common_play.ocp.search import OCPSearch
-
+from ovos_plugin_common_play.ocp.utils import require_native_source
 try:
     from ovos_utils.ocp import dict2entry
 except ImportError:  # older utils version
@@ -26,10 +26,15 @@ except ImportError:  # older utils version
 
 class OCPMediaPlayer(OVOSAbstractApplication):
     def __init__(self, bus=None, settings=None, lang=None, gui=None,
-                 resources_dir=None, skill_id=OCP_ID, **kwargs):
+                 resources_dir=None, skill_id=OCP_ID, validate_source=True,
+                 native_sources: Optional[List[str]] = None,
+                 **kwargs):
         resources_dir = resources_dir or join(dirname(__file__), "res")
         gui = gui or OCPMediaPlayerGUI(bus=bus)
 
+        self.validate_source = validate_source
+        self.native_sources = native_sources or Configuration()["Audio"].\
+            get("native_sources", ["debug_cli", "audio"])
         # Define things referenced in `bind`
         self.now_playing: NowPlaying = NowPlaying()
         self.media: OCPSearch = OCPSearch()
@@ -670,6 +675,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         self.remove_event("gui.player.media.service.get.previous")
 
     # player -> common play
+    @require_native_source()
     def handle_player_state_update(self, message):
         """
         Handles 'gui.player.media.service.sync.status' and
@@ -707,6 +713,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
                                      "CanPlay": state == PlayerState.PAUSED,
                                      "PlaybackStatus": state2str[state]})
 
+    @require_native_source()
     def handle_player_media_update(self, message):
         """
         Handles 'ovos.common_play.media.state' messages with media state updates
@@ -733,9 +740,11 @@ class OCPMediaPlayer(OVOSAbstractApplication):
             if self.settings.get("autoplay", True):
                 self.play_next()
 
+    @require_native_source()
     def handle_invalid_media(self, message):
         self.gui.show_playback_error()
 
+    @require_native_source()
     def handle_playback_ended(self, message):
         # TODO: When we get here, self.active_backend has been reset!
         if (self.settings.get("autoplay", True) and \
@@ -748,6 +757,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         self.gui.handle_end_of_playback(message)
 
     # ovos common play bus api requests
+    @require_native_source()
     def handle_play_request(self, message):
         LOG.debug("Received external OVOS playback request")
         repeat = message.data.get("repeat", False)
@@ -764,15 +774,19 @@ class OCPMediaPlayer(OVOSAbstractApplication):
             disambiguation = message.data.get("disambiguation") or [media]
         self.play_media(media, disambiguation, playlist)
 
+    @require_native_source()
     def handle_pause_request(self, message):
         self.pause()
 
+    @require_native_source()
     def handle_stop_request(self, message):
         self.stop()
 
+    @require_native_source()
     def handle_resume_request(self, message):
         self.resume()
 
+    @require_native_source()
     def handle_seek_request(self, message):
         # from bus api
         miliseconds = message.data.get("seconds", 0) * 1000
@@ -787,29 +801,36 @@ class OCPMediaPlayer(OVOSAbstractApplication):
             position += miliseconds
         self.seek(position)
 
+    @require_native_source()
     def handle_next_request(self, message):
         self.play_next()
 
+    @require_native_source()
     def handle_prev_request(self, message):
         self.play_prev()
 
+    @require_native_source()
     def handle_set_shuffle(self, message):
         self.shuffle = True
         self.gui.update_seekbar_capabilities()
 
+    @require_native_source()
     def handle_unset_shuffle(self, message):
         self.shuffle = False
         self.gui.update_seekbar_capabilities()
 
+    @require_native_source()
     def handle_set_repeat(self, message):
         self.loop_state = LoopState.REPEAT
         self.gui.update_seekbar_capabilities()
 
+    @require_native_source()
     def handle_unset_repeat(self, message):
         self.loop_state = LoopState.NONE
         self.gui.update_seekbar_capabilities()
 
     # playlist control bus api
+    @require_native_source()
     def handle_repeat_toggle_request(self, message):
         if self.loop_state == LoopState.REPEAT_TRACK:
             self.loop_state = LoopState.NONE
@@ -820,26 +841,31 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         LOG.info(f"Repeat: {self.loop_state}")
         self.gui.update_seekbar_capabilities()
 
+    @require_native_source()
     def handle_shuffle_toggle_request(self, message):
         self.shuffle = not self.shuffle
         LOG.info(f"Shuffle: {self.shuffle}")
         self.gui.update_seekbar_capabilities()
 
+    @require_native_source()
     def handle_playlist_set_request(self, message):
         self.playlist.clear()
         self.handle_playlist_queue_request(message)
 
+    @require_native_source()
     def handle_playlist_queue_request(self, message):
         for track in message.data["tracks"]:
             self.playlist.add_entry(track)
         self.gui.update_playlist()
 
+    @require_native_source()
     def handle_playlist_clear_request(self, message):
         self.playlist.clear()
         self.set_media_state(MediaState.NO_MEDIA)
         self.gui.update_playlist()
 
     # audio ducking
+    @require_native_source()
     def handle_duck_request(self, message):
         """
         Pause audio on 'recognizer_loop:record_begin'
@@ -849,6 +875,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
             self.pause()
             self._paused_on_duck = True
 
+    @require_native_source()
     def handle_unduck_request(self, message):
         """
         Resume paused audio on 'recognizer_loop:record_begin'
@@ -859,6 +886,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
             self._paused_on_duck = False
 
     # track data
+    @require_native_source()
     def handle_track_length_request(self, message):
         l = self.now_playing.length
         if self.active_backend == PlaybackType.AUDIO_SERVICE:
@@ -866,6 +894,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         data = {"length": l}
         self.bus.emit(message.response(data))
 
+    @require_native_source()
     def handle_track_position_request(self, message):
         pos = self.now_playing.position
         if self.active_backend == PlaybackType.AUDIO_SERVICE:
@@ -873,10 +902,12 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         data = {"position": pos}
         self.bus.emit(message.response(data))
 
+    @require_native_source()
     def handle_set_track_position_request(self, message):
         miliseconds = message.data.get("position")
         self.seek(miliseconds)
 
+    @require_native_source()
     def handle_track_info_request(self, message):
         data = self.now_playing.as_dict
         if self.active_backend == PlaybackType.AUDIO_SERVICE:
@@ -884,6 +915,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         self.bus.emit(message.response(data))
 
     # internal info
+    @require_native_source()
     def handle_list_backends_request(self, message):
         data = self.audio_service.available_backends()
         self.bus.emit(message.response(data))
@@ -901,18 +933,21 @@ class OCPMediaPlayer(OVOSAbstractApplication):
     def app_view_timeout_mode(self):
         return self.settings.get("app_view_timeout_mode", "all")
 
+    @require_native_source()
     def handle_enable_app_timeout(self, message):
         self.settings["app_view_timeout_enabled"] = message.data.get("enabled", False)
         self.settings.store()
         if not self.app_view_timeout_enabled:
             self.gui.cancel_app_view_timeout()
 
+    @require_native_source()
     def handle_set_app_timeout(self, message):
         # timeout in seconds: 15 | 30 | 45 | 60
         self.settings["app_view_timeout"] = message.data.get("timeout", 30)
         self.settings.store()
         self.gui.cancel_app_view_timeout(restart=True)
 
+    @require_native_source()
     def handle_set_app_timeout_mode(self, message):
         # timeout modes: all | pause
         self.settings["app_view_timeout_mode"] = message.data.get("mode", "all")

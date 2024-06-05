@@ -1,8 +1,40 @@
 import shutil
 from os import makedirs
 from os.path import expanduser, isfile, join, dirname, exists
-
+from ovos_config import Configuration
+from ovos_utils.log import LOG
 from ovos_plugin_manager.ocp import load_stream_extractors, available_extractors
+from functools import wraps
+
+
+def validate_message_context(message, native_sources=None):
+    destination = message.context.get("destination")
+    if destination:
+        native_sources = native_sources or Configuration()["Audio"].get(
+            "native_sources", ["debug_cli", "audio"]) or []
+        if any(s in destination for s in native_sources):
+            # request from device
+            return True
+        # external request, do not handle
+        return False
+    # broadcast for everyone
+    return True
+
+
+def require_native_source():
+
+    def _decorator(func):
+        @wraps(func)
+        def func_wrapper(self, message):
+            # OCPMediaPlayer, Message
+            if validate_message_context(message, self.native_sources):
+                return func(self, message)
+            LOG.debug("ignoring OCP bus message, not from a native audio source")
+            return None
+
+        return func_wrapper
+
+    return _decorator
 
 
 def ocp_plugins():
