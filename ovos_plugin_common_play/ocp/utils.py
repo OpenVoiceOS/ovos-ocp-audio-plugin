@@ -27,7 +27,7 @@ def require_native_source():
         @wraps(func)
         def func_wrapper(self, message):
             # OCPMediaPlayer, Message
-            if validate_message_context(message, self.native_sources):
+            if not message or validate_message_context(message, self.native_sources):
                 return func(self, message)
             LOG.debug("ignoring OCP bus message, not from a native audio source")
             return None
