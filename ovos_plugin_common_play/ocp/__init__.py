@@ -162,12 +162,12 @@ class OCP(OVOSAbstractApplication):
             # trigger a presence announcement from all loaded ocp skills
             self.bus.emit(Message("ovos.common_play.skills.get"))
 
-    def register_media_intents(self):
+    def register_media_intents(self, force=False):
         """
         NOTE: uses the same format as mycroft .intent files, language
         support is handled the same way
         """
-        if self.using_new_pipeline:
+        if not force and self.using_new_pipeline:
             LOG.debug("skipping Classic OCP media type intents registration")
             return
 
