@@ -1,8 +1,16 @@
 # Changelog
 
-## [0.0.7a7](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/0.0.7a7) (2024-06-02)
+## [0.0.7a8](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/0.0.7a8) (2024-06-06)
 
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.7a6...0.0.7a7)
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.7a7...0.0.7a8)
+
+**Fixed bugs:**
+
+- fix/native\_sources [\#120](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/120) ([JarbasAl](https://github.com/JarbasAl))
+
+## [V0.0.7a7](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.7a7) (2024-06-02)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.7a6...V0.0.7a7)
 
 **Merged pull requests:**
 
