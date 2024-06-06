@@ -44,7 +44,7 @@ class OCP(OVOSAbstractApplication):
     }
 
     def __init__(self, bus=None, lang=None, settings=None, skill_id=OCP_ID,
-                 validate_source: bool = False):
+                 validate_source: bool = True):
         # settings = settings or OCPSettings()
         res_dir = join(dirname(__file__), "res")
         super().__init__(skill_id=skill_id, resources_dir=res_dir,
