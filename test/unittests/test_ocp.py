@@ -139,8 +139,27 @@ class TestOCP(unittest.TestCase):
         pass
 
     def test_do_play(self):
-        # TODO
-        pass
+        called = False
+
+        def play_media(*args, **kwargs):
+            nonlocal called
+            called = True
+
+        self.ocp.player.play_media = play_media
+
+        msg = Message("")
+        self.ocp.player.handle_play_request(msg)
+        self.assertTrue(called)  # no message.context -> broadcast for everyone
+
+        msg = Message("", {}, {"destination": "audio"})
+        called = False
+        self.ocp.player.handle_play_request(msg)
+        self.assertTrue(called)  # "audio" is a native source
+
+        msg = Message("", {}, {"destination": "hive"})
+        called = False
+        self.ocp.player.handle_play_request(msg)
+        self.assertFalse(called) # ignored playback for remote client
 
     def test_search(self):
         # TODO
