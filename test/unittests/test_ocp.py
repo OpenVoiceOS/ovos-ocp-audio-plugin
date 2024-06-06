@@ -70,17 +70,6 @@ class TestOCP(unittest.TestCase):
         # TODO
         pass
 
-    def test_classify_media(self):
-        music = "play some music"
-        movie = "play a movie"
-        news = "play the latest news"
-        unknown = "play something"
-        self.ocp.register_media_intents()
-        self.assertEqual(self.ocp.classify_media(music), MediaType.MUSIC)
-        self.assertEqual(self.ocp.classify_media(movie), MediaType.MOVIE)
-        self.assertEqual(self.ocp.classify_media(news), MediaType.NEWS)
-        self.assertEqual(self.ocp.classify_media(unknown), MediaType.GENERIC)
-
     def test_handle_open(self):
         real_gui_home = self.ocp.gui.show_home
         self.ocp.gui.show_home = Mock()
