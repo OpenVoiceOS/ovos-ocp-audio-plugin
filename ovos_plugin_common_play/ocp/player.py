@@ -370,12 +370,11 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         messagebus to account for loading failures, even if config claims
         backend is enabled it might not load
         """
-        backends = self.audio_service.available_backends()
         cfg = Configuration()["Audio"]["backends"]
-        available = [k for k, v in backends.items()
-                     if cfg[k].get("type", "") != "ovos_common_play"]
+        available = [k for k, v in cfg.items()
+                     if v.get("type", "") != "ovos_common_play"]
         preferred = self.settings.get("preferred_audio_services") or \
-                    ["vlc", "mplayer", "simple"]
+                    ["vlc", "simple"]
         for b in preferred:
             if b in available:
                 return b
