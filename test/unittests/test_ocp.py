@@ -75,7 +75,7 @@ class TestOCP(unittest.TestCase):
         movie = "play a movie"
         news = "play the latest news"
         unknown = "play something"
-        self.ocp.register_media_intents(force=True)
+        self.ocp.register_media_intents()
         self.assertEqual(self.ocp.classify_media(music), MediaType.MUSIC)
         self.assertEqual(self.ocp.classify_media(movie), MediaType.MOVIE)
         self.assertEqual(self.ocp.classify_media(news), MediaType.NEWS)

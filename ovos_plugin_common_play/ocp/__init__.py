@@ -162,15 +162,11 @@ class OCP(OVOSAbstractApplication):
             # trigger a presence announcement from all loaded ocp skills
             self.bus.emit(Message("ovos.common_play.skills.get"))
 
-    def register_media_intents(self, force=False):
+    def register_media_intents(self):
         """
         NOTE: uses the same format as mycroft .intent files, language
         support is handled the same way
         """
-        if not force and self.using_new_pipeline:
-            LOG.debug("skipping Classic OCP media type intents registration")
-            return
-
         locale_folder = join(dirname(__file__), "res", "locale", self.lang)
         intents = self.intent2media
         if self.settings.get("adult_content", False):
