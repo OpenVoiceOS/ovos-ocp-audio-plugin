@@ -43,7 +43,8 @@ class OCP(OVOSAbstractApplication):
         "hentai": MediaType.HENTAI
     }
 
-    def __init__(self, bus=None, lang=None, settings=None, skill_id=OCP_ID):
+    def __init__(self, bus=None, lang=None, settings=None, skill_id=OCP_ID,
+                 validate_source: bool = False):
         # settings = settings or OCPSettings()
         res_dir = join(dirname(__file__), "res")
         super().__init__(skill_id=skill_id, resources_dir=res_dir,
@@ -58,7 +59,8 @@ class OCP(OVOSAbstractApplication):
                                      settings=self.settings,
                                      resources_dir=res_dir,
                                      gui=self.gui,
-                                     skill_id=OCP_ID)
+                                     skill_id=OCP_ID,
+                                     validate_source=validate_source)
         self.media_intents = IntentContainer()
         self.register_ocp_api_events()
 
