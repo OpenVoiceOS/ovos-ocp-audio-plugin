@@ -25,6 +25,10 @@ class OCPAudioBackend(OCPAudioPlayerBackend):
                     self.handle_receive_meta)
         self.create_ocp(self.config)
 
+    @property
+    def player(self):
+        return self.ocp.player
+
     def create_ocp(self, config: dict):
         self.config = config
         self.config.setdefault("mode", "auto")
