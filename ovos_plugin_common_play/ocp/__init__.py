@@ -1,5 +1,6 @@
 from os.path import join, dirname, isfile
 from threading import Event, Lock
+from typing import Optional, List
 from ovos_config import Configuration
 from ovos_plugin_common_play.ocp.gui import OCPMediaPlayerGUI
 from ovos_plugin_common_play.ocp.player import OCPMediaPlayer
@@ -44,7 +45,8 @@ class OCP(OVOSAbstractApplication):
     }
 
     def __init__(self, bus=None, lang=None, settings=None, skill_id=OCP_ID,
-                 validate_source: bool = True):
+                 validate_source: bool = True,
+                 native_sources: Optional[List[str]] = None):
         # settings = settings or OCPSettings()
         res_dir = join(dirname(__file__), "res")
         super().__init__(skill_id=skill_id, resources_dir=res_dir,
@@ -60,7 +62,8 @@ class OCP(OVOSAbstractApplication):
                                      resources_dir=res_dir,
                                      gui=self.gui,
                                      skill_id=OCP_ID,
-                                     validate_source=validate_source)
+                                     validate_source=validate_source,
+                                     native_sources=native_sources)
         self.media_intents = IntentContainer()
         self.register_ocp_api_events()
 
