@@ -1,7 +1,6 @@
 import enum
 from os.path import join, dirname
 from threading import Lock, Timer
-from ovos_plugin_common_play.ocp import OCP_ID
 from time import sleep
 
 from ovos_bus_client.apis.gui import GUIInterface
