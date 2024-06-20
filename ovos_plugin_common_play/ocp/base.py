@@ -1,11 +1,13 @@
-from ovos_config.locations import get_xdg_config_save_path
-from ovos_plugin_common_play.ocp.constants import OCP_ID
-from ovos_plugin_common_play.ocp.status import MediaState, PlayerState, TrackState
-from ovos_plugin_manager.templates.audio import AudioBackend
-from ovos_ocp_files_plugin.plugin import OCPFilesMetadataExtractor
-from ovos_utils.log import LOG
-from os.path import basename, join, isfile
+from os.path import join, isfile
+
 from ovos_bus_client.message import Message
+from ovos_config.locations import get_xdg_config_save_path
+from ovos_plugin_manager.templates.audio import AudioBackend
+from ovos_utils.log import LOG
+from ovos_workshop.decorators.ocp import MediaState, PlayerState, TrackState
+
+from ovos_plugin_common_play.ocp.constants import OCP_ID
+from ovos_plugin_common_play.ocp.utils import extract_metadata
 
 
 class OCPAbstractComponent:
@@ -220,30 +222,7 @@ class OCPAudioPlayerBackend(AudioBackend):
         elif not isinstance(tracks, list):
             raise ValueError
         self.load_track(tracks[0])
-        self._tracks = [_uri2meta(t) for t in tracks]
+        self._tracks = [extract_metadata(t) for t in tracks]
         self.bus.emit(Message('ovos.common_play.playlist.queue',
-                      {'tracks': self._tracks}))
+                              {'tracks': self._tracks}))
         self.track_info()  # will trigger update in track data
-
-
-def _uri2meta(uri):
-    if isinstance(uri, list):
-        uri = uri[0]
-    try:
-        # only works for local files
-        # audio only (?)
-        meta = OCPFilesMetadataExtractor.extract_metadata(uri)
-    except Exception as e:
-        LOG.exception(e)
-        # TODO let's try to dig for message and see if theres
-        #  anything there, maybe set title / artist to skill_id ?
-        meta = {"uri": uri,
-                "title": basename(uri),
-                "artist": "ovos.common_play.plugin",
-                "album": "",
-                "image": "",
-                "playback": 2,  # PlaybackType.AUDIO,  # TODO mime type check
-                "status": 33  # TrackState.QUEUED_AUDIO
-                }
-    meta["skill_id"] = "mycroft.audio_interface"
-    return meta

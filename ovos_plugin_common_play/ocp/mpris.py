@@ -7,10 +7,9 @@ from dbus_next.constants import BusType
 from dbus_next.message import Message as DbusMessage, \
     MessageType as DbusMessageType
 from dbus_next.service import ServiceInterface, method, dbus_property, PropertyAccess
-from ovos_utils.log import LOG
 from ovos_bus_client.message import Message
-from ovos_plugin_common_play.ocp.status import TrackState, PlaybackType, \
-    PlayerState, LoopState
+from ovos_utils.log import LOG
+from ovos_workshop.decorators.ocp import TrackState, PlaybackType, PlayerState, LoopState
 
 
 class MprisPlayerCtl(Thread):
@@ -571,7 +570,7 @@ class _MediaPlayer2PlayerInterface(ServiceInterface):
 
     @dbus_property(access=PropertyAccess.READ)
     def Position(self) -> 'd':
-        return 1 # TODO from ocp_player
+        return 1  # TODO from ocp_player
 
     @dbus_property(access=PropertyAccess.READ)
     def CanPlay(self) -> 'b':
@@ -623,6 +622,3 @@ class _MediaPlayer2PlayerInterface(ServiceInterface):
             self._ocp_player.resume()
         else:
             self._ocp_player.pause()
-
-
-

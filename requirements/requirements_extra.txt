@@ -5,3 +5,4 @@ ovos-ocp-bandcamp-plugin~=0.0, >=0.0.1
 ovos-ocp-m3u-plugin>0.0, >=0.0.1
 ovos-ocp-news-plugin~=0.0, >=0.0.3
 ovos_audio_plugin_simple>=0.0.2a3, < 0.1.0
+ovos-ocp-files-plugin~=0.13
