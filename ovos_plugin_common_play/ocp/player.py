@@ -407,9 +407,11 @@ class OCPMediaPlayer(OVOSAbstractApplication):
 
         LOG.debug(f"Requesting playback: {repr(self.active_backend)}")
         if self.active_backend == PlaybackType.AUDIO and not is_gui_running():
-            LOG.warning("Requested Audio playback via GUI without GUI. "
-                        "Choosing Audio Service")
-            self.now_playing.playback = PlaybackType.AUDIO_SERVICE
+            # NOTE: this is already normalized in self.validate_stream, using messagebus
+            # if we get here the GUI probably crashed, or just isnt "mycroft-gui-app" or "ovos-shell"
+            # is_gui_running() can not be trusted, log a warning only
+            LOG.warning("Requested Audio playback via GUI, but GUI doesn't seem to be running?")
+
         if self.active_backend == PlaybackType.AUDIO_SERVICE:
             LOG.debug("Handling playback via audio_service")
             # we explicitly want to use an audio backend for audio only output

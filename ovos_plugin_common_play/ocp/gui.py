@@ -363,48 +363,60 @@ class OCPMediaPlayerGUI(GUIInterface):
         self.send_event("ocp.gui.show.suggestion.view.disambiguation")
 
     # gui <-> playlists
-    def handle_play_from_playlist(self, message):
-        LOG.debug("Playback requested from playlist results")
-        media = message.data["playlistData"]
-        for track in self.player.playlist:
-            if track == media:  # found track
-                self.player.play_media(track)
-                break
-        else:
-            LOG.error("Track is not part of loaded playlist!")
-
-    def _gui2entry(self, gui_entry):
+    def _gui2entry(self, gui_entry, from_playlist=True, from_search=True):
         if isinstance(gui_entry, dict):
             gui_entry = dict2entry(gui_entry)
         # HACK: since the GUI sends incomplete data,
         # we need to check the internal playlist....
-        for track in self.player.disambiguation:
-            if isinstance(gui_entry, Playlist):
-                if not isinstance(track, Playlist):
-                    continue
-                if track.title == gui_entry.title:
-                    LOG.debug(f"gui data mapped to {track}")
-                    return track
+        if from_playlist:
+            for track in self.player.playlist:
+                if isinstance(gui_entry, Playlist):
+                    if not isinstance(track, Playlist):
+                        continue
+                    if track.title == gui_entry.title:
+                        LOG.debug(f"gui data mapped to {track}")
+                        return track
 
-            elif not isinstance(track, Playlist):
-                if isinstance(track, PluginStream):
-                    uri = f"{track.extractor_id}//{track.stream}"
-                else:
-                    uri = track.uri
-                if uri == gui_entry.uri:
-                    LOG.debug(f"gui data mapped to {track}")
-                    return track
-        else:
-            LOG.warning("malformed GUI request, track not in search results")
-            if gui_entry.playback == PlaybackType.UNDEFINED:
-                LOG.error("undefined playback type, assuming PlaybackType.AUDIO")
-                gui_entry.playback = PlaybackType.AUDIO
-            # either GUI issues got fixed or an error will be spoken
-            return gui_entry
+                elif not isinstance(track, Playlist):
+                    if isinstance(track, PluginStream):
+                        uri = f"{track.extractor_id}//{track.stream}"
+                    else:
+                        uri = track.uri
+                    if uri == gui_entry.uri:
+                        LOG.debug(f"gui data mapped to {track}")
+                        return track
+        if from_search:
+            for track in self.player.disambiguation:
+                if isinstance(gui_entry, Playlist):
+                    if not isinstance(track, Playlist):
+                        continue
+                    if track.title == gui_entry.title:
+                        LOG.debug(f"gui data mapped to {track}")
+                        return track
+
+                elif not isinstance(track, Playlist):
+                    if isinstance(track, PluginStream):
+                        uri = f"{track.extractor_id}//{track.stream}"
+                    else:
+                        uri = track.uri
+                    if uri == gui_entry.uri:
+                        LOG.debug(f"gui data mapped to {track}")
+                        return track
+        LOG.warning("malformed GUI request, track not in search results")
+        if gui_entry.playback == PlaybackType.UNDEFINED:
+            LOG.error("undefined playback type, assuming PlaybackType.AUDIO")
+            gui_entry.playback = PlaybackType.AUDIO
+        # either GUI issues got fixed or an error will be spoken
+        return gui_entry
+
+    def handle_play_from_playlist(self, message):
+        LOG.debug("Playback requested from playlist results")
+        media = self._gui2entry(message.data["playlistData"], from_playlist=True, from_search=False)
+        self.player.play_media(media)
 
     def handle_play_from_search(self, message):
         LOG.debug("Playback requested from search results")
-        media = self._gui2entry(message.data["playlistData"])
+        media = self._gui2entry(message.data["playlistData"], from_playlist=False, from_search=True)
         self.player.play_media(media)
 
     def handle_play_skill_featured_media(self, message):
