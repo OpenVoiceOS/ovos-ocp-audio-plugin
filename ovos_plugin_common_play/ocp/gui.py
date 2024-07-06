@@ -404,8 +404,8 @@ class OCPMediaPlayerGUI(GUIInterface):
                         return track
         LOG.warning("malformed GUI request, track not in search results")
         if gui_entry.playback == PlaybackType.UNDEFINED:
-            LOG.error("undefined playback type, assuming PlaybackType.AUDIO")
-            gui_entry.playback = PlaybackType.AUDIO
+            LOG.error("undefined playback type, assuming PlaybackType.AUDIO_SERVICE")
+            gui_entry.playback = PlaybackType.AUDIO_SERVICE
         # either GUI issues got fixed or an error will be spoken
         return gui_entry
 

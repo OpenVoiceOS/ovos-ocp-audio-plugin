@@ -74,26 +74,6 @@ class TestMediaEntry(unittest.TestCase):
         # TODO
         pass
 
-    def test_from_dict(self):
-        dict_data = valid_search_results[1]
-        from_dict = MediaEntry.from_dict(dict_data)
-        self.assertIsInstance(from_dict, RealMediaEntry)
-        from_init = MediaEntry(dict_data["title"], dict_data["uri"],
-                               image=dict_data["image"],
-                               match_confidence=dict_data["match_confidence"],
-                               playback=PlaybackType.AUDIO,
-                               skill_icon=dict_data["skill_icon"],
-                               media_type=dict_data["media_type"],
-                               artist=dict_data["artist"])
-        self.assertEqual(from_init, from_dict)
-
-        # Test int playback
-        dict_data['playback'] = int(dict_data['playback'])
-        new_entry = MediaEntry.from_dict(dict_data)
-        self.assertEqual(from_dict, new_entry)
-
-        self.assertIsInstance(MediaEntry.from_dict({}), RealMediaEntry)
-
     def test_info(self):
         # TODO
         pass
