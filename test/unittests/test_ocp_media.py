@@ -74,6 +74,26 @@ class TestMediaEntry(unittest.TestCase):
         # TODO
         pass
 
+    def test_from_dict(self):
+        dict_data = valid_search_results[1]
+        from_dict = MediaEntry.from_dict(dict_data)
+        self.assertIsInstance(from_dict, RealMediaEntry)
+        from_init = MediaEntry(dict_data["title"], dict_data["uri"],
+                               image=dict_data["image"],
+                               match_confidence=dict_data["match_confidence"],
+                               playback=PlaybackType.AUDIO,
+                               skill_icon=dict_data["skill_icon"],
+                               media_type=dict_data["media_type"],
+                               artist=dict_data["artist"])
+        self.assertEqual(from_init, from_dict)
+
+        # Test int playback
+        dict_data['playback'] = int(dict_data['playback'])
+        new_entry = MediaEntry.from_dict(dict_data)
+        self.assertEqual(from_dict, new_entry)
+
+        self.assertIsInstance(MediaEntry.from_dict({"uri": "test"}), RealMediaEntry)
+
     def test_info(self):
         # TODO
         pass
@@ -106,8 +126,7 @@ class TestPlaylist(unittest.TestCase):
         self.assertTrue(pl.is_last_track)
 
         # Playlist of dicts
-        pl = Playlist()
-        pl += valid_search_results
+        pl = Playlist(valid_search_results)
         self.assertEqual(pl.position, 0)
         self.assertEqual(len(pl), len(valid_search_results))
         self.assertEqual(len(pl.entries), len(valid_search_results))
@@ -171,8 +190,7 @@ class TestPlaylist(unittest.TestCase):
         self.assertEqual(pl.position, 0)
 
         # Test playlist of len 1
-        pl = Playlist()
-        pl.append(valid_search_results[0])
+        pl = Playlist([valid_search_results[0]])
         pl.position = 0
         pl._validate_position()
         self.assertEqual(pl.position, 0)
@@ -181,8 +199,7 @@ class TestPlaylist(unittest.TestCase):
         self.assertEqual(pl.position, 0)
 
         # Test playlist of len>1
-        pl = Playlist()
-        pl += valid_search_results
+        pl = Playlist(valid_search_results)
         pl.position = 0
         pl._validate_position()
         self.assertEqual(pl.position, 0)
