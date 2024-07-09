@@ -9,11 +9,12 @@ from ovos_utils.gui import is_gui_connected, is_gui_running
 from ovos_utils.log import LOG
 from ovos_utils.messagebus import Message
 from ovos_workshop import OVOSAbstractApplication
-from ovos_workshop.decorators.ocp import LoopState, MediaState, PlayerState, TrackState, PlaybackType, PlaybackMode
+from ovos_workshop.backwards_compat import (PluginStream, LoopState, MediaState, PlayerState, TrackState,
+                                            PlaybackType, MediaEntry, PlaybackMode, Playlist)
 
 from ovos_plugin_common_play.ocp.constants import OCP_ID
 from ovos_plugin_common_play.ocp.gui import OCPMediaPlayerGUI
-from ovos_plugin_common_play.ocp.media import NowPlaying, Playlist, MediaEntry, _ME
+from ovos_plugin_common_play.ocp.media import NowPlaying
 from ovos_plugin_common_play.ocp.mpris import MprisPlayerCtl
 from ovos_plugin_common_play.ocp.mycroft_cps import MycroftAudioService
 from ovos_plugin_common_play.ocp.search import OCPSearch
@@ -241,7 +242,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         self.bus.emit(Message("ovos.common_play.player.state",
                               {"state": self.state}))
 
-    def set_now_playing(self, track: Union[dict, MediaEntry]):
+    def set_now_playing(self, track: Union[dict, MediaEntry, Playlist, PluginStream]):
         """
         Set `track` as the currently playing media, update the playlist, and
         notify any GUI or MPRIS clients. Adds `track` to `playlist`
@@ -250,11 +251,15 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         LOG.debug(f"Playing: {track}")
         if isinstance(track, dict):
             LOG.debug("Handling dict track")
-            track = dict2entry(track)
-        if not isinstance(track, (_ME, Playlist)):
+            if "uri" not in track:
+                track["uri"] = ""  # when syncing from MPRIS uri is missing
+            track = MediaEntry.from_dict(track)
+        if not isinstance(track, (MediaEntry, Playlist, PluginStream)):
             raise ValueError(f"Expected MediaEntry/Playlist, but got: {track}")
         self.now_playing.reset()  # reset now_playing to remove old metadata
-        if isinstance(track, _ME):
+        if isinstance(track, PluginStream):
+            track = track.as_media_entry
+        if isinstance(track, MediaEntry):
             # single track entry (MediaEntry)
             self.now_playing.update(track)
             # copy now_playing (without event handlers) to playlist
@@ -321,7 +326,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         self.play_next()
 
     # media controls
-    def play_media(self, track: Union[dict, MediaEntry],
+    def play_media(self, track: Union[dict, MediaEntry, PluginStream, Playlist],
                    disambiguation: List[Union[dict, MediaEntry]] = None,
                    playlist: List[Union[dict, MediaEntry]] = None):
         """
@@ -332,7 +337,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         """
         if isinstance(track, dict):
             track = dict2entry(track)
-        if not isinstance(track, (_ME, Playlist)):
+        if not isinstance(track, (MediaEntry, Playlist, PluginStream)):
             raise TypeError(f"Expected MediaEntry/Playlist, got: {track}")
         if isinstance(track, Playlist) and not playlist:
             playlist = track
@@ -404,9 +409,11 @@ class OCPMediaPlayer(OVOSAbstractApplication):
 
         LOG.debug(f"Requesting playback: {repr(self.active_backend)}")
         if self.active_backend == PlaybackType.AUDIO and not is_gui_running():
-            LOG.warning("Requested Audio playback via GUI without GUI. "
-                        "Choosing Audio Service")
-            self.now_playing.playback = PlaybackType.AUDIO_SERVICE
+            # NOTE: this is already normalized in self.validate_stream, using messagebus
+            # if we get here the GUI probably crashed, or just isnt "mycroft-gui-app" or "ovos-shell"
+            # is_gui_running() can not be trusted, log a warning only
+            LOG.warning("Requested Audio playback via GUI, but GUI doesn't seem to be running?")
+
         if self.active_backend == PlaybackType.AUDIO_SERVICE:
             LOG.debug("Handling playback via audio_service")
             # we explicitly want to use an audio backend for audio only output

@@ -92,7 +92,7 @@ class TestMediaEntry(unittest.TestCase):
         new_entry = MediaEntry.from_dict(dict_data)
         self.assertEqual(from_dict, new_entry)
 
-        self.assertIsInstance(MediaEntry.from_dict({}), RealMediaEntry)
+        self.assertIsInstance(MediaEntry.from_dict({"uri": "test"}), RealMediaEntry)
 
     def test_info(self):
         # TODO
