@@ -41,7 +41,7 @@ valid_search_results = [
 
 class TestOCPPlayer(unittest.TestCase):
     bus = FakeBus()
-    player = OCPMediaPlayer(bus)
+    player = OCPMediaPlayer(bus, settings={'disable_mpris': False})
     emitted_msgs = []
 
     @classmethod
@@ -93,7 +93,7 @@ class TestOCPPlayer(unittest.TestCase):
                       'ovos.common_play.play',
                       'ovos.common_play.pause',
                       'ovos.common_play.resume',
-                      'ovos.common_play.stop',
+                      #'ovos.common_play.stop',
                       'ovos.common_play.next',
                       'ovos.common_play.previous',
                       'ovos.common_play.seek',

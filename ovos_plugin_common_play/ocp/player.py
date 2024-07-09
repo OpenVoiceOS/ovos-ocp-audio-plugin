@@ -251,7 +251,9 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         LOG.debug(f"Playing: {track}")
         if isinstance(track, dict):
             LOG.debug("Handling dict track")
-            track = dict2entry(track)
+            if "uri" not in track:
+                track["uri"] = ""  # when syncing from MPRIS uri is missing
+            track = MediaEntry.from_dict(track)
         if not isinstance(track, (MediaEntry, Playlist, PluginStream)):
             raise ValueError(f"Expected MediaEntry/Playlist, but got: {track}")
         self.now_playing.reset()  # reset now_playing to remove old metadata

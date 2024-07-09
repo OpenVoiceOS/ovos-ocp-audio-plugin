@@ -48,6 +48,12 @@ class MediaEntry(_ME):
         """
         return merge_dict(self.as_dict, self.infocard)
 
+    @staticmethod
+    def from_dict(track: dict) -> 'MediaEntry':
+        if "uri" not in track:  # not valid in ovos-utils.ocp
+            track["uri"] = ""
+        return _ME.from_dict(track)
+
 
 class NowPlaying(MediaEntry):
     def __init__(self, *args, **kwargs):
