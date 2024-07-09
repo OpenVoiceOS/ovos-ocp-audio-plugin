@@ -1,6 +1,6 @@
 from os.path import join, dirname
 from typing import Union
-
+from dataclasses import dataclass
 from ovos_bus_client.client import MessageBusClient
 from ovos_bus_client.message import Message
 from ovos_utils.json_helper import merge_dict
@@ -11,7 +11,21 @@ from ovos_plugin_common_play.ocp.constants import OCP_ID
 from ovos_plugin_common_play.ocp.utils import ocp_plugins
 
 
+@dataclass
 class MediaEntry(_ME):
+    uri: str = ""
+    title: str = ""
+    artist: str = ""
+    match_confidence: int = 0  # 0 - 100
+    skill_id: str = OCP_ID
+    playback: PlaybackType = PlaybackType.UNDEFINED
+    status: TrackState = TrackState.DISAMBIGUATION
+    media_type: MediaType = MediaType.GENERIC
+    length: int = 0  # in seconds
+    image: str = ""
+    skill_icon: str = ""
+    javascript: str = ""  # to execute once webview is loaded
+
     def __init__(self, title="", uri="", skill_id=OCP_ID,
                  image=None, match_confidence=0,
                  playback=PlaybackType.UNDEFINED,
@@ -55,7 +69,21 @@ class MediaEntry(_ME):
         return _ME.from_dict(track)
 
 
+@dataclass
 class NowPlaying(MediaEntry):
+    uri: str = ""
+    title: str = ""
+    artist: str = ""
+    match_confidence: int = 0  # 0 - 100
+    skill_id: str = OCP_ID
+    playback: PlaybackType = PlaybackType.UNDEFINED
+    status: TrackState = TrackState.DISAMBIGUATION
+    media_type: MediaType = MediaType.GENERIC
+    length: int = 0  # in seconds
+    image: str = ""
+    skill_icon: str = ""
+    javascript: str = ""  # to execute once webview is loaded
+
     def __init__(self, *args, **kwargs):
         MediaEntry.__init__(self, *args, **kwargs)
         self._player = None
@@ -63,7 +91,7 @@ class NowPlaying(MediaEntry):
     @property
     def as_dict(self) -> dict:
         """
-        Return a dict reporesentation of this MediaEntry
+        Return a dict representation of this MediaEntry
         """
         return {k: v for k, v in self.__dict__.items()
                 if not k.startswith("_")}
