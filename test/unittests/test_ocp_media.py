@@ -106,7 +106,8 @@ class TestPlaylist(unittest.TestCase):
         self.assertTrue(pl.is_last_track)
 
         # Playlist of dicts
-        pl = Playlist(valid_search_results)
+        pl = Playlist()
+        pl += valid_search_results
         self.assertEqual(pl.position, 0)
         self.assertEqual(len(pl), len(valid_search_results))
         self.assertEqual(len(pl.entries), len(valid_search_results))
@@ -170,7 +171,8 @@ class TestPlaylist(unittest.TestCase):
         self.assertEqual(pl.position, 0)
 
         # Test playlist of len 1
-        pl = Playlist([valid_search_results[0]])
+        pl = Playlist()
+        pl.append(valid_search_results[0])
         pl.position = 0
         pl._validate_position()
         self.assertEqual(pl.position, 0)
@@ -179,7 +181,8 @@ class TestPlaylist(unittest.TestCase):
         self.assertEqual(pl.position, 0)
 
         # Test playlist of len>1
-        pl = Playlist(valid_search_results)
+        pl = Playlist()
+        pl += valid_search_results
         pl.position = 0
         pl._validate_position()
         self.assertEqual(pl.position, 0)
