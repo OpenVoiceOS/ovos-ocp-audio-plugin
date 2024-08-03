@@ -261,7 +261,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         if isinstance(track, PluginStream):
             track = track.extract_media_entry(video=track.playback == PlaybackType.VIDEO)
             LOG.info(f"PluginStream extracted: {track}")
-            self.playlist[idx] = track # update extracted plugin stream
+            self.playlist[idx] = track  # update extracted plugin stream
 
         if isinstance(track, MediaEntry):
             # single track entry (MediaEntry)
@@ -316,11 +316,6 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         if self.active_backend not in [PlaybackType.SKILL,
                                        PlaybackType.UNDEFINED,
                                        PlaybackType.MPRIS]:
-            try:
-                self.now_playing.extract_stream()
-            except Exception as e:
-                LOG.exception(e)
-                return False
             has_gui = is_gui_running() or is_gui_connected(self.bus)
             if not has_gui or self.settings.get("force_audioservice", False) or \
                     self.settings.get("playback_mode") == PlaybackMode.FORCE_AUDIOSERVICE:
