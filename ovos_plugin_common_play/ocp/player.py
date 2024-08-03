@@ -251,13 +251,16 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         LOG.debug(f"Playing: {track}")
         if isinstance(track, dict):
             LOG.debug(f"Handling dict track: {track}")
-            if "uri" not in track:
-                track["uri"] = ""  # when syncing from MPRIS uri is missing
+            if "uri" not in track:  # TODO handle this better
+                track["uri"] = "external:"  # when syncing from MPRIS uri is missing
             track = dict2entry(track)
         if not isinstance(track, (MediaEntry, Playlist, PluginStream)):
             raise ValueError(f"Expected MediaEntry/Playlist, but got: {track}")
 
-        idx = self.playlist.index(track)  # find the entry in "now playing"
+        try:
+            idx = self.playlist.index(track)  # find the entry in "now playing"
+        except ValueError:
+            idx = -1
         if isinstance(track, PluginStream):
             track = track.extract_media_entry(video=track.playback == PlaybackType.VIDEO)
             LOG.info(f"PluginStream extracted: {track}")
@@ -321,7 +324,10 @@ class OCPMediaPlayer(OVOSAbstractApplication):
             if not has_gui or self.settings.get("force_audioservice", False) or \
                     self.settings.get("playback_mode") == PlaybackMode.FORCE_AUDIOSERVICE:
                 # No gui, so lets force playback to use audio only
+                LOG.debug("Casting to PlaybackType.AUDIO_SERVICE")
                 self.now_playing.playback = PlaybackType.AUDIO_SERVICE
+            if not self.now_playing.uri:
+                return False
             self.gui["stream"] = self.now_playing.uri
 
         self.gui.update_current_track()
