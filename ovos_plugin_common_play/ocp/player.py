@@ -250,37 +250,51 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         """
         LOG.debug(f"Playing: {track}")
         if isinstance(track, dict):
-            LOG.debug("Handling dict track")
+            LOG.debug(f"Handling dict track: {track}")
             if "uri" not in track:
                 track["uri"] = ""  # when syncing from MPRIS uri is missing
-            track = MediaEntry.from_dict(track)
+            track = dict2entry(track)
         if not isinstance(track, (MediaEntry, Playlist, PluginStream)):
             raise ValueError(f"Expected MediaEntry/Playlist, but got: {track}")
-        self.now_playing.reset()  # reset now_playing to remove old metadata
+
+        idx = self.playlist.index(track)  # find the entry in "now playing"
         if isinstance(track, PluginStream):
-            track = track.as_media_entry
+            track = track.extract_media_entry(video=track.playback == PlaybackType.VIDEO)
+            LOG.info(f"PluginStream extracted: {track}")
+            self.playlist[idx] = track # update extracted plugin stream
+
         if isinstance(track, MediaEntry):
             # single track entry (MediaEntry)
             self.now_playing.update(track)
-            # copy now_playing (without event handlers) to playlist
-            # entry = self.now_playing.as_entry()
-            if track not in self.playlist:  # compared by uri
+
+            # update playlist position
+            if idx > -1:
+                self.playlist.set_position(idx)
+            # add to "now playing" if it's a new track
+            elif track not in self.playlist:  # compared by uri
                 self.playlist.add_entry(track)
+                self.playlist.set_position(len(self.playlist) - 1)
+            # find equivalent track position in playlist
+            else:
+                self.playlist.goto_track(track)
+
         elif isinstance(track, Playlist):
             # this is a playlist result (list of dicts)
             self.playlist.clear()
             for entry in track:
                 self.playlist.add_entry(entry)
 
-            if len(self.playlist):
-                self.now_playing.update(self.playlist[0])
-            else:
-                # If there's no URI, the skill might be handling playback so
-                # now_playing should still be updated
-                self.now_playing.update(self.playlist.as_dict)
+            # mew playlist -> reset playlist position to the start
+            self.playlist.set_position(0)
 
-        # sync playlist position
-        self.playlist.goto_track(self.now_playing)
+            # update self.now_playing
+            if len(self.playlist):
+                track = self.playlist[0]
+                return self.set_now_playing(track)
+
+            # If there's no URI, the skill might be handling playback so
+            # now_playing should still be updated
+            self.now_playing.update(self.playlist.as_dict)
 
         # update gui values
         self.gui.update_current_track()
