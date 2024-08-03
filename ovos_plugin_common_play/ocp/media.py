@@ -194,7 +194,7 @@ class NowPlaying(MediaEntry):
 
     def extract_stream(self):
         """
-        Get metadata from ocp_plugins and add it to this MediaEntry
+        DEPRECATED: Get metadata from ocp_plugins and add it to this MediaEntry
         """
         uri = self.uri
         if not uri:

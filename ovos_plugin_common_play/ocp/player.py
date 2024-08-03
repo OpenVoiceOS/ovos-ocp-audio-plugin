@@ -250,37 +250,55 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         """
         LOG.debug(f"Playing: {track}")
         if isinstance(track, dict):
-            LOG.debug("Handling dict track")
-            if "uri" not in track:
-                track["uri"] = ""  # when syncing from MPRIS uri is missing
-            track = MediaEntry.from_dict(track)
+            LOG.debug(f"Handling dict track: {track}")
+            if "uri" not in track:  # TODO handle this better
+                track["uri"] = "external:"  # when syncing from MPRIS uri is missing
+            track = dict2entry(track)
         if not isinstance(track, (MediaEntry, Playlist, PluginStream)):
             raise ValueError(f"Expected MediaEntry/Playlist, but got: {track}")
-        self.now_playing.reset()  # reset now_playing to remove old metadata
+
+        try:
+            idx = self.playlist.index(track)  # find the entry in "now playing"
+        except ValueError:
+            idx = -1
         if isinstance(track, PluginStream):
-            track = track.as_media_entry
+            track = track.extract_media_entry(video=track.playback == PlaybackType.VIDEO)
+            LOG.info(f"PluginStream extracted: {track}")
+            if idx >= 0:
+                self.playlist[idx] = track  # update extracted plugin stream
+
         if isinstance(track, MediaEntry):
             # single track entry (MediaEntry)
             self.now_playing.update(track)
-            # copy now_playing (without event handlers) to playlist
-            # entry = self.now_playing.as_entry()
-            if track not in self.playlist:  # compared by uri
+
+            # update playlist position
+            if idx > -1:
+                self.playlist.set_position(idx)
+            # add to "now playing" if it's a new track
+            elif track not in self.playlist:  # compared by uri
                 self.playlist.add_entry(track)
+                self.playlist.set_position(len(self.playlist) - 1)
+            # find equivalent track position in playlist
+            else:
+                self.playlist.goto_track(track)
+
         elif isinstance(track, Playlist):
             # this is a playlist result (list of dicts)
             self.playlist.clear()
             for entry in track:
                 self.playlist.add_entry(entry)
 
-            if len(self.playlist):
-                self.now_playing.update(self.playlist[0])
-            else:
-                # If there's no URI, the skill might be handling playback so
-                # now_playing should still be updated
-                self.now_playing.update(self.playlist.as_dict)
+            # mew playlist -> reset playlist position to the start
+            self.playlist.set_position(0)
 
-        # sync playlist position
-        self.playlist.goto_track(self.now_playing)
+            # update self.now_playing
+            if len(self.playlist):
+                track = self.playlist[0]
+                return self.set_now_playing(track)
+
+            # If there's no URI, the skill might be handling playback so
+            # now_playing should still be updated
+            self.now_playing.update(self.playlist.as_dict)
 
         # update gui values
         self.gui.update_current_track()
@@ -302,16 +320,14 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         if self.active_backend not in [PlaybackType.SKILL,
                                        PlaybackType.UNDEFINED,
                                        PlaybackType.MPRIS]:
-            try:
-                self.now_playing.extract_stream()
-            except Exception as e:
-                LOG.exception(e)
-                return False
             has_gui = is_gui_running() or is_gui_connected(self.bus)
             if not has_gui or self.settings.get("force_audioservice", False) or \
                     self.settings.get("playback_mode") == PlaybackMode.FORCE_AUDIOSERVICE:
                 # No gui, so lets force playback to use audio only
+                LOG.debug("Casting to PlaybackType.AUDIO_SERVICE")
                 self.now_playing.playback = PlaybackType.AUDIO_SERVICE
+            if not self.now_playing.uri:
+                return False
             self.gui["stream"] = self.now_playing.uri
 
         self.gui.update_current_track()

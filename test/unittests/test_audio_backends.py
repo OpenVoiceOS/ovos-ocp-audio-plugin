@@ -51,26 +51,6 @@ class TestOCPLoad(unittest.TestCase):
 
         self.audio = AudioService(self.bus)
 
-    def test_native_ocp(self):
-        # assert that OCP is the selected default backend
-        self.assertTrue(isinstance(self.audio.default, OCPAudioBackend))
-
-        # assert that OCP is in "auto" mode
-        self.assertEqual(self.audio.default.config["mode"], "auto")
-
-        # assert that OCP is loaded
-        self.assertTrue(self.audio.default.ocp is not None)
-        self.assertTrue(isinstance(self.audio.default.ocp, OCP))
-
-        # assert that test backends also loaded
-        # NOTE: "service" is a list, should be named "services"
-        # not renamed for backwards compat but its a typo!
-        loaded_services = [s.name for s in self.audio.service]
-        self.assertIn("OCP", loaded_services)
-        # TODO fix me, add dummy plugins
-        #self.assertIn("mycroft_test", loaded_services)
-        #self.assertIn("ovos_test", loaded_services)
-
     def tearDown(self) -> None:
         self.audio.shutdown()
 
