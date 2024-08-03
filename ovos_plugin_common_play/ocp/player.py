@@ -261,7 +261,8 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         if isinstance(track, PluginStream):
             track = track.extract_media_entry(video=track.playback == PlaybackType.VIDEO)
             LOG.info(f"PluginStream extracted: {track}")
-            self.playlist[idx] = track  # update extracted plugin stream
+            if idx >= 0:
+                self.playlist[idx] = track  # update extracted plugin stream
 
         if isinstance(track, MediaEntry):
             # single track entry (MediaEntry)
