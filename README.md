@@ -36,6 +36,8 @@ mycroft.conf
 
 ## Standalone Mode
 
+> **DEPRECATED**: valid for ovos-core 0.0.7 only!
+
 Normally OCP is initialized and started by [ovos-audio](https://github.com/OpenVoiceOS/ovos-audio).
 
 However, in some situations you may want to run OCP in standalone mode.
