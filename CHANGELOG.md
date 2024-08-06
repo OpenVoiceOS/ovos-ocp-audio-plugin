@@ -1,8 +1,17 @@
 # Changelog
 
-## [0.0.7a10](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/0.0.7a10) (2024-08-03)
+## [0.0.7a11](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/0.0.7a11) (2024-08-06)
 
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.7a9...0.0.7a10)
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.7a10...0.0.7a11)
+
+**Fixed bugs:**
+
+- Playlists don't work when progressing naturally, but skips are fine [\#123](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/issues/123)
+- logs/end\_of\_track [\#124](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/124) ([JarbasAl](https://github.com/JarbasAl))
+
+## [V0.0.7a10](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.7a10) (2024-08-03)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.7a9...V0.0.7a10)
 
 **Fixed bugs:**
 
