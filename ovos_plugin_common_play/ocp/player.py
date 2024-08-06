@@ -769,10 +769,14 @@ class OCPMediaPlayer(OVOSAbstractApplication):
     @require_native_source()
     def handle_playback_ended(self, message):
         # TODO: When we get here, self.active_backend has been reset!
-        if (self.settings.get("autoplay", True) and \
-                self.active_backend != PlaybackType.MPRIS and
-                len(self.playlist.entries)):
-            LOG.debug(f"Playing next (backend={repr(self.active_backend)}")
+        LOG.info(f"END OF MEDIA - playlist pos: {self.playlist.position} "
+                  f"total tracks: {len(self.playlist)} "
+                 f"backend: {self.active_backend}")
+        go_next = self.settings.get("autoplay", True) and \
+                self.active_backend != PlaybackType.MPRIS and \
+                self.playlist.position + 1 < len(self.playlist)
+        LOG.debug(f"Go to Next track: {go_next}")
+        if go_next:
             self.play_next()
             return
         LOG.info("Playback ended")
