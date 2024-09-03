@@ -1,160 +1,93 @@
 # Changelog
 
-## [V0.0.6a16](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.6a16) (2024-01-18)
+## [V0.0.7a11](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.7a11) (2024-08-06)
 
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.6a15...V0.0.6a16)
-
-**Fixed bugs:**
-
-- OCP GUI stays up until dismissed after playing a single track [\#98](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/issues/98)
-- settings storage seems to be ambiguous [\#43](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/issues/43)
-
-**Merged pull requests:**
-
-- Add upper version pin for ovos-utils [\#106](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/106) ([NeonDaniel](https://github.com/NeonDaniel))
-
-## [V0.0.6a15](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.6a15) (2024-01-10)
-
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.6a14...V0.0.6a15)
-
-**Closed issues:**
-
-- `StreamHandler` initialized on import [\#54](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/issues/54)
-- Emit messagebus event on Intent match [\#20](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/issues/20)
-
-**Merged pull requests:**
-
-- Update news.intent [\#83](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/83) ([timonvanhasselt](https://github.com/timonvanhasselt))
-
-## [V0.0.6a14](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.6a14) (2024-01-08)
-
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.6a13...V0.0.6a14)
-
-**Merged pull requests:**
-
-- allow alpha utils [\#105](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/105) ([JarbasAl](https://github.com/JarbasAl))
-
-## [V0.0.6a13](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.6a13) (2024-01-02)
-
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.6a12...V0.0.6a13)
-
-**Merged pull requests:**
-
-- Update dependencies to stable versions with ovos-core 0.0.7 compat. [\#104](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/104) ([NeonDaniel](https://github.com/NeonDaniel))
-
-## [V0.0.6a12](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.6a12) (2023-12-30)
-
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.6a11...V0.0.6a12)
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.7a10...V0.0.7a11)
 
 **Fixed bugs:**
 
-- fix/OCP\_plugins\_loading [\#103](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/103) ([JarbasAl](https://github.com/JarbasAl))
+- Playlists don't work when progressing naturally, but skips are fine [\#123](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/issues/123)
+- logs/end\_of\_track [\#124](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/124) ([JarbasAl](https://github.com/JarbasAl))
 
-## [V0.0.6a11](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.6a11) (2023-12-29)
+## [V0.0.7a10](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.7a10) (2024-08-03)
 
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.6a10...V0.0.6a11)
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.7a9...V0.0.7a10)
+
+**Fixed bugs:**
+
+- fix/playlist\_handling [\#122](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/122) ([JarbasAl](https://github.com/JarbasAl))
+
+## [V0.0.7a9](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.7a9) (2024-07-09)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.7a8...V0.0.7a9)
+
+**Fixed bugs:**
+
+- fix/play\_from\_gui [\#121](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/121) ([JarbasAl](https://github.com/JarbasAl))
+
+## [V0.0.7a8](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.7a8) (2024-06-06)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.7a7...V0.0.7a8)
+
+**Fixed bugs:**
+
+- fix/native\_sources [\#120](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/120) ([JarbasAl](https://github.com/JarbasAl))
+
+## [V0.0.7a7](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.7a7) (2024-06-02)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.7a6...V0.0.7a7)
 
 **Merged pull requests:**
 
-- Update requirements.txt [\#102](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/102) ([JarbasAl](https://github.com/JarbasAl))
+- default to OCP pipeline + support for utils 0.0.38 [\#119](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/119) ([JarbasAl](https://github.com/JarbasAl))
 
-## [V0.0.6a10](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.6a10) (2023-12-29)
+## [V0.0.7a6](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.7a6) (2024-05-28)
 
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.6a9...V0.0.6a10)
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.7a5...V0.0.7a6)
 
-**Merged pull requests:**
+**Fixed bugs:**
 
-- bump requirements [\#101](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/101) ([JarbasAl](https://github.com/JarbasAl))
+- fix/playlist\_again [\#117](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/117) ([JarbasAl](https://github.com/JarbasAl))
 
-## [V0.0.6a9](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.6a9) (2023-10-27)
+## [V0.0.7a5](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.7a5) (2024-05-25)
 
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.6a8...V0.0.6a9)
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.7a4...V0.0.7a5)
 
-**Merged pull requests:**
+**Fixed bugs:**
 
-- Update requirements to stable versions [\#100](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/100) ([NeonDaniel](https://github.com/NeonDaniel))
+- fix playlist handling [\#116](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/116) ([JarbasAl](https://github.com/JarbasAl))
 
-## [V0.0.6a8](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.6a8) (2023-09-12)
+## [V0.0.7a4](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.7a4) (2024-05-25)
 
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.6a7...V0.0.6a8)
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.7a3...V0.0.7a4)
+
+**Fixed bugs:**
+
+- fix/coexistence\_with\_pipeline [\#115](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/115) ([JarbasAl](https://github.com/JarbasAl))
+
+## [V0.0.7a3](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.7a3) (2024-05-10)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.7a2...V0.0.7a3)
 
 **Implemented enhancements:**
 
-- Add standalone launcher [\#97](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/97) ([Ramblurr](https://github.com/Ramblurr))
+- feat/experimental\_ocp\_pipeline [\#112](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/112) ([JarbasAl](https://github.com/JarbasAl))
 
-## [V0.0.6a7](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.6a7) (2023-08-21)
+## [V0.0.7a2](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.7a2) (2024-01-25)
 
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.6a6...V0.0.6a7)
-
-**Merged pull requests:**
-
-- OCPQuery: Only check if the gui is connected once [\#96](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/96) ([Ramblurr](https://github.com/Ramblurr))
-
-## [V0.0.6a6](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.6a6) (2023-08-21)
-
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.6a5...V0.0.6a6)
-
-**Fixed bugs:**
-
-- Allow `PlaybackType.SKILL` search results to be played when there is no GUI [\#95](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/95) ([Ramblurr](https://github.com/Ramblurr))
-
-**Closed issues:**
-
-- OCP search results are not processed fast enough because `is_gui_connected(..)` takes too long [\#93](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/issues/93)
-- OCP skills supporting PlaybackType.SKILL cannot be played when there is no GUI [\#92](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/issues/92)
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.7a1...V0.0.7a2)
 
 **Merged pull requests:**
 
-- Handle race condition between `ovos.common_play.query.response` and `ovos.common_play.skill.search_end` [\#94](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/94) ([Ramblurr](https://github.com/Ramblurr))
+- refactor/dry\_ocp\_imports [\#109](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/109) ([NeonJarbas](https://github.com/NeonJarbas))
 
-## [V0.0.6a5](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.6a5) (2023-07-19)
+## [V0.0.7a1](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.7a1) (2024-01-25)
 
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.6a4...V0.0.6a5)
-
-**Merged pull requests:**
-
-- Update GUI to pass resource names instead of paths [\#90](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/90) ([NeonDaniel](https://github.com/NeonDaniel))
-
-## [V0.0.6a4](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.6a4) (2023-07-13)
-
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.6a3...V0.0.6a4)
-
-**Fixed bugs:**
-
-- fix/support for ui directories param [\#87](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/87) ([JarbasAl](https://github.com/JarbasAl))
-
-## [V0.0.6a3](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.6a3) (2023-07-12)
-
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.6a2...V0.0.6a3)
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.6...V0.0.7a1)
 
 **Merged pull requests:**
 
-- Update requirements.txt [\#86](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/86) ([JarbasAl](https://github.com/JarbasAl))
-
-## [V0.0.6a2](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.6a2) (2023-06-14)
-
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.6a1...V0.0.6a2)
-
-**Closed issues:**
-
-- All media play requests loop \(silently\) until ovos restart [\#84](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/issues/84)
-- self.active\_backend is undefined when fallback is triggered [\#82](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/issues/82)
-
-**Merged pull requests:**
-
-- Refactor init to resolve deprecation warnings [\#85](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/85) ([NeonDaniel](https://github.com/NeonDaniel))
-
-## [V0.0.6a1](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.0.6a1) (2023-04-23)
-
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.0.5...V0.0.6a1)
-
-**Implemented enhancements:**
-
-- Replace mycroft\_bus\_client with ovos\_bus\_client [\#80](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/80) ([goldyfruit](https://github.com/goldyfruit))
-
-**Merged pull requests:**
-
-- Fix automation typos [\#77](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/77) ([NeonDaniel](https://github.com/NeonDaniel))
+- refactor/utils\_0.1.0 [\#108](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/108) ([NeonJarbas](https://github.com/NeonJarbas))
 
 
 

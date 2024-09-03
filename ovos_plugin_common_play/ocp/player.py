@@ -1,30 +1,41 @@
 import random
 from os.path import join, dirname
-from typing import List, Union
-
 from time import sleep
+from typing import List, Union, Optional
 
-from ovos_utils.gui import is_gui_connected, is_gui_running
-from ovos_utils.log import LOG
 from ovos_bus_client.message import Message
 from ovos_config import Configuration
-
-from ovos_plugin_common_play.ocp.gui import OCPMediaPlayerGUI
-from ovos_plugin_common_play.ocp.media import Playlist, MediaEntry, NowPlaying
-from ovos_plugin_common_play.ocp.mpris import MprisPlayerCtl
-from ovos_plugin_common_play.ocp.search import OCPSearch
-from ovos_plugin_common_play.ocp.status import *
-from ovos_plugin_common_play.ocp.mycroft_cps import MycroftAudioService
+from ovos_utils.gui import is_gui_connected, is_gui_running
+from ovos_utils.log import LOG
+from ovos_utils.messagebus import Message
 from ovos_workshop import OVOSAbstractApplication
+from ovos_workshop.backwards_compat import (PluginStream, LoopState, MediaState, PlayerState, TrackState,
+                                            PlaybackType, MediaEntry, PlaybackMode, Playlist)
+
 from ovos_plugin_common_play.ocp.constants import OCP_ID
+from ovos_plugin_common_play.ocp.gui import OCPMediaPlayerGUI
+from ovos_plugin_common_play.ocp.media import NowPlaying
+from ovos_plugin_common_play.ocp.mpris import MprisPlayerCtl
+from ovos_plugin_common_play.ocp.mycroft_cps import MycroftAudioService
+from ovos_plugin_common_play.ocp.search import OCPSearch
+from ovos_plugin_common_play.ocp.utils import require_native_source
+try:
+    from ovos_utils.ocp import dict2entry
+except ImportError:  # older utils version
+    dict2entry = MediaEntry.from_dict
 
 
 class OCPMediaPlayer(OVOSAbstractApplication):
     def __init__(self, bus=None, settings=None, lang=None, gui=None,
-                 resources_dir=None, skill_id=OCP_ID, **kwargs):
+                 resources_dir=None, skill_id=OCP_ID, validate_source=True,
+                 native_sources: Optional[List[str]] = None,
+                 **kwargs):
         resources_dir = resources_dir or join(dirname(__file__), "res")
         gui = gui or OCPMediaPlayerGUI(bus=bus)
 
+        self.validate_source = validate_source
+        self.native_sources = native_sources or Configuration()["Audio"].\
+            get("native_sources", ["debug_cli", "audio"])
         # Define things referenced in `bind`
         self.now_playing: NowPlaying = NowPlaying()
         self.media: OCPSearch = OCPSearch()
@@ -231,7 +242,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         self.bus.emit(Message("ovos.common_play.player.state",
                               {"state": self.state}))
 
-    def set_now_playing(self, track: Union[dict, MediaEntry]):
+    def set_now_playing(self, track: Union[dict, MediaEntry, Playlist, PluginStream]):
         """
         Set `track` as the currently playing media, update the playlist, and
         notify any GUI or MPRIS clients. Adds `track` to `playlist`
@@ -239,39 +250,55 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         """
         LOG.debug(f"Playing: {track}")
         if isinstance(track, dict):
-            LOG.debug("Handling dict track")
-            track = MediaEntry.from_dict(track)
-        if not isinstance(track, MediaEntry):
-            raise ValueError(f"Expected MediaEntry, but got: {track}")
-        self.now_playing.reset()  # reset now_playing to remove old metadata
-        if track.uri:
+            LOG.debug(f"Handling dict track: {track}")
+            if "uri" not in track:  # TODO handle this better
+                track["uri"] = "external:"  # when syncing from MPRIS uri is missing
+            track = dict2entry(track)
+        if not isinstance(track, (MediaEntry, Playlist, PluginStream)):
+            raise ValueError(f"Expected MediaEntry/Playlist, but got: {track}")
+
+        try:
+            idx = self.playlist.index(track)  # find the entry in "now playing"
+        except ValueError:
+            idx = -1
+        if isinstance(track, PluginStream):
+            track = track.extract_media_entry(video=track.playback == PlaybackType.VIDEO)
+            LOG.info(f"PluginStream extracted: {track}")
+            if idx >= 0:
+                self.playlist[idx] = track  # update extracted plugin stream
+
+        if isinstance(track, MediaEntry):
             # single track entry (MediaEntry)
             self.now_playing.update(track)
-            # copy now_playing (without event handlers) to playlist
-            # entry = self.now_playing.as_entry()
-            if track not in self.playlist:  # compared by uri
-                self.playlist.add_entry(track)
-        elif track.data.get("playlist"):
-            # this is a playlist result (list of dicts)
-            pl = track.data.get("playlist")
-            if pl:
-                self.playlist.clear()
-                for entry in pl:
-                    self.playlist.add_entry(entry)
 
-            if len(self.playlist):
-                self.now_playing.update(self.playlist[0])
+            # update playlist position
+            if idx > -1:
+                self.playlist.set_position(idx)
+            # add to "now playing" if it's a new track
+            elif track not in self.playlist:  # compared by uri
+                self.playlist.add_entry(track)
+                self.playlist.set_position(len(self.playlist) - 1)
+            # find equivalent track position in playlist
             else:
-                # If there's no URI, the skill might be handling playback so
-                # now_playing should still be updated
-                self.now_playing.update(track)
-        else:
+                self.playlist.goto_track(track)
+
+        elif isinstance(track, Playlist):
+            # this is a playlist result (list of dicts)
+            self.playlist.clear()
+            for entry in track:
+                self.playlist.add_entry(entry)
+
+            # mew playlist -> reset playlist position to the start
+            self.playlist.set_position(0)
+
+            # update self.now_playing
+            if len(self.playlist):
+                track = self.playlist[0]
+                return self.set_now_playing(track)
+
             # If there's no URI, the skill might be handling playback so
             # now_playing should still be updated
-            self.now_playing.update(track)
-
-        # sync playlist position
-        self.playlist.goto_track(self.now_playing)
+            self.now_playing.update(self.playlist.as_dict)
 
         # update gui values
         self.gui.update_current_track()
@@ -293,16 +320,14 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         if self.active_backend not in [PlaybackType.SKILL,
                                        PlaybackType.UNDEFINED,
                                        PlaybackType.MPRIS]:
-            try:
-                self.now_playing.extract_stream()
-            except Exception as e:
-                LOG.exception(e)
-                return False
             has_gui = is_gui_running() or is_gui_connected(self.bus)
             if not has_gui or self.settings.get("force_audioservice", False) or \
                     self.settings.get("playback_mode") == PlaybackMode.FORCE_AUDIOSERVICE:
                 # No gui, so lets force playback to use audio only
+                LOG.debug("Casting to PlaybackType.AUDIO_SERVICE")
                 self.now_playing.playback = PlaybackType.AUDIO_SERVICE
+            if not self.now_playing.uri:
+                return False
             self.gui["stream"] = self.now_playing.uri
 
         self.gui.update_current_track()
@@ -317,7 +342,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         self.play_next()
 
     # media controls
-    def play_media(self, track: Union[dict, MediaEntry],
+    def play_media(self, track: Union[dict, MediaEntry, PluginStream, Playlist],
                    disambiguation: List[Union[dict, MediaEntry]] = None,
                    playlist: List[Union[dict, MediaEntry]] = None):
         """
@@ -327,9 +352,12 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         @param playlist: list of tracks in the current playlist
         """
         if isinstance(track, dict):
-            track = MediaEntry.from_dict(track)
-        if not isinstance(track, MediaEntry):
-            raise TypeError(f"Expected MediaEntry, got: {track}")
+            track = dict2entry(track)
+        if not isinstance(track, (MediaEntry, Playlist, PluginStream)):
+            raise TypeError(f"Expected MediaEntry/Playlist, got: {track}")
+        if isinstance(track, Playlist) and not playlist:
+            playlist = track
+            track = playlist[0]
         if self.mpris:
             self.mpris.stop()
         if self.state == PlayerState.PLAYING:
@@ -363,12 +391,11 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         messagebus to account for loading failures, even if config claims
         backend is enabled it might not load
         """
-        backends = self.audio_service.available_backends()
         cfg = Configuration()["Audio"]["backends"]
-        available = [k for k, v in backends.items()
-                     if cfg[k].get("type", "") != "ovos_common_play"]
+        available = [k for k, v in cfg.items()
+                     if v.get("type", "") != "ovos_common_play"]
         preferred = self.settings.get("preferred_audio_services") or \
-            ["vlc", "mplayer", "simple"]
+                    ["vlc", "simple"]
         for b in preferred:
             if b in available:
                 return b
@@ -398,9 +425,11 @@ class OCPMediaPlayer(OVOSAbstractApplication):
 
         LOG.debug(f"Requesting playback: {repr(self.active_backend)}")
         if self.active_backend == PlaybackType.AUDIO and not is_gui_running():
-            LOG.warning("Requested Audio playback via GUI without GUI. "
-                        "Choosing Audio Service")
-            self.now_playing.playback = PlaybackType.AUDIO_SERVICE
+            # NOTE: this is already normalized in self.validate_stream, using messagebus
+            # if we get here the GUI probably crashed, or just isnt "mycroft-gui-app" or "ovos-shell"
+            # is_gui_running() can not be trusted, log a warning only
+            LOG.warning("Requested Audio playback via GUI, but GUI doesn't seem to be running?")
+
         if self.active_backend == PlaybackType.AUDIO_SERVICE:
             LOG.debug("Handling playback via audio_service")
             # we explicitly want to use an audio backend for audio only output
@@ -603,6 +632,9 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         # stop any search still happening
         self.bus.emit(Message("ovos.common_play.search.stop"))
 
+        LOG.debug("clearing playlist")
+        self.playlist.clear()  # needed to ensure next track doesnt track due to autoplay
+
         LOG.debug("Stopping playback")
         if self.active_backend in [PlaybackType.AUDIO_SERVICE,
                                    PlaybackType.UNDEFINED]:
@@ -665,6 +697,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         self.remove_event("gui.player.media.service.get.previous")
 
     # player -> common play
+    @require_native_source()
     def handle_player_state_update(self, message):
         """
         Handles 'gui.player.media.service.sync.status' and
@@ -702,6 +735,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
                                      "CanPlay": state == PlayerState.PAUSED,
                                      "PlaybackStatus": state2str[state]})
 
+    @require_native_source()
     def handle_player_media_update(self, message):
         """
         Handles 'ovos.common_play.media.state' messages with media state updates
@@ -728,20 +762,28 @@ class OCPMediaPlayer(OVOSAbstractApplication):
             if self.settings.get("autoplay", True):
                 self.play_next()
 
+    @require_native_source()
     def handle_invalid_media(self, message):
         self.gui.show_playback_error()
 
+    @require_native_source()
     def handle_playback_ended(self, message):
         # TODO: When we get here, self.active_backend has been reset!
-        if self.settings.get("autoplay", True) and \
-                self.active_backend != PlaybackType.MPRIS:
-            LOG.debug(f"Playing next (backend={repr(self.active_backend)}")
+        LOG.info(f"END OF MEDIA - playlist pos: {self.playlist.position} "
+                  f"total tracks: {len(self.playlist)} "
+                 f"backend: {self.active_backend}")
+        go_next = self.settings.get("autoplay", True) and \
+                self.active_backend != PlaybackType.MPRIS and \
+                self.playlist.position + 1 < len(self.playlist)
+        LOG.debug(f"Go to Next track: {go_next}")
+        if go_next:
             self.play_next()
             return
         LOG.info("Playback ended")
         self.gui.handle_end_of_playback(message)
 
     # ovos common play bus api requests
+    @require_native_source()
     def handle_play_request(self, message):
         LOG.debug("Received external OVOS playback request")
         repeat = message.data.get("repeat", False)
@@ -758,15 +800,19 @@ class OCPMediaPlayer(OVOSAbstractApplication):
             disambiguation = message.data.get("disambiguation") or [media]
         self.play_media(media, disambiguation, playlist)
 
+    @require_native_source()
     def handle_pause_request(self, message):
         self.pause()
 
+    @require_native_source()
     def handle_stop_request(self, message):
         self.stop()
 
+    @require_native_source()
     def handle_resume_request(self, message):
         self.resume()
 
+    @require_native_source()
     def handle_seek_request(self, message):
         # from bus api
         miliseconds = message.data.get("seconds", 0) * 1000
@@ -781,29 +827,36 @@ class OCPMediaPlayer(OVOSAbstractApplication):
             position += miliseconds
         self.seek(position)
 
+    @require_native_source()
     def handle_next_request(self, message):
         self.play_next()
 
+    @require_native_source()
     def handle_prev_request(self, message):
         self.play_prev()
 
+    @require_native_source()
     def handle_set_shuffle(self, message):
         self.shuffle = True
         self.gui.update_seekbar_capabilities()
 
+    @require_native_source()
     def handle_unset_shuffle(self, message):
         self.shuffle = False
         self.gui.update_seekbar_capabilities()
 
+    @require_native_source()
     def handle_set_repeat(self, message):
         self.loop_state = LoopState.REPEAT
         self.gui.update_seekbar_capabilities()
 
+    @require_native_source()
     def handle_unset_repeat(self, message):
         self.loop_state = LoopState.NONE
         self.gui.update_seekbar_capabilities()
 
     # playlist control bus api
+    @require_native_source()
     def handle_repeat_toggle_request(self, message):
         if self.loop_state == LoopState.REPEAT_TRACK:
             self.loop_state = LoopState.NONE
@@ -814,26 +867,31 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         LOG.info(f"Repeat: {self.loop_state}")
         self.gui.update_seekbar_capabilities()
 
+    @require_native_source()
     def handle_shuffle_toggle_request(self, message):
         self.shuffle = not self.shuffle
         LOG.info(f"Shuffle: {self.shuffle}")
         self.gui.update_seekbar_capabilities()
 
+    @require_native_source()
     def handle_playlist_set_request(self, message):
         self.playlist.clear()
         self.handle_playlist_queue_request(message)
 
+    @require_native_source()
     def handle_playlist_queue_request(self, message):
         for track in message.data["tracks"]:
             self.playlist.add_entry(track)
         self.gui.update_playlist()
 
+    @require_native_source()
     def handle_playlist_clear_request(self, message):
         self.playlist.clear()
         self.set_media_state(MediaState.NO_MEDIA)
         self.gui.update_playlist()
 
     # audio ducking
+    @require_native_source()
     def handle_duck_request(self, message):
         """
         Pause audio on 'recognizer_loop:record_begin'
@@ -843,6 +901,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
             self.pause()
             self._paused_on_duck = True
 
+    @require_native_source()
     def handle_unduck_request(self, message):
         """
         Resume paused audio on 'recognizer_loop:record_begin'
@@ -853,6 +912,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
             self._paused_on_duck = False
 
     # track data
+    @require_native_source()
     def handle_track_length_request(self, message):
         l = self.now_playing.length
         if self.active_backend == PlaybackType.AUDIO_SERVICE:
@@ -860,6 +920,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         data = {"length": l}
         self.bus.emit(message.response(data))
 
+    @require_native_source()
     def handle_track_position_request(self, message):
         pos = self.now_playing.position
         if self.active_backend == PlaybackType.AUDIO_SERVICE:
@@ -867,10 +928,12 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         data = {"position": pos}
         self.bus.emit(message.response(data))
 
+    @require_native_source()
     def handle_set_track_position_request(self, message):
         miliseconds = message.data.get("position")
         self.seek(miliseconds)
 
+    @require_native_source()
     def handle_track_info_request(self, message):
         data = self.now_playing.as_dict
         if self.active_backend == PlaybackType.AUDIO_SERVICE:
@@ -878,12 +941,13 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         self.bus.emit(message.response(data))
 
     # internal info
+    @require_native_source()
     def handle_list_backends_request(self, message):
         data = self.audio_service.available_backends()
         self.bus.emit(message.response(data))
 
     # app timeout
-    @property    
+    @property
     def app_view_timeout_enabled(self):
         return self.settings.get("app_view_timeout_enabled", False)
 
@@ -895,18 +959,21 @@ class OCPMediaPlayer(OVOSAbstractApplication):
     def app_view_timeout_mode(self):
         return self.settings.get("app_view_timeout_mode", "all")
 
+    @require_native_source()
     def handle_enable_app_timeout(self, message):
         self.settings["app_view_timeout_enabled"] = message.data.get("enabled", False)
         self.settings.store()
         if not self.app_view_timeout_enabled:
             self.gui.cancel_app_view_timeout()
 
+    @require_native_source()
     def handle_set_app_timeout(self, message):
         # timeout in seconds: 15 | 30 | 45 | 60
         self.settings["app_view_timeout"] = message.data.get("timeout", 30)
         self.settings.store()
         self.gui.cancel_app_view_timeout(restart=True)
 
+    @require_native_source()
     def handle_set_app_timeout_mode(self, message):
         # timeout modes: all | pause
         self.settings["app_view_timeout_mode"] = message.data.get("mode", "all")

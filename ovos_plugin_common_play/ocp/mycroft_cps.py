@@ -2,14 +2,12 @@ import time
 from datetime import timedelta
 from os.path import abspath
 
-from ovos_bus_client.message import dig_for_message
-
-from ovos_plugin_common_play.ocp.constants import OCP_ID
-from ovos_bus_client.message import Message
+from ovos_bus_client.message import Message, dig_for_message
 from ovos_bus_client.util import wait_for_reply
+from ovos_workshop.decorators.ocp import MediaType, PlaybackType
 
 from ovos_plugin_common_play.ocp.base import OCPAbstractComponent
-from ovos_plugin_common_play.ocp.status import *
+from ovos_plugin_common_play.ocp.constants import OCP_ID
 
 
 def ensure_uri(s):
@@ -22,12 +20,12 @@ def ensure_uri(s):
         if s is uri, s is returned otherwise file:// is prepended
     """
     if isinstance(s, str):
-        if '://' not in s:
+        if ':' not in s:
             return 'file://' + abspath(s)
         else:
             return s
     elif isinstance(s, (tuple, list)):
-        if '://' not in s[0]:
+        if ':' not in s[0]:
             return 'file://' + abspath(s[0]), s[1]
         else:
             return s

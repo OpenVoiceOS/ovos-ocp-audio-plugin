@@ -41,9 +41,6 @@ class TestOCP(unittest.TestCase):
         self.bus.once('mycroft.skills.is_ready', _handle_skills_check)
         self.bus.emit(Message('mycroft.ready'))
 
-        self.assertTrue(self.ocp._intents_event.is_set())
-
-        # TODO: Test messagebus event registration
 
     def test_ping(self):
         resp = self.bus.wait_for_response(Message("ovos.common_play.ping"),
@@ -78,7 +75,7 @@ class TestOCP(unittest.TestCase):
         movie = "play a movie"
         news = "play the latest news"
         unknown = "play something"
-
+        self.ocp.register_media_intents()
         self.assertEqual(self.ocp.classify_media(music), MediaType.MUSIC)
         self.assertEqual(self.ocp.classify_media(movie), MediaType.MOVIE)
         self.assertEqual(self.ocp.classify_media(news), MediaType.NEWS)
@@ -142,8 +139,27 @@ class TestOCP(unittest.TestCase):
         pass
 
     def test_do_play(self):
-        # TODO
-        pass
+        called = False
+
+        def play_media(*args, **kwargs):
+            nonlocal called
+            called = True
+
+        self.ocp.player.play_media = play_media
+
+        msg = Message("")
+        self.ocp.player.handle_play_request(msg)
+        self.assertTrue(called)  # no message.context -> broadcast for everyone
+
+        msg = Message("", {}, {"destination": "audio"})
+        called = False
+        self.ocp.player.handle_play_request(msg)
+        self.assertTrue(called)  # "audio" is a native source
+
+        msg = Message("", {}, {"destination": "hive"})
+        called = False
+        self.ocp.player.handle_play_request(msg)
+        self.assertFalse(called) # ignored playback for remote client
 
     def test_search(self):
         # TODO

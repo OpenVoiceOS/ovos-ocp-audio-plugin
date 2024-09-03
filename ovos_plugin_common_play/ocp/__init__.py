@@ -1,18 +1,20 @@
 from os.path import join, dirname, isfile
-
-from ovos_plugin_common_play.ocp.constants import OCP_ID
-from ovos_workshop.decorators.ocp import *
+from threading import Event, Lock
+from typing import Optional, List
+from ovos_config import Configuration
 from ovos_plugin_common_play.ocp.gui import OCPMediaPlayerGUI
 from ovos_plugin_common_play.ocp.player import OCPMediaPlayer
-from ovos_plugin_common_play.ocp.status import *
 from ovos_utils.gui import can_use_gui
 from ovos_utils.log import LOG
-from ovos_plugin_common_play.ocp.utils import create_desktop_file
-from ovos_bus_client.message import Message
-from ovos_workshop import OVOSAbstractApplication
+from ovos_utils.messagebus import Message
+
 from padacioso import IntentContainer
-from threading import Event, Lock
-from ovos_plugin_common_play.ocp.utils import ocp_plugins
+
+from ovos_workshop import OVOSAbstractApplication
+from ovos_workshop.decorators.ocp import *
+from ovos_plugin_manager.ocp import load_stream_extractors
+
+from ovos_plugin_common_play.ocp.constants import OCP_ID
 
 
 class OCP(OVOSAbstractApplication):
@@ -42,7 +44,9 @@ class OCP(OVOSAbstractApplication):
         "hentai": MediaType.HENTAI
     }
 
-    def __init__(self, bus=None, lang=None, settings=None, skill_id=OCP_ID):
+    def __init__(self, bus=None, lang=None, settings=None, skill_id=OCP_ID,
+                 validate_source: bool = True,
+                 native_sources: Optional[List[str]] = None):
         # settings = settings or OCPSettings()
         res_dir = join(dirname(__file__), "res")
         super().__init__(skill_id=skill_id, resources_dir=res_dir,
@@ -57,26 +61,28 @@ class OCP(OVOSAbstractApplication):
                                      settings=self.settings,
                                      resources_dir=res_dir,
                                      gui=self.gui,
-                                     skill_id=OCP_ID)
+                                     skill_id=OCP_ID,
+                                     validate_source=validate_source,
+                                     native_sources=native_sources)
         self.media_intents = IntentContainer()
         self.register_ocp_api_events()
-        self.register_media_intents()
 
-        self.add_event("mycroft.ready", self.replace_mycroft_cps, once=True)
-        skills_ready = self.bus.wait_for_response(
-            Message("mycroft.skills.is_ready",
-                    context={"source": [self.skill_id],
-                             "destination": ["skills"]}))
-        if skills_ready and skills_ready.data.get("status"):
-            self.remove_event("mycroft.ready")
-            self.replace_mycroft_cps(skills_ready)
-        try:
-            # TODO: Should this just happen at install time? A user might not
-            #       want this shortcut.
-            create_desktop_file()
-        except:  # permission errors and stuff
-            pass
-        ocp_plugins()  # trigger a load + caching of OCP plugins
+        if self.using_new_pipeline:
+            LOG.info("Using Classic OCP with experimental OCP pipeline")
+        else:
+            self.register_media_intents()
+
+            self.add_event("mycroft.ready", self.replace_mycroft_cps, once=True)
+            skills_ready = self.bus.wait_for_response(
+                Message("mycroft.skills.is_ready",
+                        context={"source": [self.skill_id],
+                                 "destination": ["skills"]}))
+            if skills_ready and skills_ready.data.get("status"):
+                self.remove_event("mycroft.ready")
+                self.replace_mycroft_cps(skills_ready)
+
+        # report available plugins to ovos-core pipeline
+        self.handle_get_SEIs(Message("ovos.common_play.SEI.get"))
 
     def handle_ping(self, message):
         """
@@ -89,10 +95,32 @@ class OCP(OVOSAbstractApplication):
         """
         Register messagebus handlers for OCP events
         """
+        self.add_event('ovos.common_play.SEI.get', self.handle_get_SEIs)
         self.add_event("ovos.common_play.ping", self.handle_ping)
         self.add_event('ovos.common_play.home', self.handle_home)
         # bus api shared with intents
         self.add_event("ovos.common_play.search", self.handle_play)
+
+    def handle_get_SEIs(self, message):
+        """report available StreamExtractorIds
+
+        Ported from ovos-media to accommodate migration period
+        and making old OCP compatible with the new pipeline
+
+        OCP plugins handle specific SEIs and return a real stream / extra metadata
+
+        this moves parsing to playback time instead of search time
+
+        SEIs are identifiers of the format "{SEI}//{uri}"
+        that might be present in media results
+
+        seis are NOT uris, a uri comes after {SEI}//
+
+        eg. for the youtube plugin a skill can return
+          "youtube//https://youtube.com/watch?v=wChqNkd6F24"
+        """
+        xtract = load_stream_extractors()  # @lru_cache, its a lazy loaded singleton
+        self.bus.emit(message.response({"SEI": xtract.supported_seis}))
 
     def handle_home(self, message=None):
         """
@@ -102,7 +130,23 @@ class OCP(OVOSAbstractApplication):
         # homescreen / launch from .desktop
         self.gui.show_home(app_mode=True)
 
+    @property
+    def using_new_pipeline(self) -> bool:
+        # this is no longer configurable, most of this repo is dead code
+        # keep this check to allow smooth updates from the couple alpha versions this was live
+        if Configuration().get("intents", {}).get("experimental_ocp_pipeline"):
+            return True
+        # check for min version for default ovos-config to contain OCP pipeline
+        from ovos_config.version import VERSION_BUILD, VERSION_ALPHA, VERSION_MAJOR, VERSION_MINOR
+        if VERSION_BUILD > 13 or VERSION_MAJOR >= 1 or VERSION_MINOR >= 1:
+            return True
+        return VERSION_BUILD == 13 and VERSION_ALPHA >= 14
+
     def register_ocp_intents(self, message=None):
+        if self.using_new_pipeline:
+            LOG.debug("skipping Classic OCP intent registration")
+            return
+
         with self._intent_registration_lock:
             if not self._intents_event.is_set():
                 LOG.info(f"OCP intents missing, registering for {self}")
@@ -175,7 +219,7 @@ class OCP(OVOSAbstractApplication):
         # if skills service (re)loads (re)register OCP
         if ("mycroft.ready", self.replace_mycroft_cps) in self.events:
             LOG.warning("Method already registered!")
-        self.add_event("mycroft.ready",  self.replace_mycroft_cps, once=True)
+        self.add_event("mycroft.ready", self.replace_mycroft_cps, once=True)
 
     def default_shutdown(self):
         self.player.shutdown()
@@ -284,11 +328,11 @@ class OCP(OVOSAbstractApplication):
             if self.gui:
                 if self.gui.active_extension == "smartspeaker":
                     self.gui.display_notification("Sorry, no matches found", style="warning")
-            
+
             self.speak_dialog("cant.play",
                               data={"phrase": phrase,
                                     "media_type": media_type})
-            
+
             if self.gui:
                 if "smartspeaker" not in self.gui.active_extension:
                     if not self.gui.persist_home_display:
@@ -302,14 +346,14 @@ class OCP(OVOSAbstractApplication):
             if self.gui:
                 if self.gui.active_extension == "smartspeaker":
                     self.gui.display_notification("Found a match", style="success")
-            
+
             best = self.player.media.select_best(results)
             self.player.play_media(best, results)
 
             if self.gui:
                 if self.gui.active_extension == "smartspeaker":
                     self.gui.clear_notification()
-            
+
             self.enclosure.mouth_reset()  # TODO display music icon in mk1
             self.set_context("Playing")
 

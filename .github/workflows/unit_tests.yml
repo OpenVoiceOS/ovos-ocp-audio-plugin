@@ -60,6 +60,10 @@ jobs:
           # NOTE: additional pytest invocations should also add the --cov-append flag
           #       or they will overwrite previous invocations' coverage reports
           #       (for an example, see OVOS Skill Manager's workflow)
+      - name: Run unittests with ovos-utils 0.0.38
+        run: |
+          pip install ovos-utils==0.0.38
+          pytest --cov=ovos_plugin_common_play --cov-report xml test/unittests
       - name: Upload coverage
         env:
           CODECOV_TOKEN: ${{secrets.CODECOV_TOKEN}}

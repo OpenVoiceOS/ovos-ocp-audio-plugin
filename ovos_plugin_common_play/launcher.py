@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 from ovos_bus_client import MessageBusClient
-from ovos_plugin_common_play.ocp import OCP, OCP_ID
 from ovos_utils import wait_for_exit_signal
+
+from ovos_plugin_common_play.ocp import OCP
+from ovos_plugin_common_play.ocp.constants import OCP_ID
 
 
 def main():

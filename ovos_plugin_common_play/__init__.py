@@ -1,11 +1,12 @@
 from pprint import pformat
+
 from ovos_bus_client import Message
 from ovos_utils.log import LOG
+from ovos_workshop.decorators.ocp import *
 
-from ovos_plugin_common_play.ocp import OCP, OCP_ID
-from ovos_plugin_common_play.ocp.status import *
-from ovos_plugin_common_play.ocp.utils import extract_metadata
+from ovos_plugin_common_play.ocp import OCP
 from ovos_plugin_common_play.ocp.base import OCPAudioPlayerBackend
+from ovos_plugin_common_play.ocp.constants import OCP_ID
 
 
 class OCPAudioBackend(OCPAudioPlayerBackend):
@@ -23,6 +24,10 @@ class OCPAudioBackend(OCPAudioPlayerBackend):
         self.bus.on("gui.player.media.service.set.meta",
                     self.handle_receive_meta)
         self.create_ocp(self.config)
+
+    @property
+    def player(self):
+        return self.ocp.player
 
     def create_ocp(self, config: dict):
         self.config = config

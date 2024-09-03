@@ -1,17 +1,17 @@
 import enum
 from os.path import join, dirname
-
-from ovos_plugin_common_play.ocp import OCP_ID
+from threading import Timer
 from time import sleep
+
+from ovos_bus_client.apis.gui import GUIInterface
 from ovos_bus_client.message import Message
 from ovos_config import Configuration
 from ovos_utils.events import EventSchedulerInterface
-from ovos_bus_client.apis.gui import GUIInterface
 from ovos_utils.log import LOG
+from ovos_workshop.backwards_compat import MediaType, Playlist, MediaEntry, PlayerState, LoopState, PlaybackType, PluginStream, dict2entry
 
-from ovos_plugin_common_play.ocp.status import *
+from ovos_plugin_common_play.ocp.constants import OCP_ID
 from ovos_plugin_common_play.ocp.utils import is_qtav_available
-from threading import Timer
 
 
 class VideoPlayerBackend(str, enum.Enum):
@@ -54,12 +54,12 @@ class OCPMediaPlayerGUI(GUIInterface):
     @property
     def video_backend(self):
         return self.player.settings.get("video_player_backend") or \
-               VideoPlayerBackend.AUTO
+            VideoPlayerBackend.AUTO
 
     @property
     def home_screen_page(self):
         return "Home"
-    
+
     @property
     def disambiguation_playlists_page(self):
         return "SuggestionsView"
@@ -114,7 +114,7 @@ class OCPMediaPlayerGUI(GUIInterface):
              "title": skill["skill_name"],
              "image": skill["thumbnail"],
              "media_type": skill.get("media_type") or [MediaType.GENERIC]
-        } for skill in self.player.media.get_featured_skills()]
+             } for skill in self.player.media.get_featured_skills()]
         self["skillCards"] = skills_cards
 
     def update_seekbar_capabilities(self):
@@ -143,10 +143,10 @@ class OCPMediaPlayerGUI(GUIInterface):
         self["uri"] = self.player.now_playing.uri
         self["title"] = self.player.now_playing.title
         self["image"] = self.player.now_playing.image or \
-            join(dirname(__file__), "res/ui/images/ocp.png")
+                        join(dirname(__file__), "res/ui/images/ocp.png")
         self["artist"] = self.player.now_playing.artist
         self["bg_image"] = self.player.now_playing.bg_image or \
-            join(dirname(__file__), "res/ui/images/ocp_bg.png")
+                           join(dirname(__file__), "res/ui/images/ocp_bg.png")
         self["duration"] = self.player.now_playing.length
         self["position"] = self.player.now_playing.position
         # options below control the web player
@@ -155,7 +155,7 @@ class OCPMediaPlayerGUI(GUIInterface):
         # TODO default permissive or restrictive?
         self["javascript"] = self.player.now_playing.javascript
         self["javascriptCanOpenWindows"] = False  # TODO allow to be defined per track
-        self["allowUrlChange"] = False # TODO allow to be defined per track
+        self["allowUrlChange"] = False  # TODO allow to be defined per track
 
     def update_search_results(self):
         self["searchModel"] = {
@@ -182,30 +182,30 @@ class OCPMediaPlayerGUI(GUIInterface):
         # This is to ensure that the home is always available to the user
         # regardless of what other pages are currently open
         # Swiping from the player to the left will always show the home page
-        
+
         # The home page will only be in view if the user is not currently playing an active track
         # If the user is playing a track, the player will be shown instead
         # This is to ensure that the user always returns to the player when they are playing a track
-        
+
         # The search_spinner_page has been integrated into the home page as an overlay
         # It will be shown when the user is searching for a track and will be hidden when the search is complete
         # on platforms that don't support the notification system
-        
+
         # Player:
         # Player loader will always be shown at Protocol level index 1
         # The merged playlist and disambiguation pages will always be shown at Protocol level index 2
-        
+
         # If the user has just opened the ocp home page, and nothing was played previously,
         # the player and merged playlist/disambiguation page will not be shown
-        
+
         # If the user has just opened the ocp home page, and a track was previously played,
         # the player and merged playlist/disambiguation page will always be shown
-        
+
         # If the player is not paused or stopped, the player will be shown instead of the home page
         # when ocp is opened
-        
+
         # Timeout is used to ensure that ocp is fully closed once the timeout has expired
-        
+
         sleep(0.2)
         player_status = self.player.state
         state2str = {PlayerState.PLAYING: "Playing", PlayerState.PAUSED: "Paused", PlayerState.STOPPED: "Stopped"}
@@ -216,11 +216,11 @@ class OCPMediaPlayerGUI(GUIInterface):
 
         LOG.debug(f"manage_display: page_requested: {page_requested}")
         LOG.debug(f"manage_display: player_status: {player_status}")
-                
+
         if page_requested == "home":
             self["homepage_index"] = 0
             self["displayBottomBar"] = False
-            
+
             # Check if the skills page has anything to show, only show it if it does
             if self["skillCards"]:
                 self["displayBottomBar"] = True
@@ -239,16 +239,16 @@ class OCPMediaPlayerGUI(GUIInterface):
         elif page_requested == "playlist":
             self["displaySuggestionBar"] = False
             self._show_suggestion_playlist()
-            
+
             if timeout is not None:
                 self.show_page(self.disambiguation_playlists_page, override_idle=timeout, override_animations=True)
             else:
                 self.show_page(self.disambiguation_playlists_page, override_idle=True, override_animations=True)
-                
+
         elif page_requested == "disambiguation":
             self["displaySuggestionBar"] = False
             self._show_suggestion_disambiguation()
-            
+
             if timeout is not None:
                 self.show_page(self.disambiguation_playlists_page, override_idle=timeout, override_animations=True)
             else:
@@ -265,7 +265,7 @@ class OCPMediaPlayerGUI(GUIInterface):
 
     def schedule_app_view_pause_timeout(self):
         if (self.player.app_view_timeout_enabled
-            and self.player.app_view_timeout_mode == "pause"
+                and self.player.app_view_timeout_mode == "pause"
                 and self.player.state == PlayerState.PAUSED):
             self.schedule_app_view_timeout()
 
@@ -333,19 +333,19 @@ class OCPMediaPlayerGUI(GUIInterface):
         # determine pages to be shown
         self["playerBackend"] = self._get_player_page()
         LOG.debug(f"pages to display backend: {self['playerBackend']}")
-        
+
         if len(self.player.disambiguation):
             self["displaySuggestionBar"] = False
             self._show_suggestion_disambiguation()
-            
+
         if len(self.player.tracks):
             self["displaySuggestionBar"] = False
             self._show_suggestion_playlist()
 
-        if len(self.player.disambiguation) and len(self.player.tracks):   
+        if len(self.player.disambiguation) and len(self.player.tracks):
             self["displaySuggestionBar"] = True
             self._show_suggestion_playlist()
-            
+
         pages = [self.player_loader_page, self.disambiguation_playlists_page]
 
         return pages
@@ -358,30 +358,66 @@ class OCPMediaPlayerGUI(GUIInterface):
 
     def _show_suggestion_playlist(self):
         self.send_event("ocp.gui.show.suggestion.view.playlist")
-     
+
     def _show_suggestion_disambiguation(self):
         self.send_event("ocp.gui.show.suggestion.view.disambiguation")
 
     # gui <-> playlists
+    def _gui2entry(self, gui_entry, from_playlist=True, from_search=True):
+        if isinstance(gui_entry, dict):
+            gui_entry = dict2entry(gui_entry)
+        # HACK: since the GUI sends incomplete data,
+        # we need to check the internal playlist....
+        if from_playlist:
+            for track in self.player.playlist:
+                if isinstance(gui_entry, Playlist):
+                    if not isinstance(track, Playlist):
+                        continue
+                    if track.title == gui_entry.title:
+                        LOG.debug(f"gui data mapped to {track}")
+                        return track
+
+                elif not isinstance(track, Playlist):
+                    if isinstance(track, PluginStream):
+                        uri = f"{track.extractor_id}//{track.stream}"
+                    else:
+                        uri = track.uri
+                    if uri == gui_entry.uri:
+                        LOG.debug(f"gui data mapped to {track}")
+                        return track
+        if from_search:
+            for track in self.player.disambiguation:
+                if isinstance(gui_entry, Playlist):
+                    if not isinstance(track, Playlist):
+                        continue
+                    if track.title == gui_entry.title:
+                        LOG.debug(f"gui data mapped to {track}")
+                        return track
+
+                elif not isinstance(track, Playlist):
+                    if isinstance(track, PluginStream):
+                        uri = f"{track.extractor_id}//{track.stream}"
+                    else:
+                        uri = track.uri
+                    if uri == gui_entry.uri:
+                        LOG.debug(f"gui data mapped to {track}")
+                        return track
+        LOG.warning("malformed GUI request, track not in search results")
+        if gui_entry.playback == PlaybackType.UNDEFINED:
+            LOG.error("undefined playback type, assuming PlaybackType.AUDIO_SERVICE")
+            gui_entry.playback = PlaybackType.AUDIO_SERVICE
+        # either GUI issues got fixed or an error will be spoken
+        return gui_entry
+
     def handle_play_from_playlist(self, message):
         LOG.debug("Playback requested from playlist results")
-        media = message.data["playlistData"]
-        for track in self.player.playlist:
-            if track == media:  # found track
-                self.player.play_media(track)
-                break
-        else:
-            LOG.error("Track is not part of loaded playlist!")
+        media = self._gui2entry(message.data["playlistData"], from_playlist=True, from_search=False)
+        self.player.play_media(media)
 
     def handle_play_from_search(self, message):
         LOG.debug("Playback requested from search results")
-        media = message.data["playlistData"]        
-        for track in self.player.disambiguation:
-            if track == media:  # found track
-                self.player.play_media(track)
-                break
-        else:
-            LOG.error("Track is not part of search results!")
+        media = self._gui2entry(message.data["playlistData"], from_playlist=False, from_search=True)
+        self.player.play_media(media)
 
     def handle_play_skill_featured_media(self, message):
         skill_id = message.data["skill_id"]
@@ -418,7 +454,7 @@ class OCPMediaPlayerGUI(GUIInterface):
         # show search results, release screen after 60 seconds
         if show_results:
             self.manage_display("playlist", timeout=60)
-            
+
     def display_notification(self, text, style="info"):
         """ Display a notification on the screen instead of spinner on platform that support it """
         self.show_controlled_notification(text, style=style)
@@ -448,7 +484,7 @@ class OCPMediaPlayerGUI(GUIInterface):
 
     def remove_search_spinner(self):
         self.send_event("ocp.gui.hide.busy.overlay")
-        
+
     def remove_homescreen(self):
         self.release()
 
@@ -468,7 +504,7 @@ class OCPExternalGuiInterface(GUIInterface):
     # - Extra / Disambiguation / Playlist, this is the page that will be shown when the skill is launched and the skill is playing
     # - Custom, allow the skill to show any custom page it wants
     # Page management lifecycle will be handled by the skill itself
-    
+
     def bind(self, player):
         self.player = player
         super().set_bus(self.bus)
@@ -477,38 +513,38 @@ class OCPExternalGuiInterface(GUIInterface):
         for page in self.ocp_registered_pages:
             if page["type"] == page_type:
                 return
-    
+
         page_to_register = {
             "page_url": page_url,
             "type": page_type
         }
         self.ocp_registered_pages[page_type] = page_to_register
-    
+
     def get_screen_type(self, page_type):
         return self.ocp_registered_pages[page_type]
-    
+
     def show_screen(self, page_type, override_idle=False, override_animations=False):
         page_to_show = self.get_screen_type(page_type)
         self.show_page(page_to_show["page_url"], override_idle=override_idle, override_animations=override_animations)
-    
+
     def show_home(self, override_idle=False, override_animations=False):
         self.show_screen("home", override_idle, override_animations)
-    
+
     def show_player(self, override_idle=False, override_animations=False):
         self.show_screen("player", override_idle, override_animations)
-    
+
     def show_extra(self, override_idle=False, override_animations=False):
         self.show_screen("extra", override_idle, override_animations)
-        
+
     def remove_screen(self, page_type):
         page_to_remove = self.get_screen_type(page_type)
         self.remove_page(page_to_remove["page_url"])
-    
+
     def remove_home(self):
         self.remove_screen("home")
-    
+
     def remove_player(self):
         self.remove_screen("player")
-    
+
     def remove_extra(self):
         self.remove_screen("extra")

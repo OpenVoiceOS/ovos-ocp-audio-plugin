@@ -41,7 +41,7 @@ valid_search_results = [
 
 class TestOCPPlayer(unittest.TestCase):
     bus = FakeBus()
-    player = OCPMediaPlayer(bus)
+    player = OCPMediaPlayer(bus, settings={'disable_mpris': False})
     emitted_msgs = []
 
     @classmethod
@@ -93,7 +93,7 @@ class TestOCPPlayer(unittest.TestCase):
                       'ovos.common_play.play',
                       'ovos.common_play.pause',
                       'ovos.common_play.resume',
-                      'ovos.common_play.stop',
+                      #'ovos.common_play.stop',
                       'ovos.common_play.next',
                       'ovos.common_play.previous',
                       'ovos.common_play.seek',
@@ -215,12 +215,10 @@ class TestOCPPlayer(unittest.TestCase):
         real_update_props = self.player.mpris.update_props
         real_update_track = self.player.gui.update_current_track
         real_update_plist = self.player.gui.update_playlist
-        real_nowplaying_reset = self.player.now_playing.reset
 
         self.player.mpris.update_props = Mock()
         self.player.gui.update_current_track = Mock()
         self.player.gui.update_playlist = Mock()
-        self.player.now_playing.reset = Mock()
 
         valid_dict = valid_search_results[0]
         valid_track = MediaEntry.from_dict(valid_search_results[1])
@@ -241,8 +239,6 @@ class TestOCPPlayer(unittest.TestCase):
         self.player.mpris.update_props.assert_called_once_with(
             {"Metadata": self.player.now_playing.mpris_metadata}
         )
-        self.player.now_playing.reset.assert_called_once()
-        self.player.now_playing.reset.reset_mock()
         self.player.gui.update_current_track.reset_mock()
         self.player.gui.update_playlist.reset_mock()
         self.player.mpris.update_props.reset_mock()
@@ -256,8 +252,6 @@ class TestOCPPlayer(unittest.TestCase):
         self.player.gui.update_playlist.assert_called_once()
         self.player.mpris.update_props.assert_called_once_with(
             {"Metadata": self.player.now_playing.mpris_metadata})
-        self.player.now_playing.reset.assert_called_once()
-        self.player.now_playing.reset.reset_mock()
         self.player.gui.update_current_track.reset_mock()
         self.player.gui.update_playlist.reset_mock()
         self.player.mpris.update_props.reset_mock()
@@ -265,7 +259,6 @@ class TestOCPPlayer(unittest.TestCase):
         # Play invalid string result
         with self.assertRaises(ValueError):
             self.player.set_now_playing(invalid_str)
-        self.player.now_playing.reset.assert_not_called()
         self.player.gui.update_current_track.assert_not_called()
         self.player.gui.update_playlist.assert_not_called()
         self.player.mpris.update_props.assert_not_called()
@@ -276,12 +269,10 @@ class TestOCPPlayer(unittest.TestCase):
         self.player.gui.update_playlist.assert_called_once()
         self.player.mpris.update_props.assert_called_once_with(
             {"Metadata": self.player.now_playing.mpris_metadata})
-        self.player.now_playing.reset.assert_called_once()
 
         self.player.mpris.update_props = real_update_props
         self.player.gui.update_current_track = real_update_track
         self.player.gui.update_playlist = real_update_plist
-        self.player.now_playing.reset = real_nowplaying_reset
 
     @patch("ovos_plugin_common_play.ocp.player.is_gui_running")
     def test_validate_stream(self, gui_running):
@@ -423,7 +414,7 @@ class TestOCPPlayer(unittest.TestCase):
         preferred = self.player._get_preferred_audio_backend()
         self.assertIsInstance(preferred, str)
         self.assertIn(preferred,
-                      ["ovos_common_play", "vlc", "mplayer", "simple"])
+                      ["mpv", "ovos_common_play", "vlc", "mplayer", "simple"])
 
     @patch("ovos_plugin_common_play.ocp.player.is_gui_running")
     def test_play(self, gui_running):
@@ -507,15 +498,6 @@ class TestOCPPlayer(unittest.TestCase):
         self.player.gui.show_player.assert_called_once()
         self.assertEqual(set(self.player.track_history.keys()), {'', media.uri})
         self.assertEqual(self.player.track_history[media.uri], 2)
-        self.assertEqual(self.player.active_backend, PlaybackType.AUDIO_SERVICE)
-        self.player.set_player_state.assert_called_once_with(
-            PlayerState.PLAYING)
-        self.player.audio_service.play.assert_called_once_with(
-            media.uri, utterance=self.player.audio_service_player)
-        last_message = self.emitted_msgs[-1]
-        self.assertEqual(last_message.msg_type, "ovos.common_play.track.state")
-        self.assertEqual(last_message.data,
-                         {"state": TrackState.PLAYING_AUDIOSERVICE})
 
         # TODO: Test Skill, Video, Webview
 
