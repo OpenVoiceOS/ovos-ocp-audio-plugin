@@ -28,7 +28,7 @@ Mycroft.Delegate {
                 renderType: Text.NativeRendering
                 font.family: "Noto Sans Display"
                 font.styleName: "Black"
-                text: qsTr("Searching")
+                text: "Searching Media"
                 color: Kirigami.Theme.textColor
             }
 
