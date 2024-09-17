@@ -14,7 +14,7 @@ from ovos_plugin_common_play.ocp.constants import OCP_ID
 from ovos_plugin_common_play.ocp.gui import OCPMediaPlayerGUI
 from ovos_plugin_common_play.ocp.media import NowPlaying
 from ovos_plugin_common_play.ocp.mpris import MprisPlayerCtl
-from ovos_plugin_common_play.ocp.mycroft_cps import MycroftAudioService
+from ovos_bus_client.apis.ocp import ClassicAudioServiceInterface
 from ovos_plugin_common_play.ocp.search import OCPSearch
 from ovos_plugin_common_play.ocp.utils import require_native_source
 try:
@@ -72,7 +72,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         self.now_playing.bind(self)
         self.media.bind(self)
         self.gui.bind(self)
-        self.audio_service = MycroftAudioService(self.bus)
+        self.audio_service = ClassicAudioServiceInterface(self.bus)
         self.register_bus_handlers()
 
     def register_bus_handlers(self):
