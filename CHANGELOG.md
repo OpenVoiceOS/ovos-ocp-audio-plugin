@@ -1,16 +1,16 @@
 # Changelog
 
-## [0.1.2a1](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/0.1.2a1) (2024-09-17)
+## [1.0.0a1](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/1.0.0a1) (2024-09-17)
 
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.1.1...0.1.2a1)
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V0.1.2...1.0.0a1)
 
-**Merged pull requests:**
+**Breaking changes:**
 
-- fix:stream extraction [\#131](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/131) ([JarbasAl](https://github.com/JarbasAl))
+- refactor:drop\_audio\_gui\_player [\#132](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/132) ([JarbasAl](https://github.com/JarbasAl))
 
-## [V0.1.1](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.1.1) (2024-09-10)
+## [V0.1.2](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V0.1.2) (2024-09-17)
 
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/0.1.1...V0.1.1)
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/0.1.2...V0.1.2)
 
 
 
