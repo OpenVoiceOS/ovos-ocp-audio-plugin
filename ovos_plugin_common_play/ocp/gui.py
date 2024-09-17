@@ -165,6 +165,7 @@ class OCPMediaPlayerGUI(GUIInterface):
         }
 
     def show_playback_error(self):
+        self["title"] = "PLAYBACK ERROR"
         # show notification in ovos-shell
         self.show_controlled_notification("Sorry, An error occurred while playing media",
                                           style="warning")

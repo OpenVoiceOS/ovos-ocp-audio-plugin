@@ -25,6 +25,11 @@ class OCPSearch(OCPAbstractComponent):
                        self.handle_ocp_skill_detach)
         self.add_event("ovos.common_play.announce",
                        self.handle_skill_announce)
+        self.add_event("ovos.common_play.search.start",
+                       self.handle_search_start)
+
+    def handle_search_start(self, message):
+        self.gui.notify_search_status("Searching...")
 
     def shutdown(self):
         self.remove_event("ovos.common_play.announce")
