@@ -322,7 +322,6 @@ class OCPMediaPlayer(OVOSAbstractApplication):
             LOG.debug("Casting PlaybackType.VIDEO to PlaybackType.AUDIO_SERVICE")
             self.now_playing.playback = PlaybackType.AUDIO_SERVICE
 
-        print(777, self.now_playing)
         if not self.now_playing.uri:
             return False
         self.now_playing.extract_stream()
