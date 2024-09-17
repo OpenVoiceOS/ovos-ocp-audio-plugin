@@ -1,11 +1,9 @@
 import random
 from os.path import join, dirname
-from time import sleep
 from typing import List, Union, Optional
 
 from ovos_bus_client.message import Message
 from ovos_config import Configuration
-from ovos_utils.gui import is_gui_connected, is_gui_running
 from ovos_utils.log import LOG
 from ovos_utils.messagebus import Message
 from ovos_workshop import OVOSAbstractApplication
@@ -314,22 +312,21 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         Validate that self.now_playing is playable and update the GUI if it is
         @return: True if the `now_playing` stream can be handled
         """
-        if self.now_playing.is_cps:
-            self.now_playing.playback = PlaybackType.SKILL
+        if self.active_backend == PlaybackType.AUDIO:
+            self.now_playing.playback = PlaybackType.AUDIO_SERVICE
 
-        if self.active_backend not in [PlaybackType.SKILL,
-                                       PlaybackType.UNDEFINED,
-                                       PlaybackType.MPRIS]:
-            has_gui = is_gui_running() or is_gui_connected(self.bus)
-            if not has_gui or self.settings.get("force_audioservice", False) or \
-                    self.settings.get("playback_mode") == PlaybackMode.FORCE_AUDIOSERVICE:
-                # No gui, so lets force playback to use audio only
-                LOG.debug("Casting to PlaybackType.AUDIO_SERVICE")
-                self.now_playing.playback = PlaybackType.AUDIO_SERVICE
-            if not self.now_playing.uri:
-                return False
-            self.gui["stream"] = self.now_playing.uri
+        # force playback to use audio only if configured to do so
+        elif self.active_backend in [PlaybackType.VIDEO] and (
+                self.settings.get("force_audioservice", False) or \
+                self.settings.get("playback_mode") == PlaybackMode.FORCE_AUDIOSERVICE):
+            LOG.debug("Casting PlaybackType.VIDEO to PlaybackType.AUDIO_SERVICE")
+            self.now_playing.playback = PlaybackType.AUDIO_SERVICE
 
+        print(777, self.now_playing)
+        if not self.now_playing.uri:
+            return False
+        self.now_playing.extract_stream()
+        self.gui["stream"] = self.now_playing.uri
         self.gui.update_current_track()
         return True
 
@@ -434,16 +431,9 @@ class OCPMediaPlayer(OVOSAbstractApplication):
             self.set_player_state(PlayerState.PLAYING)
         elif self.active_backend == PlaybackType.SKILL:
             LOG.debug("Requesting playback: PlaybackType.SKILL")
-            if self.now_playing.is_cps:  # mycroft-core compat layer
-                LOG.debug("     - Mycroft common play result selected")
-                self.bus.emit(Message('play:start',
-                                      {"skill_id": self.now_playing.skill_id,
-                                       "callback_data": self.now_playing.cps_data,
-                                       "phrase": self.now_playing.phrase}))
-            else:
-                self.bus.emit(Message(
-                    f'ovos.common_play.{self.now_playing.skill_id}.play',
-                    self.now_playing.info))
+            self.bus.emit(Message(
+                f'ovos.common_play.{self.now_playing.skill_id}.play',
+                self.now_playing.info))
             self.bus.emit(Message("ovos.common_play.track.state", {
                 "state": TrackState.PLAYING_SKILL}))
         elif self.active_backend == PlaybackType.VIDEO:
