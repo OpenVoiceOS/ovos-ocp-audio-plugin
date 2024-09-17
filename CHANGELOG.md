@@ -1,20 +1,32 @@
 # Changelog
 
+## [1.1.0a1](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/1.1.0a1) (2024-09-17)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V1.0.2a1...1.1.0a1)
+
+**Merged pull requests:**
+
+- feat:ovos.common\_play.search.populate event [\#139](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/139) ([JarbasAl](https://github.com/JarbasAl))
+
+## [V1.0.2a1](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V1.0.2a1) (2024-09-17)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/1.0.2a1...V1.0.2a1)
+
 ## [1.0.2a1](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/1.0.2a1) (2024-09-17)
 
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V1.0.1a1...1.0.2a1)
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/1.0.1a1...1.0.2a1)
 
 **Merged pull requests:**
 
 - fix:playlist/search results navigation [\#137](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/137) ([JarbasAl](https://github.com/JarbasAl))
 
-## [V1.0.1a1](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V1.0.1a1) (2024-09-17)
-
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/1.0.1a1...V1.0.1a1)
-
 ## [1.0.1a1](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/1.0.1a1) (2024-09-17)
 
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/1.0.0a1...1.0.1a1)
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V1.0.1a1...1.0.1a1)
+
+## [V1.0.1a1](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V1.0.1a1) (2024-09-17)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/1.0.0a1...V1.0.1a1)
 
 **Merged pull requests:**
 
