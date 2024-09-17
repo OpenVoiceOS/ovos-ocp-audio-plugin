@@ -324,8 +324,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
 
         if not self.now_playing.uri:
             return False
-        self.gui.display_notification(f"Extracting info from: {self.now_playing.uri}")
-        self.gui["footer_text"] = f"Extracting info from: {self.now_playing.uri}"
+        self.gui["title"] = f"Extracting info from: {self.now_playing.uri}" # will be reset in self.gui.update_current_track()
         self.now_playing.extract_stream()
         self.gui["stream"] = self.now_playing.uri
         self.gui.update_current_track()

@@ -1,3 +1,4 @@
+import time
 from os.path import join, dirname, isfile
 from threading import Event, Lock
 from typing import Optional, List
@@ -326,21 +327,15 @@ class OCP(OVOSAbstractApplication):
         LOG.debug(f"Playing {len(results)} results for: {phrase}")
         if not results:
             if self.gui:
-                self.gui.display_notification("Sorry, no matches found", style="warning")
-                self.gui["footer_text"] = "Sorry, no matches found"
+                self.gui.notify_search_status("Sorry, no matches found", style="warning")
 
             self.speak_dialog("cant.play",
                               data={"phrase": phrase,
                                     "media_type": media_type})
 
             if self.gui:
-                if "smartspeaker" not in self.gui.active_extension:
-                    if not self.gui.persist_home_display:
-                        self.gui.remove_homescreen()
-                    else:
-                        self.gui.remove_search_spinner()
-                else:
-                    self.gui.clear_notification()
+                time.sleep(0.5)
+                self.gui.remove_search_spinner()
 
         else:
             if self.gui:
@@ -350,8 +345,7 @@ class OCP(OVOSAbstractApplication):
             self.player.play_media(best, results)
 
             if self.gui:
-                if self.gui.active_extension == "smartspeaker":
-                    self.gui.clear_notification()
+                self.gui.remove_search_spinner()
 
             self.enclosure.mouth_reset()  # TODO display music icon in mk1
             self.set_context("Playing")

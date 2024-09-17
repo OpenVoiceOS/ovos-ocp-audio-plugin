@@ -226,11 +226,10 @@ class OCPQuery:
                         self.search_playlist.add_entry(res)
                         # update search UI
                         if self.gui and self.searching and res["match_confidence"] >= 30:
-                            self.gui.display_notification(f"Found some results: {res['title']}")
-                            self.gui["footer_text"] = \
-                                f"skill - {skill_id}\n" \
-                                f"match - {res['title']}\n" \
-                                f"confidence - {res['match_confidence']} "
+                            self.gui.notify_search_status(f"Found some results: {res['title']}",
+                                            f"skill - {skill_id}\n" \
+                                            f"match - {res['title']}\n" \
+                                            f"confidence - {res['match_confidence']} ")
 
                 # remove filtered results
                 message.data["results"] = [r for r in results if r is not None]
@@ -245,8 +244,7 @@ class OCPQuery:
                         self.searching = False
                         LOG.debug("common play query timeout, parsing results")
                         if self.gui:
-                            self.gui.display_notification("Parsing your results")
-                            self.gui["footer_text"] = "Timeout! selecting best result"
+                            self.gui.notify_search_status("Parsing your results", "Timeout! selecting best result")
 
                 elif self.searching:
                     for res in message.data.get("results", []):
@@ -257,12 +255,11 @@ class OCPQuery:
                                 "Receiving very high confidence match, stopping "
                                 "search early")
                             if self.gui:
-                                self.gui.display_notification("Found a great match, stopping search")
-                                self.gui["footer_text"] = \
-                                        f"High confidence match!\n " \
-                                        f"skill - {skill_id}\n" \
-                                        f"match - {res['title']}\n" \
-                                        f"confidence - {res['match_confidence']} "
+                                self.gui.notify_search_status("Found a great match, stopping search",
+                                                f"High confidence match!\n "
+                                                f"skill - {skill_id}\n"
+                                                f"match - {res['title']}\n"
+                                                f"confidence - {res['match_confidence']} ")
                             # allow other skills to "just miss"
                             early_stop_grace = \
                                 self.settings.get("early_stop_grace_period", 0.5)
@@ -291,8 +288,8 @@ class OCPQuery:
         if not self.active_skills and self.searching:
             LOG.info("Received search responses from all skills!")
             if self.gui:
-                self.gui.display_notification("Selecting best result")
-                self.gui["footer_text"] = "Received search responses from all skills!\nselecting best result"
+                self.gui.notify_search_status("Selecting best result",
+                                "Received search responses from all skills!")
 
             self.searching = False
         if self.gui:
@@ -367,10 +364,7 @@ class OCPSearch(OCPAbstractComponent):
             # stop any search still happening
             self.bus.emit(Message("ovos.common_play.search.stop"))
             if self.gui:
-                self.gui.display_notification("Searching...Your query is being processed")
-                self.gui["footer_text"] = "Searching...Your query is being processed"
-                if self.gui.active_extension in ["smartspeaker", "ovos-gui-plugin-shell-companion"]:
-                    self.gui.show_search_spinner(persist_home=self.gui.persist_home_display)
+                self.gui.notify_search_status("Searching...Your query is being processed")
             self.clear()
 
             query = OCPQuery(query=phrase, media_type=media_type, ocp_search=self,

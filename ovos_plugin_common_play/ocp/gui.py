@@ -165,13 +165,9 @@ class OCPMediaPlayerGUI(GUIInterface):
         }
 
     def show_playback_error(self):
-        if self.active_extension == "smartspeaker":
-            self.display_notification("Sorry, An error occurred while playing media")
-            sleep(0.4)
-            self.clear_notification()
-        else:
-            self["footer_text"] = "Sorry, An error occurred while playing media"
-            self.remove_search_spinner()
+        self.notify_search_status("Sorry, An error occurred while playing media", style="warning")
+        sleep(0.4)
+        self.clear_notification()
 
     def manage_display(self, page_requested, timeout=None):
         # Home:
@@ -300,7 +296,6 @@ class OCPMediaPlayerGUI(GUIInterface):
         # Always clear the spinner and notification before showing the player
         self.persist_home_display = True
         self.remove_search_spinner()
-        self.clear_notification()
 
         check_backend = self._get_player_page()
         if self.get("playerBackend", "") != check_backend:
@@ -465,14 +460,15 @@ class OCPMediaPlayerGUI(GUIInterface):
             self.notification_timeout.cancel()
         self.start_timeout_notification()
 
-    def show_search_spinner(self, persist_home=False):
-        self.show_home(app_mode=persist_home)
-        sleep(0.2)
-        self.send_event("ocp.gui.show.busy.overlay")
-        self["footer_text"] = "Querying Skills\n\n"
+    def notify_search_status(self, text, footer=None, **kwargs):
+        self.display_notification(text, **kwargs)
+        if footer and self.active_extension not in ["smartspeaker", "ovos-gui-plugin-shell-companion"]:
+            self["footer_text"] = footer
+            self.show_page("busy", override_idle=True)
 
     def remove_search_spinner(self):
-        self.send_event("ocp.gui.hide.busy.overlay")
+        self.remove_page("busy")
+        self.clear_notification()
 
     def remove_homescreen(self):
         self.release()
@@ -520,6 +516,7 @@ class OCPExternalGuiInterface(GUIInterface):
         self.show_screen("home", override_idle, override_animations)
 
     def show_player(self, override_idle=False, override_animations=False):
+        self.remove_search_spinner()
         self.show_screen("player", override_idle, override_animations)
 
     def show_extra(self, override_idle=False, override_animations=False):
