@@ -11,7 +11,6 @@ Mycroft.Delegate {
     id: rootSuggestionsView
     skillBackgroundSource: sessionData.bg_image ? sessionData.bg_image : "https://source.unsplash.com/1920x1080/?+music"
     property bool compactMode: parent.height >= 550 ? 0 : 1
-    property bool displayBottomBar: sessionData.displaySuggestionBar ? sessionData.displaySuggestionBar : 0
     fillWidth: true
     leftPadding: 0
     rightPadding: 0
@@ -36,8 +35,8 @@ Mycroft.Delegate {
         anchors.top: parent.top
         anchors.left: parent.left
         anchors.right: parent.right
-        anchors.bottom: displayBottomBar ? bottomBar.top : parent.bottom
-        anchors.bottomMargin: displayBottomBar ? Mycroft.Units.gridUnit * 0.5 : 0
+        anchors.bottom:  bottomBar.top
+        anchors.bottomMargin: Mycroft.Units.gridUnit * 0.5
         anchors.margins: Mycroft.Units.gridUnit * 2
         currentIndex: 0
 
@@ -59,8 +58,8 @@ Mycroft.Delegate {
         anchors.right: parent.right
         height: compactMode ? Mycroft.Units.gridUnit * 6 : Mycroft.Units.gridUnit * 4
         color: "transparent"
-        visible: displayBottomBar
-        enabled: displayBottomBar
+        visible: true
+        enabled: true
 
         Kirigami.Separator {
             id: bottomBarSeparator
