@@ -440,8 +440,8 @@ class OCPMediaPlayerGUI(GUIInterface):
         if show_results:
             self.manage_display("playlist", timeout=60)
 
-    def notify_search_status(self, text, footer=None, **kwargs):
-        self["footer_text"] = footer
+    def notify_search_status(self, text):
+        self["footer_text"] = text
         self.show_page("busy", override_idle=True)
 
     def remove_search_spinner(self):
