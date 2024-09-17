@@ -327,7 +327,7 @@ class OCP(OVOSAbstractApplication):
         LOG.debug(f"Playing {len(results)} results for: {phrase}")
         if not results:
             if self.gui:
-                self.gui.notify_search_status("Sorry, no matches found", style="warning")
+                self.gui.show_controlled_notification("Sorry, no matches found", style="warning")
 
             self.speak_dialog("cant.play",
                               data={"phrase": phrase,
@@ -336,6 +336,7 @@ class OCP(OVOSAbstractApplication):
             if self.gui:
                 time.sleep(0.5)
                 self.gui.remove_search_spinner()
+                self.gui.remove_controlled_notification()
 
         else:
             if self.gui:
