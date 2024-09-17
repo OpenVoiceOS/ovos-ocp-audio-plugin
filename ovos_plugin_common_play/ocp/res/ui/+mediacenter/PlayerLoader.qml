@@ -13,7 +13,7 @@ Mycroft.Delegate {
     topPadding: 0
     bottomPadding: 0
     rightPadding: 0
-    property var backgroundAllowedPlayers: ["OVOSAudioPlayer.qml", "OVOSSyncPlayer.qml"]
+    property var backgroundAllowedPlayers: [OVOSSyncPlayer.qml"]
 
     function movePageRight(){
         parent.parent.parent.currentIndex++
