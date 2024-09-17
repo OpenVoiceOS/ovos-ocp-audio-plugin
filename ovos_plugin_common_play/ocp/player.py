@@ -328,8 +328,8 @@ class OCPMediaPlayer(OVOSAbstractApplication):
                 self.now_playing.playback = PlaybackType.AUDIO_SERVICE
             if not self.now_playing.uri:
                 return False
-            self.gui["stream"] = self.now_playing.uri
-
+        self.now_playing.extract_stream()
+        self.gui["stream"] = self.now_playing.uri
         self.gui.update_current_track()
         return True
 
