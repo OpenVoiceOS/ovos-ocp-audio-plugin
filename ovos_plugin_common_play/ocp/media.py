@@ -194,15 +194,13 @@ class NowPlaying(MediaEntry):
 
     def extract_stream(self):
         """
-        DEPRECATED: Get metadata from ocp_plugins and add it to this MediaEntry
+        update missing metadata via OCP plugins that can parse the URI
+        this can include a playable stream (eg, youtube urls) or just track data (name, artist, icon...)
         """
         uri = self.uri
         if not uri:
             raise ValueError("No URI to extract stream from")
-        if self.playback == PlaybackType.VIDEO:
-            video = True
-        else:
-            video = False
+        video = self.playback == PlaybackType.VIDEO
         meta = ocp_plugins().extract_stream(uri, video)
         # update media entry with new data
         if meta:
