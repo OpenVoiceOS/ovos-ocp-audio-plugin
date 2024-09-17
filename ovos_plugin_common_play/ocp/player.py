@@ -424,13 +424,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         self.track_history[self.now_playing.uri] += 1
 
         LOG.debug(f"Requesting playback: {repr(self.active_backend)}")
-        if self.active_backend == PlaybackType.AUDIO and not is_gui_running():
-            # NOTE: this is already normalized in self.validate_stream, using messagebus
-            # if we get here the GUI probably crashed, or just isnt "mycroft-gui-app" or "ovos-shell"
-            # is_gui_running() can not be trusted, log a warning only
-            LOG.warning("Requested Audio playback via GUI, but GUI doesn't seem to be running?")
-
-        if self.active_backend == PlaybackType.AUDIO_SERVICE:
+        if self.active_backend in [PlaybackType.AUDIO_SERVICE, PlaybackType.AUDIO]:
             LOG.debug("Handling playback via audio_service")
             # we explicitly want to use an audio backend for audio only output
             self.audio_service.play(self.now_playing.uri,
@@ -438,17 +432,6 @@ class OCPMediaPlayer(OVOSAbstractApplication):
             self.bus.emit(Message("ovos.common_play.track.state", {
                 "state": TrackState.PLAYING_AUDIOSERVICE}))
             self.set_player_state(PlayerState.PLAYING)
-        elif self.active_backend == PlaybackType.AUDIO:
-            LOG.debug("Handling playback via gui")
-            # handle audio natively in mycroft-gui
-            sleep(2)  # wait for gui page to start or this is sent before page
-            self.bus.emit(Message("gui.player.media.service.play", {
-                "track": self.now_playing.uri,
-                "mime": self.now_playing.mimetype,
-                "repeat": False}))
-            sleep(0.2)  # wait for the above message to be processed
-            self.bus.emit(Message("ovos.common_play.track.state", {
-                "state": TrackState.PLAYING_AUDIO}))
         elif self.active_backend == PlaybackType.SKILL:
             LOG.debug("Requesting playback: PlaybackType.SKILL")
             if self.now_playing.is_cps:  # mycroft-core compat layer
