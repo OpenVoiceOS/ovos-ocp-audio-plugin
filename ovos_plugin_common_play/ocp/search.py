@@ -72,14 +72,3 @@ class OCPSearch(OCPAbstractComponent):
         return [s for s in skills
                 if MediaType.ADULT not in s["media_type"] and
                 MediaType.HENTAI not in s["media_type"]]
-
-    def clear(self):
-        self.search_playlist.clear()
-        if self.gui:
-            self.gui.update_search_results()
-
-    def replace(self, playlist):
-        self.search_playlist.clear()
-        self.search_playlist.replace(playlist)
-        if self.gui:
-            self.gui.update_search_results()

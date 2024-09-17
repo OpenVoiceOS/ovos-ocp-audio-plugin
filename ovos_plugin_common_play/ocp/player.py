@@ -141,6 +141,8 @@ class OCPMediaPlayer(OVOSAbstractApplication):
                        self.handle_set_repeat)
         self.add_event('ovos.common_play.repeat.unset',
                        self.handle_unset_repeat)
+        self.add_event('ovos.common_play.search.populate',
+                       self.handle_search_replace)
 
         # GUI Configuration Events
         self.add_event('ovos.common_play.gui.enable_app_timeout',
@@ -648,7 +650,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         """
         self.stop()
         self.playlist.clear()
-        self.media.clear()
+        self.media.search_playlist.clear()
         self.set_media_state(MediaState.NO_MEDIA)
         self.shuffle = False
         self.loop_state = LoopState.NONE
@@ -757,20 +759,32 @@ class OCPMediaPlayer(OVOSAbstractApplication):
 
     # ovos common play bus api requests
     @require_native_source()
+    def handle_search_replace(self, message):
+        LOG.debug("Updating search results playlist")
+        pl = message.data["playlist"]
+        replace = message.data.get("replace", False)
+        sort = message.data.get("sort_by_conf", True)
+        if replace:
+            if not pl:
+                self.media.search_playlist.clear()
+            else:
+                self.media.search_playlist.replace(pl)
+        else:
+            for e in pl:
+                self.media.search_playlist.add_entry(e)
+        if sort:
+            self.media.search_playlist.sort_by_conf()
+        self.gui.update_search_results()
+
+    @require_native_source()
     def handle_play_request(self, message):
-        LOG.debug("Received external OVOS playback request")
+        LOG.debug("Received playback request")
         repeat = message.data.get("repeat", False)
         if repeat:
             self.loop_state = LoopState.REPEAT
-
-        if message.data.get("tracks"):
-            # backwards compat / old style
-            playlist = disambiguation = message.data["tracks"]
-            media = playlist[0]
-        else:
-            media = message.data.get("media")
-            playlist = message.data.get("playlist") or [media]
-            disambiguation = message.data.get("disambiguation") or [media]
+        media = message.data.get("media")
+        playlist = message.data.get("playlist") or [media]
+        disambiguation = message.data.get("disambiguation") or []
         self.play_media(media, disambiguation, playlist)
 
     @require_native_source()
