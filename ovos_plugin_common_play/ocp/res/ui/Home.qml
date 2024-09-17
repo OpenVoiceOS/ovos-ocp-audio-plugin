@@ -27,62 +27,6 @@ Mycroft.Delegate {
         parent.parent.parent.currentItem.contentItem.forceActiveFocus()
     }
 
-    onGuiEvent: {
-        switch (eventName) {
-            case "ocp.gui.show.busy.overlay":
-                busyPageOverlay.open = true
-                break
-            case "ocp.gui.hide.busy.overlay":
-                busyPageOverlay.open = false
-                break
-        }
-    }
-
-    Rectangle {
-        id: busyPageOverlay
-        visible: busyPageOverlay.open ? 1 : 0
-        enabled: busyPageOverlay.open ? 1 : 0
-        z: 2
-        property bool open: false
-        anchors.fill: parent
-        color: Kirigami.Theme.backgroundColor
-        opacity: busyPageOverlay.open ? 0.95 : 0
-        radius: 10
-        property var indicatorText: sessionData.footer_text ? sessionData.footer_text : "Loading"
-        layer.enabled: true
-        layer.effect: DropShadow {
-            horizontalOffset: 0
-            verticalOffset: 0
-            radius: 10
-            samples: 16
-            color: Kirigami.Theme.backgroundColor
-        }
-
-        Behavior on opacity {
-            NumberAnimation {
-                duration: 200
-            }
-        }
-
-        Controls.BusyIndicator {
-            id: viewBusyIndicator
-            visible: busyPageOverlay.visible
-            anchors.centerIn: parent
-            running: busyPageOverlay.visible
-            enabled: busyPageOverlay.visible
-
-            Controls.Label {
-                id: viewBusyIndicatorLabel
-                visible: busyPageOverlay.visible
-                enabled: busyPageOverlay.visible
-                anchors.top: parent.bottom
-                color: Kirigami.Theme.textColor
-                anchors.horizontalCenter: parent.horizontalCenter
-                text: busyPageOverlay.indicatorText
-            }
-        }
-    }
-
     Item {
         id: topBarArea
         height: Mycroft.Units.gridUnit * 3

@@ -57,7 +57,7 @@ class TestOCPPlayer(unittest.TestCase):
         from ovos_plugin_common_play.ocp.search import OCPSearch
         from ovos_plugin_common_play.ocp.media import NowPlaying, Playlist
         from ovos_plugin_common_play.ocp.mpris import MprisPlayerCtl
-        from ovos_plugin_common_play.ocp.mycroft_cps import MycroftAudioService
+        from ovos_bus_client.apis.ocp import ClassicAudioServiceInterface
         from ovos_workshop import OVOSAbstractApplication
 
         self.assertIsInstance(self.player, OVOSAbstractApplication)
@@ -79,7 +79,7 @@ class TestOCPPlayer(unittest.TestCase):
         self.assertEqual(self.player.now_playing._player, self.player)
         self.assertEqual(self.player.media._player, self.player)
         self.assertEqual(self.player.gui.player, self.player)
-        self.assertIsInstance(self.player.audio_service, MycroftAudioService)
+        self.assertIsInstance(self.player.audio_service, ClassicAudioServiceInterface)
 
         bus_events = ['recognizer_loop:record_begin',
                       'recognizer_loop:record_end',
@@ -274,8 +274,7 @@ class TestOCPPlayer(unittest.TestCase):
         self.player.gui.update_current_track = real_update_track
         self.player.gui.update_playlist = real_update_plist
 
-    @patch("ovos_plugin_common_play.ocp.player.is_gui_running")
-    def test_validate_stream(self, gui_running):
+    def test_validate_stream(self):
         real_update = self.player.gui.update_current_track
         self.player.gui.update_current_track = Mock()
         media_entry = MediaEntry.from_dict(valid_search_results[0])
@@ -292,12 +291,11 @@ class TestOCPPlayer(unittest.TestCase):
         self.assertEqual(self.player.active_backend, PlaybackType.AUDIO)
 
         # Test with GUI
-        gui_running.return_value = True
         self.assertTrue(self.player.validate_stream())
         self.assertEqual(self.player.gui["stream"], media_entry.uri)
         self.player.gui.update_current_track.assert_called_once()
         self.assertEqual(self.player.now_playing.playback,
-                         PlaybackType.AUDIO)
+                         PlaybackType.AUDIO_SERVICE)
 
         # Invalid Entry
         self.player.now_playing.update(invalid_entry)
@@ -306,7 +304,6 @@ class TestOCPPlayer(unittest.TestCase):
         self.player.gui.update_current_track.assert_called_once()
 
         # Test without GUI
-        gui_running.return_value = False
         self.player.gui.update_current_track.reset_mock()
         self.player.gui["stream"] = None
         self.player.now_playing.update(media_entry)
@@ -416,9 +413,7 @@ class TestOCPPlayer(unittest.TestCase):
         self.assertIn(preferred,
                       ["mpv", "ovos_common_play", "vlc", "mplayer", "simple"])
 
-    @patch("ovos_plugin_common_play.ocp.player.is_gui_running")
-    def test_play(self, gui_running):
-        gui_running.return_value = True
+    def test_play(self):
         real_update_props = self.player.mpris.update_props
         real_stop = self.player.mpris.stop
         real_validate_stream = self.player.validate_stream
@@ -477,19 +472,21 @@ class TestOCPPlayer(unittest.TestCase):
         last_message = self.emitted_msgs[-1]
         second_last_message = self.emitted_msgs[-2]
         self.assertEqual(last_message.msg_type, "ovos.common_play.track.state")
-        self.assertEqual(last_message.data, {"state": TrackState.PLAYING_AUDIO})
+        self.assertEqual(last_message.data, {"state": TrackState.PLAYING_AUDIOSERVICE})
         self.assertEqual(second_last_message.msg_type,
-                         "gui.player.media.service.play")
+                         "gui.player.media.service.set.meta")
         self.assertEqual(second_last_message.data,
-                         {"track": media.uri, "mime": list(media.mimetype),
-                          "repeat": False})
+                         {'title': 'Orbiting A Distant Planet',
+                          'image': 'https://freemusicarchive.org/legacy/fma-smaller.jpg',
+                          'artist': 'Quantum Jazz'})
+
+
 
         self.player.mpris.stop.reset_mock()
         self.player.validate_stream.reset_mock()
         self.player.gui.show_player.reset_mock()
 
         # Test valid audio without gui (AudioService)
-        gui_running.return_value = False
         self.player.mpris.stop_event.clear()
         self.player.play()
         self.player.mpris.stop.assert_called_once()

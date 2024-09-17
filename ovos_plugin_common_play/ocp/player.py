@@ -1,11 +1,9 @@
 import random
 from os.path import join, dirname
-from time import sleep
 from typing import List, Union, Optional
 
 from ovos_bus_client.message import Message
 from ovos_config import Configuration
-from ovos_utils.gui import is_gui_connected, is_gui_running
 from ovos_utils.log import LOG
 from ovos_utils.messagebus import Message
 from ovos_workshop import OVOSAbstractApplication
@@ -16,7 +14,7 @@ from ovos_plugin_common_play.ocp.constants import OCP_ID
 from ovos_plugin_common_play.ocp.gui import OCPMediaPlayerGUI
 from ovos_plugin_common_play.ocp.media import NowPlaying
 from ovos_plugin_common_play.ocp.mpris import MprisPlayerCtl
-from ovos_plugin_common_play.ocp.mycroft_cps import MycroftAudioService
+from ovos_bus_client.apis.ocp import ClassicAudioServiceInterface
 from ovos_plugin_common_play.ocp.search import OCPSearch
 from ovos_plugin_common_play.ocp.utils import require_native_source
 try:
@@ -74,7 +72,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         self.now_playing.bind(self)
         self.media.bind(self)
         self.gui.bind(self)
-        self.audio_service = MycroftAudioService(self.bus)
+        self.audio_service = ClassicAudioServiceInterface(self.bus)
         self.register_bus_handlers()
 
     def register_bus_handlers(self):
@@ -143,6 +141,8 @@ class OCPMediaPlayer(OVOSAbstractApplication):
                        self.handle_set_repeat)
         self.add_event('ovos.common_play.repeat.unset',
                        self.handle_unset_repeat)
+        self.add_event('ovos.common_play.search.populate',
+                       self.handle_search_replace)
 
         # GUI Configuration Events
         self.add_event('ovos.common_play.gui.enable_app_timeout',
@@ -314,20 +314,19 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         Validate that self.now_playing is playable and update the GUI if it is
         @return: True if the `now_playing` stream can be handled
         """
-        if self.now_playing.is_cps:
-            self.now_playing.playback = PlaybackType.SKILL
+        if self.active_backend == PlaybackType.AUDIO:
+            self.now_playing.playback = PlaybackType.AUDIO_SERVICE
 
-        if self.active_backend not in [PlaybackType.SKILL,
-                                       PlaybackType.UNDEFINED,
-                                       PlaybackType.MPRIS]:
-            has_gui = is_gui_running() or is_gui_connected(self.bus)
-            if not has_gui or self.settings.get("force_audioservice", False) or \
-                    self.settings.get("playback_mode") == PlaybackMode.FORCE_AUDIOSERVICE:
-                # No gui, so lets force playback to use audio only
-                LOG.debug("Casting to PlaybackType.AUDIO_SERVICE")
-                self.now_playing.playback = PlaybackType.AUDIO_SERVICE
-            if not self.now_playing.uri:
-                return False
+        # force playback to use audio only if configured to do so
+        elif self.active_backend in [PlaybackType.VIDEO] and (
+                self.settings.get("force_audioservice", False) or \
+                self.settings.get("playback_mode") == PlaybackMode.FORCE_AUDIOSERVICE):
+            LOG.debug("Casting PlaybackType.VIDEO to PlaybackType.AUDIO_SERVICE")
+            self.now_playing.playback = PlaybackType.AUDIO_SERVICE
+
+        if not self.now_playing.uri:
+            return False
+        self.gui["title"] = f"Extracting info from: {self.now_playing.uri}" # will be reset in self.gui.update_current_track()
         self.now_playing.extract_stream()
         self.gui["stream"] = self.now_playing.uri
         self.gui.update_current_track()
@@ -424,13 +423,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         self.track_history[self.now_playing.uri] += 1
 
         LOG.debug(f"Requesting playback: {repr(self.active_backend)}")
-        if self.active_backend == PlaybackType.AUDIO and not is_gui_running():
-            # NOTE: this is already normalized in self.validate_stream, using messagebus
-            # if we get here the GUI probably crashed, or just isnt "mycroft-gui-app" or "ovos-shell"
-            # is_gui_running() can not be trusted, log a warning only
-            LOG.warning("Requested Audio playback via GUI, but GUI doesn't seem to be running?")
-
-        if self.active_backend == PlaybackType.AUDIO_SERVICE:
+        if self.active_backend in [PlaybackType.AUDIO_SERVICE, PlaybackType.AUDIO]:
             LOG.debug("Handling playback via audio_service")
             # we explicitly want to use an audio backend for audio only output
             self.audio_service.play(self.now_playing.uri,
@@ -438,29 +431,11 @@ class OCPMediaPlayer(OVOSAbstractApplication):
             self.bus.emit(Message("ovos.common_play.track.state", {
                 "state": TrackState.PLAYING_AUDIOSERVICE}))
             self.set_player_state(PlayerState.PLAYING)
-        elif self.active_backend == PlaybackType.AUDIO:
-            LOG.debug("Handling playback via gui")
-            # handle audio natively in mycroft-gui
-            sleep(2)  # wait for gui page to start or this is sent before page
-            self.bus.emit(Message("gui.player.media.service.play", {
-                "track": self.now_playing.uri,
-                "mime": self.now_playing.mimetype,
-                "repeat": False}))
-            sleep(0.2)  # wait for the above message to be processed
-            self.bus.emit(Message("ovos.common_play.track.state", {
-                "state": TrackState.PLAYING_AUDIO}))
         elif self.active_backend == PlaybackType.SKILL:
             LOG.debug("Requesting playback: PlaybackType.SKILL")
-            if self.now_playing.is_cps:  # mycroft-core compat layer
-                LOG.debug("     - Mycroft common play result selected")
-                self.bus.emit(Message('play:start',
-                                      {"skill_id": self.now_playing.skill_id,
-                                       "callback_data": self.now_playing.cps_data,
-                                       "phrase": self.now_playing.phrase}))
-            else:
-                self.bus.emit(Message(
-                    f'ovos.common_play.{self.now_playing.skill_id}.play',
-                    self.now_playing.info))
+            self.bus.emit(Message(
+                f'ovos.common_play.{self.now_playing.skill_id}.play',
+                self.now_playing.info))
             self.bus.emit(Message("ovos.common_play.track.state", {
                 "state": TrackState.PLAYING_SKILL}))
         elif self.active_backend == PlaybackType.VIDEO:
@@ -675,7 +650,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         """
         self.stop()
         self.playlist.clear()
-        self.media.clear()
+        self.media.search_playlist.clear()
         self.set_media_state(MediaState.NO_MEDIA)
         self.shuffle = False
         self.loop_state = LoopState.NONE
@@ -784,20 +759,32 @@ class OCPMediaPlayer(OVOSAbstractApplication):
 
     # ovos common play bus api requests
     @require_native_source()
+    def handle_search_replace(self, message):
+        LOG.debug("Updating search results playlist")
+        pl = message.data["playlist"]
+        replace = message.data.get("replace", False)
+        sort = message.data.get("sort_by_conf", True)
+        if replace:
+            if not pl:
+                self.media.search_playlist.clear()
+            else:
+                self.media.search_playlist.replace(pl)
+        else:
+            for e in pl:
+                self.media.search_playlist.add_entry(e)
+        if sort:
+            self.media.search_playlist.sort_by_conf()
+        self.gui.update_search_results()
+
+    @require_native_source()
     def handle_play_request(self, message):
-        LOG.debug("Received external OVOS playback request")
+        LOG.debug("Received playback request")
         repeat = message.data.get("repeat", False)
         if repeat:
             self.loop_state = LoopState.REPEAT
-
-        if message.data.get("tracks"):
-            # backwards compat / old style
-            playlist = disambiguation = message.data["tracks"]
-            media = playlist[0]
-        else:
-            media = message.data.get("media")
-            playlist = message.data.get("playlist") or [media]
-            disambiguation = message.data.get("disambiguation") or [media]
+        media = message.data.get("media")
+        playlist = message.data.get("playlist") or [media]
+        disambiguation = message.data.get("disambiguation") or []
         self.play_media(media, disambiguation, playlist)
 
     @require_native_source()

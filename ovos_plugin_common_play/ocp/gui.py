@@ -1,6 +1,6 @@
 import enum
+import time
 from os.path import join, dirname
-from threading import Timer
 from time import sleep
 
 from ovos_bus_client.apis.gui import GUIInterface
@@ -8,7 +8,8 @@ from ovos_bus_client.message import Message
 from ovos_config import Configuration
 from ovos_utils.events import EventSchedulerInterface
 from ovos_utils.log import LOG
-from ovos_workshop.backwards_compat import MediaType, Playlist, MediaEntry, PlayerState, LoopState, PlaybackType, PluginStream, dict2entry
+from ovos_workshop.backwards_compat import (MediaType, Playlist, MediaEntry, PlayerState, LoopState,
+                                            PlaybackType, PluginStream, dict2entry)
 
 from ovos_plugin_common_play.ocp.constants import OCP_ID
 from ovos_plugin_common_play.ocp.utils import is_qtav_available
@@ -31,8 +32,6 @@ class OCPMediaPlayerGUI(GUIInterface):
                                                 ui_directories=ui_dirs,
                                                 config=gui_config)
         self.ocp_skills = {}  # skill_id: meta
-        self.active_extension = gui_config.get("extension", "generic")
-        self.notification_timeout = None
         self.search_mode_is_app = False
         self.persist_home_display = False
         self.event_scheduler_interface = None
@@ -40,16 +39,11 @@ class OCPMediaPlayerGUI(GUIInterface):
     def bind(self, player):
         self.player = player
         super().set_bus(self.bus)
-        self.player.add_event("ovos.common_play.playback_time",
-                              self.handle_sync_seekbar)
-        self.player.add_event('ovos.common_play.playlist.play',
-                              self.handle_play_from_playlist)
-        self.player.add_event('ovos.common_play.search.play',
-                              self.handle_play_from_search)
-        self.player.add_event('ovos.common_play.skill.play',
-                              self.handle_play_skill_featured_media)
-        self.event_scheduler_interface = \
-            EventSchedulerInterface(skill_id=OCP_ID, bus=self.bus)
+        self.player.add_event("ovos.common_play.playback_time", self.handle_sync_seekbar)
+        self.player.add_event('ovos.common_play.playlist.play', self.handle_play_from_playlist)
+        self.player.add_event('ovos.common_play.search.play', self.handle_play_from_search)
+        self.player.add_event('ovos.common_play.skill.play', self.handle_play_skill_featured_media)
+        self.event_scheduler_interface = EventSchedulerInterface(skill_id=OCP_ID, bus=self.bus)
 
     @property
     def video_backend(self):
@@ -63,10 +57,6 @@ class OCPMediaPlayerGUI(GUIInterface):
     @property
     def disambiguation_playlists_page(self):
         return "SuggestionsView"
-
-    @property
-    def audio_player_page(self):
-        return "OVOSAudioPlayer"
 
     @property
     def audio_service_page(self):
@@ -168,13 +158,12 @@ class OCPMediaPlayerGUI(GUIInterface):
         }
 
     def show_playback_error(self):
-        if self.active_extension == "smartspeaker":
-            self.display_notification("Sorry, An error occurred while playing media")
-            sleep(0.4)
-            self.clear_notification()
-        else:
-            self["footer_text"] = "Sorry, An error occurred while playing media"
-            self.remove_search_spinner()
+        self["title"] = "PLAYBACK ERROR"
+        # show notification in ovos-shell
+        self.show_controlled_notification("Sorry, An error occurred while playing media",
+                                          style="warning")
+        time.sleep(2)
+        self.remove_controlled_notification()
 
     def manage_display(self, page_requested, timeout=None):
         # Home:
@@ -187,9 +176,8 @@ class OCPMediaPlayerGUI(GUIInterface):
         # If the user is playing a track, the player will be shown instead
         # This is to ensure that the user always returns to the player when they are playing a track
 
-        # The search_spinner_page has been integrated into the home page as an overlay
-        # It will be shown when the user is searching for a track and will be hidden when the search is complete
-        # on platforms that don't support the notification system
+        # The search_spinner_page will be shown when the user is searching for a track
+        # and will be hidden when the search is complete
 
         # Player:
         # Player loader will always be shown at Protocol level index 1
@@ -237,22 +225,12 @@ class OCPMediaPlayerGUI(GUIInterface):
             self.show_pages(self._get_pages_to_display(), 0, override_idle=True, override_animations=True)
 
         elif page_requested == "playlist":
-            self["displaySuggestionBar"] = False
             self._show_suggestion_playlist()
-
-            if timeout is not None:
-                self.show_page(self.disambiguation_playlists_page, override_idle=timeout, override_animations=True)
-            else:
-                self.show_page(self.disambiguation_playlists_page, override_idle=True, override_animations=True)
+            self.show_page(self.disambiguation_playlists_page, override_idle=timeout or True, override_animations=True)
 
         elif page_requested == "disambiguation":
-            self["displaySuggestionBar"] = False
             self._show_suggestion_disambiguation()
-
-            if timeout is not None:
-                self.show_page(self.disambiguation_playlists_page, override_idle=timeout, override_animations=True)
-            else:
-                self.show_page(self.disambiguation_playlists_page, override_idle=True, override_animations=True)
+            self.show_page(self.disambiguation_playlists_page, override_idle=timeout or True, override_animations=True)
 
         if (self.player.app_view_timeout_enabled and page_requested == "player"
                 and self.player.app_view_timeout_mode == "all"):
@@ -281,7 +259,7 @@ class OCPMediaPlayerGUI(GUIInterface):
 
     def show_home(self, app_mode=True):
         self.update_ocp_skills()
-        self.clear_notification()
+        self.remove_search_spinner()
 
         sleep(0.2)
         self.manage_display("home")
@@ -300,10 +278,9 @@ class OCPMediaPlayerGUI(GUIInterface):
         super().release()
 
     def show_player(self):
-        # Always clear the spinner and notification before showing the player
+        # Always clear the spinner before showing the player
         self.persist_home_display = True
         self.remove_search_spinner()
-        self.clear_notification()
 
         check_backend = self._get_player_page()
         if self.get("playerBackend", "") != check_backend:
@@ -314,19 +291,11 @@ class OCPMediaPlayerGUI(GUIInterface):
 
     # page helpers
     def _get_player_page(self):
-        if self.player.active_backend == PlaybackType.AUDIO_SERVICE or \
-                self.player.settings.get("force_audioservice", False):
-            return self.audio_service_page
-        elif self.player.active_backend == PlaybackType.VIDEO:
+        if self.player.active_backend == PlaybackType.VIDEO:
             return self.video_player_page
-        elif self.player.active_backend == PlaybackType.AUDIO:
-            return self.audio_player_page
         elif self.player.active_backend == PlaybackType.WEBVIEW:
             return self.web_player_page
-        elif self.player.active_backend == PlaybackType.MPRIS:
-            return self.audio_service_page
-        else:  # external playback (eg. skill)
-            # TODO ?
+        else:
             return self.audio_service_page
 
     def _get_pages_to_display(self):
@@ -335,15 +304,9 @@ class OCPMediaPlayerGUI(GUIInterface):
         LOG.debug(f"pages to display backend: {self['playerBackend']}")
 
         if len(self.player.disambiguation):
-            self["displaySuggestionBar"] = False
             self._show_suggestion_disambiguation()
 
         if len(self.player.tracks):
-            self["displaySuggestionBar"] = False
-            self._show_suggestion_playlist()
-
-        if len(self.player.disambiguation) and len(self.player.tracks):
-            self["displaySuggestionBar"] = True
             self._show_suggestion_playlist()
 
         pages = [self.player_loader_page, self.disambiguation_playlists_page]
@@ -426,7 +389,6 @@ class OCPMediaPlayerGUI(GUIInterface):
 
         self.player.playlist.clear()
         self.player.media.replace(playlist)
-        self["displaySuggestionBar"] = False
 
         self.manage_display("disambiguation")
 
@@ -455,35 +417,12 @@ class OCPMediaPlayerGUI(GUIInterface):
         if show_results:
             self.manage_display("playlist", timeout=60)
 
-    def display_notification(self, text, style="info"):
-        """ Display a notification on the screen instead of spinner on platform that support it """
-        self.show_controlled_notification(text, style=style)
-        self.reset_timeout_notification()
-
-    def clear_notification(self):
-        """ Remove the notification on the screen """
-        if self.notification_timeout:
-            self.notification_timeout.cancel()
-        self.remove_controlled_notification()
-
-    def start_timeout_notification(self):
-        """ Remove the notification on the screen after 1 minute of inactivity """
-        self.notification_timeout = Timer(60, self.clear_notification).start()
-
-    def reset_timeout_notification(self):
-        """ Reset the timer to remove the notification """
-        if self.notification_timeout:
-            self.notification_timeout.cancel()
-        self.start_timeout_notification()
-
-    def show_search_spinner(self, persist_home=False):
-        self.show_home(app_mode=persist_home)
-        sleep(0.2)
-        self.send_event("ocp.gui.show.busy.overlay")
-        self["footer_text"] = "Querying Skills\n\n"
+    def notify_search_status(self, text):
+        self["footer_text"] = text
+        self.show_page("busy", override_idle=True)
 
     def remove_search_spinner(self):
-        self.send_event("ocp.gui.hide.busy.overlay")
+        self.remove_page("busy")
 
     def remove_homescreen(self):
         self.release()
@@ -531,6 +470,7 @@ class OCPExternalGuiInterface(GUIInterface):
         self.show_screen("home", override_idle, override_animations)
 
     def show_player(self, override_idle=False, override_animations=False):
+        self.remove_search_spinner()
         self.show_screen("player", override_idle, override_animations)
 
     def show_extra(self, override_idle=False, override_animations=False):
