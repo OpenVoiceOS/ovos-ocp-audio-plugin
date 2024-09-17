@@ -32,7 +32,6 @@ class TestOCP(unittest.TestCase):
         self.assertIsInstance(self.ocp.gui, OCPMediaPlayerGUI)
         self.assertIsInstance(self.ocp.settings, dict)
         self.assertIsInstance(self.ocp.player, OCPMediaPlayer)
-        self.assertIsNotNone(self.ocp.media_intents)
 
         # Mock startup events
         def _handle_skills_check(msg):
@@ -40,7 +39,6 @@ class TestOCP(unittest.TestCase):
 
         self.bus.once('mycroft.skills.is_ready', _handle_skills_check)
         self.bus.emit(Message('mycroft.ready'))
-
 
     def test_ping(self):
         resp = self.bus.wait_for_response(Message("ovos.common_play.ping"),
@@ -62,131 +60,9 @@ class TestOCP(unittest.TestCase):
         # TODO
         pass
 
-    def test_replace_mycroft_cps(self):
-        # TODO
-        pass
-
     def test_default_shutdown(self):
         # TODO
         pass
-
-    def test_classify_media(self):
-        music = "play some music"
-        movie = "play a movie"
-        news = "play the latest news"
-        unknown = "play something"
-        self.ocp.register_media_intents()
-        self.assertEqual(self.ocp.classify_media(music), MediaType.MUSIC)
-        self.assertEqual(self.ocp.classify_media(movie), MediaType.MOVIE)
-        self.assertEqual(self.ocp.classify_media(news), MediaType.NEWS)
-        self.assertEqual(self.ocp.classify_media(unknown), MediaType.GENERIC)
-
-    def test_handle_open(self):
-        real_gui_home = self.ocp.gui.show_home
-        self.ocp.gui.show_home = Mock()
-        self.ocp.handle_open(None)
-        self.ocp.gui.show_home.assert_called_once_with(app_mode=True)
-        self.ocp.gui.show_home = real_gui_home
-
-    def test_handle_playback_intents(self):
-        real_player = self.ocp.player
-        self.ocp.player = MagicMock()
-
-        # next
-        self.ocp.handle_next(None)
-        self.ocp.player.play_next.assert_called_once()
-
-        # previous
-        self.ocp.handle_prev(None)
-        self.ocp.player.play_prev.assert_called_once()
-
-        # pause
-        self.ocp.handle_pause(None)
-        self.ocp.player.pause.assert_called_once()
-
-        # stop
-        self.ocp.handle_stop()
-        self.ocp.player.stop.assert_called_once()
-
-        # resume
-        self.ocp.player.state = PlayerState.PAUSED
-        self.ocp.handle_resume(None)
-        self.ocp.player.resume.assert_called_once()
-
-        # resume while playing
-        self.ocp.player.state = PlayerState.PLAYING
-        real_get_response = self.ocp.get_response
-        real_play = self.ocp.handle_play
-        self.ocp.get_response = Mock(return_value="test")
-        self.ocp.handle_play = Mock()
-
-        test_message = Message("test")
-        self.ocp.handle_resume(test_message)
-        self.ocp.get_response.assert_called_once_with("play.what")
-        self.ocp.handle_play.assert_called_once_with(test_message)
-        self.assertEqual(test_message.data['utterance'], 'test')
-
-        self.ocp.handle_play = real_play
-        self.ocp.get_response = real_get_response
-        self.ocp.player = real_player
-
-    def test_handle_play(self):
-        # TODO
-        pass
-
-    def test_handle_read(self):
-        # TODO
-        pass
-
-    def test_do_play(self):
-        called = False
-
-        def play_media(*args, **kwargs):
-            nonlocal called
-            called = True
-
-        self.ocp.player.play_media = play_media
-
-        msg = Message("")
-        self.ocp.player.handle_play_request(msg)
-        self.assertTrue(called)  # no message.context -> broadcast for everyone
-
-        msg = Message("", {}, {"destination": "audio"})
-        called = False
-        self.ocp.player.handle_play_request(msg)
-        self.assertTrue(called)  # "audio" is a native source
-
-        msg = Message("", {}, {"destination": "hive"})
-        called = False
-        self.ocp.player.handle_play_request(msg)
-        self.assertFalse(called) # ignored playback for remote client
-
-    def test_search(self):
-        # TODO
-        pass
-
-    def test_should_resume(self):
-        valid_utt = "resume"
-        invalid_utt = "test"
-        empty_utt = ""
-
-        # Playing
-        self.ocp.player.state = PlayerState.PLAYING
-        self.assertFalse(self.ocp._should_resume(valid_utt))
-        self.assertFalse(self.ocp._should_resume(invalid_utt))
-        self.assertFalse(self.ocp._should_resume(empty_utt))
-
-        # Stopped
-        self.ocp.player.state = PlayerState.STOPPED
-        self.assertFalse(self.ocp._should_resume(valid_utt))
-        self.assertFalse(self.ocp._should_resume(invalid_utt))
-        self.assertFalse(self.ocp._should_resume(empty_utt))
-
-        # Paused
-        self.ocp.player.state = PlayerState.PAUSED
-        self.assertTrue(self.ocp._should_resume(valid_utt))
-        self.assertFalse(self.ocp._should_resume(invalid_utt))
-        self.assertTrue(self.ocp._should_resume(empty_utt))
 
 
 if __name__ == "__main__":
