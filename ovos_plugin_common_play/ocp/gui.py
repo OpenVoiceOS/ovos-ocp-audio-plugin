@@ -1,7 +1,6 @@
 import enum
 import time
 from os.path import join, dirname
-from threading import Timer
 from time import sleep
 
 from ovos_bus_client.apis.gui import GUIInterface
@@ -33,7 +32,6 @@ class OCPMediaPlayerGUI(GUIInterface):
                                                 ui_directories=ui_dirs,
                                                 config=gui_config)
         self.ocp_skills = {}  # skill_id: meta
-        self.active_extension = gui_config.get("extension", "generic")
         self.search_mode_is_app = False
         self.persist_home_display = False
         self.event_scheduler_interface = None
@@ -41,16 +39,11 @@ class OCPMediaPlayerGUI(GUIInterface):
     def bind(self, player):
         self.player = player
         super().set_bus(self.bus)
-        self.player.add_event("ovos.common_play.playback_time",
-                              self.handle_sync_seekbar)
-        self.player.add_event('ovos.common_play.playlist.play',
-                              self.handle_play_from_playlist)
-        self.player.add_event('ovos.common_play.search.play',
-                              self.handle_play_from_search)
-        self.player.add_event('ovos.common_play.skill.play',
-                              self.handle_play_skill_featured_media)
-        self.event_scheduler_interface = \
-            EventSchedulerInterface(skill_id=OCP_ID, bus=self.bus)
+        self.player.add_event("ovos.common_play.playback_time", self.handle_sync_seekbar)
+        self.player.add_event('ovos.common_play.playlist.play', self.handle_play_from_playlist)
+        self.player.add_event('ovos.common_play.search.play', self.handle_play_from_search)
+        self.player.add_event('ovos.common_play.skill.play', self.handle_play_skill_featured_media)
+        self.event_scheduler_interface = EventSchedulerInterface(skill_id=OCP_ID, bus=self.bus)
 
     @property
     def video_backend(self):
