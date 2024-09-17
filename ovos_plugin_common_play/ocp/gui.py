@@ -232,22 +232,12 @@ class OCPMediaPlayerGUI(GUIInterface):
             self.show_pages(self._get_pages_to_display(), 0, override_idle=True, override_animations=True)
 
         elif page_requested == "playlist":
-            self["displaySuggestionBar"] = False
             self._show_suggestion_playlist()
-
-            if timeout is not None:
-                self.show_page(self.disambiguation_playlists_page, override_idle=timeout, override_animations=True)
-            else:
-                self.show_page(self.disambiguation_playlists_page, override_idle=True, override_animations=True)
+            self.show_page(self.disambiguation_playlists_page, override_idle=timeout or True, override_animations=True)
 
         elif page_requested == "disambiguation":
-            self["displaySuggestionBar"] = False
             self._show_suggestion_disambiguation()
-
-            if timeout is not None:
-                self.show_page(self.disambiguation_playlists_page, override_idle=timeout, override_animations=True)
-            else:
-                self.show_page(self.disambiguation_playlists_page, override_idle=True, override_animations=True)
+            self.show_page(self.disambiguation_playlists_page, override_idle=timeout or True, override_animations=True)
 
         if (self.player.app_view_timeout_enabled and page_requested == "player"
                 and self.player.app_view_timeout_mode == "all"):
@@ -321,15 +311,9 @@ class OCPMediaPlayerGUI(GUIInterface):
         LOG.debug(f"pages to display backend: {self['playerBackend']}")
 
         if len(self.player.disambiguation):
-            self["displaySuggestionBar"] = False
             self._show_suggestion_disambiguation()
 
         if len(self.player.tracks):
-            self["displaySuggestionBar"] = False
-            self._show_suggestion_playlist()
-
-        if len(self.player.disambiguation) and len(self.player.tracks):
-            self["displaySuggestionBar"] = True
             self._show_suggestion_playlist()
 
         pages = [self.player_loader_page, self.disambiguation_playlists_page]
@@ -412,7 +396,6 @@ class OCPMediaPlayerGUI(GUIInterface):
 
         self.player.playlist.clear()
         self.player.media.replace(playlist)
-        self["displaySuggestionBar"] = False
 
         self.manage_display("disambiguation")
 
