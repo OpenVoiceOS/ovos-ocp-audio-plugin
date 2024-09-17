@@ -8,7 +8,8 @@ from ovos_bus_client.message import Message
 from ovos_config import Configuration
 from ovos_utils.events import EventSchedulerInterface
 from ovos_utils.log import LOG
-from ovos_workshop.backwards_compat import MediaType, Playlist, MediaEntry, PlayerState, LoopState, PlaybackType, PluginStream, dict2entry
+from ovos_workshop.backwards_compat import (MediaType, Playlist, MediaEntry, PlayerState, LoopState,
+                                            PlaybackType, PluginStream, dict2entry)
 
 from ovos_plugin_common_play.ocp.constants import OCP_ID
 from ovos_plugin_common_play.ocp.utils import is_qtav_available
@@ -63,10 +64,6 @@ class OCPMediaPlayerGUI(GUIInterface):
     @property
     def disambiguation_playlists_page(self):
         return "SuggestionsView"
-
-    @property
-    def audio_player_page(self):
-        return "OVOSAudioPlayer"
 
     @property
     def audio_service_page(self):
@@ -314,19 +311,11 @@ class OCPMediaPlayerGUI(GUIInterface):
 
     # page helpers
     def _get_player_page(self):
-        if self.player.active_backend == PlaybackType.AUDIO_SERVICE or \
-                self.player.settings.get("force_audioservice", False):
-            return self.audio_service_page
-        elif self.player.active_backend == PlaybackType.VIDEO:
+        if self.player.active_backend == PlaybackType.VIDEO:
             return self.video_player_page
-        elif self.player.active_backend == PlaybackType.AUDIO:
-            return self.audio_player_page
         elif self.player.active_backend == PlaybackType.WEBVIEW:
             return self.web_player_page
-        elif self.player.active_backend == PlaybackType.MPRIS:
-            return self.audio_service_page
-        else:  # external playback (eg. skill)
-            # TODO ?
+        else:
             return self.audio_service_page
 
     def _get_pages_to_display(self):
