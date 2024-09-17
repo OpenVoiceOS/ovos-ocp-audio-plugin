@@ -326,8 +326,8 @@ class OCP(OVOSAbstractApplication):
         LOG.debug(f"Playing {len(results)} results for: {phrase}")
         if not results:
             if self.gui:
-                if self.gui.active_extension == "smartspeaker":
-                    self.gui.display_notification("Sorry, no matches found", style="warning")
+                self.gui.display_notification("Sorry, no matches found", style="warning")
+                self.gui["footer_text"] = "Sorry, no matches found"
 
             self.speak_dialog("cant.play",
                               data={"phrase": phrase,
@@ -344,8 +344,7 @@ class OCP(OVOSAbstractApplication):
 
         else:
             if self.gui:
-                if self.gui.active_extension == "smartspeaker":
-                    self.gui.display_notification("Found a match", style="success")
+                self.gui.display_notification("Found a match", style="success")
 
             best = self.player.media.select_best(results)
             self.player.play_media(best, results)

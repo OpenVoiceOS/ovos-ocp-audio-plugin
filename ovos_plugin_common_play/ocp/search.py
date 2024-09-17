@@ -226,13 +226,11 @@ class OCPQuery:
                         self.search_playlist.add_entry(res)
                         # update search UI
                         if self.gui and self.searching and res["match_confidence"] >= 30:
-                            if self.gui.active_extension == "smartspeaker":
-                                self.gui.display_notification(f"Found some results for {res['title']}")
-                            else:
-                                self.gui["footer_text"] = \
-                                    f"skill - {skill_id}\n" \
-                                    f"match - {res['title']}\n" \
-                                    f"confidence - {res['match_confidence']} "
+                            self.gui.display_notification(f"Found some results: {res['title']}")
+                            self.gui["footer_text"] = \
+                                f"skill - {skill_id}\n" \
+                                f"match - {res['title']}\n" \
+                                f"confidence - {res['match_confidence']} "
 
                 # remove filtered results
                 message.data["results"] = [r for r in results if r is not None]
@@ -247,12 +245,8 @@ class OCPQuery:
                         self.searching = False
                         LOG.debug("common play query timeout, parsing results")
                         if self.gui:
-                            if self.gui.active_extension == "smartspeaker":
-                                self.gui.display_notification("Parsing your results")
-                            else:
-                                self.gui["footer_text"] = "Timeout!\n " \
-                                                          "selecting best result\n" \
-                                                          " "
+                            self.gui.display_notification("Parsing your results")
+                            self.gui["footer_text"] = "Timeout! selecting best result"
 
                 elif self.searching:
                     for res in message.data.get("results", []):
@@ -263,10 +257,8 @@ class OCPQuery:
                                 "Receiving very high confidence match, stopping "
                                 "search early")
                             if self.gui:
-                                if self.gui.active_extension == "smartspeaker":
-                                    self.gui.display_notification("Found a great match, stopping search")
-                                else:
-                                    self.gui["footer_text"] = \
+                                self.gui.display_notification("Found a great match, stopping search")
+                                self.gui["footer_text"] = \
                                         f"High confidence match!\n " \
                                         f"skill - {skill_id}\n" \
                                         f"match - {res['title']}\n" \
@@ -299,11 +291,8 @@ class OCPQuery:
         if not self.active_skills and self.searching:
             LOG.info("Received search responses from all skills!")
             if self.gui:
-                if self.gui.active_extension == "smartspeaker":
-                    self.gui.display_notification("Selecting best result")
-                else:
-                    self.gui["footer_text"] = "Received search responses from all " \
-                                              "skills!\nselecting best result"
+                self.gui.display_notification("Selecting best result")
+                self.gui["footer_text"] = "Received search responses from all skills!\nselecting best result"
 
             self.searching = False
         if self.gui:
@@ -378,13 +367,10 @@ class OCPSearch(OCPAbstractComponent):
             # stop any search still happening
             self.bus.emit(Message("ovos.common_play.search.stop"))
             if self.gui:
-                if self.gui.active_extension == "smartspeaker":
-                    self.gui.display_notification("Searching...Your query is being processed")
-                else:
-                    if self.gui.persist_home_display:
-                        self.gui.show_search_spinner(persist_home=True)
-                    else:
-                        self.gui.show_search_spinner(persist_home=False)
+                self.gui.display_notification("Searching...Your query is being processed")
+                self.gui["footer_text"] = "Searching...Your query is being processed"
+                if self.gui.active_extension in ["smartspeaker", "ovos-gui-plugin-shell-companion"]:
+                    self.gui.show_search_spinner(persist_home=self.gui.persist_home_display)
             self.clear()
 
             query = OCPQuery(query=phrase, media_type=media_type, ocp_search=self,
