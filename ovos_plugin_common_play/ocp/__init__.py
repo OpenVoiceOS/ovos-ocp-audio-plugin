@@ -339,13 +339,14 @@ class OCP(OVOSAbstractApplication):
 
         else:
             if self.gui:
-                self.gui.display_notification("Found a match", style="success")
+                self.gui.show_controlled_notification("Found a match", style="success")
 
             best = self.player.media.select_best(results)
             self.player.play_media(best, results)
 
             if self.gui:
                 self.gui.remove_search_spinner()
+                self.remove_controlled_notification()
 
             self.enclosure.mouth_reset()  # TODO display music icon in mk1
             self.set_context("Playing")

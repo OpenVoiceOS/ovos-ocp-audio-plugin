@@ -1,4 +1,5 @@
 import enum
+import time
 from os.path import join, dirname
 from threading import Timer
 from time import sleep
@@ -33,7 +34,6 @@ class OCPMediaPlayerGUI(GUIInterface):
                                                 config=gui_config)
         self.ocp_skills = {}  # skill_id: meta
         self.active_extension = gui_config.get("extension", "generic")
-        self.notification_timeout = None
         self.search_mode_is_app = False
         self.persist_home_display = False
         self.event_scheduler_interface = None
@@ -165,9 +165,11 @@ class OCPMediaPlayerGUI(GUIInterface):
         }
 
     def show_playback_error(self):
-        self.notify_search_status("Sorry, An error occurred while playing media", style="warning")
-        sleep(0.4)
-        self.clear_notification()
+        # show notification in ovos-shell
+        self.show_controlled_notification("Sorry, An error occurred while playing media",
+                                          style="warning")
+        time.sleep(2)
+        self.remove_controlled_notification()
 
     def manage_display(self, page_requested, timeout=None):
         # Home:
@@ -180,9 +182,8 @@ class OCPMediaPlayerGUI(GUIInterface):
         # If the user is playing a track, the player will be shown instead
         # This is to ensure that the user always returns to the player when they are playing a track
 
-        # The search_spinner_page has been integrated into the home page as an overlay
-        # It will be shown when the user is searching for a track and will be hidden when the search is complete
-        # on platforms that don't support the notification system
+        # The search_spinner_page will be shown when the user is searching for a track
+        # and will be hidden when the search is complete
 
         # Player:
         # Player loader will always be shown at Protocol level index 1
@@ -274,7 +275,7 @@ class OCPMediaPlayerGUI(GUIInterface):
 
     def show_home(self, app_mode=True):
         self.update_ocp_skills()
-        self.clear_notification()
+        self.remove_search_spinner()
 
         sleep(0.2)
         self.manage_display("home")
@@ -293,7 +294,7 @@ class OCPMediaPlayerGUI(GUIInterface):
         super().release()
 
     def show_player(self):
-        # Always clear the spinner and notification before showing the player
+        # Always clear the spinner before showing the player
         self.persist_home_display = True
         self.remove_search_spinner()
 
@@ -439,36 +440,12 @@ class OCPMediaPlayerGUI(GUIInterface):
         if show_results:
             self.manage_display("playlist", timeout=60)
 
-    def display_notification(self, text, style="info"):
-        """ Display a notification on the screen instead of spinner on platform that support it """
-        self.show_controlled_notification(text, style=style)
-        self.reset_timeout_notification()
-
-    def clear_notification(self):
-        """ Remove the notification on the screen """
-        if self.notification_timeout:
-            self.notification_timeout.cancel()
-        self.remove_controlled_notification()
-
-    def start_timeout_notification(self):
-        """ Remove the notification on the screen after 1 minute of inactivity """
-        self.notification_timeout = Timer(60, self.clear_notification).start()
-
-    def reset_timeout_notification(self):
-        """ Reset the timer to remove the notification """
-        if self.notification_timeout:
-            self.notification_timeout.cancel()
-        self.start_timeout_notification()
-
     def notify_search_status(self, text, footer=None, **kwargs):
-        self.display_notification(text, **kwargs)
-        if footer and self.active_extension not in ["smartspeaker", "ovos-gui-plugin-shell-companion"]:
-            self["footer_text"] = footer
-            self.show_page("busy", override_idle=True)
+        self["footer_text"] = footer
+        self.show_page("busy", override_idle=True)
 
     def remove_search_spinner(self):
         self.remove_page("busy")
-        self.clear_notification()
 
     def remove_homescreen(self):
         self.release()
