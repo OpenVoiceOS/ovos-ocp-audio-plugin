@@ -8,7 +8,8 @@ from ovos_bus_client.message import Message
 from ovos_config import Configuration
 from ovos_utils.events import EventSchedulerInterface
 from ovos_utils.log import LOG
-from ovos_workshop.backwards_compat import (MediaType, Playlist, MediaEntry, PlayerState, LoopState,
+from ovos_workshop.skills.ovos import SkillGUI
+from ovos_workshop.backwards_compat import (MediaType, Playlist, PlayerState, LoopState,
                                             PlaybackType, PluginStream, dict2entry)
 
 from ovos_plugin_common_play.ocp.constants import OCP_ID
@@ -21,16 +22,23 @@ class VideoPlayerBackend(str, enum.Enum):
     NATIVE = "native"
 
 
-class OCPMediaPlayerGUI(GUIInterface):
-    def __init__(self, bus=None):
+class _FakeSkill:
+    # SkillGUI expects a OVOSSkill, we need to define
+    # self.skill_id , self.bus , self.config_core, self.root_dir
+    def __init__(self, bus):
+        self.bus = bus
         # the skill_id is chosen so the namespace matches the regular bus api
         # ie, the gui event "XXX" is sent in the bus as "ovos.common_play.XXX"
-        gui_config = Configuration().get("gui") or {}
-        ui_dirs = {"qt5": f"{dirname(__file__)}/res/ui"}
-        super(OCPMediaPlayerGUI, self).__init__(bus=bus,
-                                                skill_id=OCP_ID,
-                                                ui_directories=ui_dirs,
-                                                config=gui_config)
+        self.skill_id = OCP_ID
+        self.root_dir = f"{dirname(__file__)}/res"
+        self.config_core = Configuration()
+
+
+class OCPMediaPlayerGUI(SkillGUI):
+    # GUIInterface is not used as base class otherwise
+    # we would need to reimplement self._cache_gui_files()
+    def __init__(self, bus=None):
+        super().__init__(_FakeSkill(bus))
         self.ocp_skills = {}  # skill_id: meta
         self.search_mode_is_app = False
         self.persist_home_display = False
