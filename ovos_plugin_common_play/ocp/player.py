@@ -7,7 +7,7 @@ from ovos_config import Configuration
 from ovos_utils.log import LOG
 from ovos_utils.messagebus import Message
 from ovos_workshop.app import OVOSAbstractApplication
-from ovos_utils.ocp import (PluginStream, LoopState, MediaState, PlayerState, TrackState,
+from ovos_utils.ocp import (PluginStream, LoopState, MediaState, PlayerState, TrackState, dict2entry,
                                             PlaybackType, MediaEntry, PlaybackMode, Playlist)
 
 from ovos_plugin_common_play.ocp.constants import OCP_ID
@@ -17,10 +17,7 @@ from ovos_plugin_common_play.ocp.mpris import MprisPlayerCtl
 from ovos_bus_client.apis.ocp import ClassicAudioServiceInterface
 from ovos_plugin_common_play.ocp.search import OCPSearch
 from ovos_plugin_common_play.ocp.utils import require_native_source
-try:
-    from ovos_utils.ocp import dict2entry
-except ImportError:  # older utils version
-    dict2entry = MediaEntry.from_dict
+
 
 
 class OCPMediaPlayer(OVOSAbstractApplication):
