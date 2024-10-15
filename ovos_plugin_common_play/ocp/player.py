@@ -6,7 +6,7 @@ from ovos_bus_client.message import Message
 from ovos_config import Configuration
 from ovos_utils.log import LOG
 from ovos_utils.messagebus import Message
-from ovos_workshop import OVOSAbstractApplication
+from ovos_workshop.app import OVOSAbstractApplication
 from ovos_workshop.backwards_compat import (PluginStream, LoopState, MediaState, PlayerState, TrackState,
                                             PlaybackType, MediaEntry, PlaybackMode, Playlist)
 
