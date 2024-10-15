@@ -5,7 +5,7 @@ from ovos_bus_client.client import MessageBusClient
 from ovos_bus_client.message import Message
 from ovos_utils.json_helper import merge_dict
 from ovos_utils.log import LOG
-from ovos_workshop.backwards_compat import MediaState, TrackState, PlaybackType, MediaType, Playlist, PluginStream, MediaEntry as _ME
+from ovos_utils.ocp import MediaState, TrackState, PlaybackType, MediaType, Playlist, PluginStream, MediaEntry as _ME
 
 from ovos_plugin_common_play.ocp.constants import OCP_ID
 from ovos_plugin_common_play.ocp.utils import ocp_plugins
