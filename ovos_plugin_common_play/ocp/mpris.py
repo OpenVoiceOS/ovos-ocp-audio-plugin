@@ -9,7 +9,7 @@ from dbus_next.message import Message as DbusMessage, \
 from dbus_next.service import ServiceInterface, method, dbus_property, PropertyAccess
 from ovos_bus_client.message import Message
 from ovos_utils.log import LOG
-from ovos_workshop.decorators.ocp import TrackState, PlaybackType, PlayerState, LoopState
+from ovos_utils.ocp import TrackState, PlaybackType, PlayerState, LoopState
 
 
 class MprisPlayerCtl(Thread):
