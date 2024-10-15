@@ -7,7 +7,7 @@ from ovos_config import Configuration
 from ovos_utils.log import LOG
 from ovos_utils.messagebus import Message
 from ovos_workshop.app import OVOSAbstractApplication
-from ovos_workshop.backwards_compat import (PluginStream, LoopState, MediaState, PlayerState, TrackState,
+from ovos_utils.ocp import (PluginStream, LoopState, MediaState, PlayerState, TrackState,
                                             PlaybackType, MediaEntry, PlaybackMode, Playlist)
 
 from ovos_plugin_common_play.ocp.constants import OCP_ID
