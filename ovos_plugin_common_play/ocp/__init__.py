@@ -11,7 +11,7 @@ from ovos_utils.messagebus import Message
 
 from padacioso import IntentContainer
 
-from ovos_workshop import OVOSAbstractApplication
+from ovos_workshop.app import OVOSAbstractApplication
 from ovos_workshop.decorators.ocp import *
 from ovos_plugin_manager.ocp import load_stream_extractors
 
