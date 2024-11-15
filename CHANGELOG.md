@@ -1,16 +1,16 @@
 # Changelog
 
-## [1.1.5a1](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/1.1.5a1) (2024-11-06)
+## [1.1.6a1](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/1.1.6a1) (2024-11-15)
 
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V1.1.4...1.1.5a1)
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V1.1.5...1.1.6a1)
 
 **Merged pull requests:**
 
-- fix: allow latest bus client version [\#150](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/150) ([JarbasAl](https://github.com/JarbasAl))
+- fix:homescreen app [\#152](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/152) ([JarbasAl](https://github.com/JarbasAl))
 
-## [V1.1.4](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V1.1.4) (2024-10-31)
+## [V1.1.5](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V1.1.5) (2024-11-06)
 
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/1.1.4...V1.1.4)
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/1.1.5...V1.1.5)
 
 
 
