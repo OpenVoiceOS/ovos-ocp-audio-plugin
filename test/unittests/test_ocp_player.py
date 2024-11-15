@@ -58,7 +58,7 @@ class TestOCPPlayer(unittest.TestCase):
         from ovos_plugin_common_play.ocp.media import NowPlaying, Playlist
         from ovos_plugin_common_play.ocp.mpris import MprisPlayerCtl
         from ovos_bus_client.apis.ocp import ClassicAudioServiceInterface
-        from ovos_workshop import OVOSAbstractApplication
+        from ovos_workshop.app import OVOSAbstractApplication
 
         self.assertIsInstance(self.player, OVOSAbstractApplication)
         self.assertIsInstance(self.player.gui, OCPMediaPlayerGUI)

@@ -1,21 +1,15 @@
-import time
-from os.path import join, dirname, isfile
-from threading import Event, Lock
+from os.path import join, dirname
 from typing import Optional, List
-from ovos_config import Configuration
-from ovos_plugin_common_play.ocp.gui import OCPMediaPlayerGUI
-from ovos_plugin_common_play.ocp.player import OCPMediaPlayer
-from ovos_utils.gui import can_use_gui
+
+from ovos_plugin_manager.ocp import load_stream_extractors
 from ovos_utils.log import LOG
 from ovos_utils.messagebus import Message
-
-from padacioso import IntentContainer
-
 from ovos_workshop.app import OVOSAbstractApplication
-from ovos_workshop.decorators.ocp import *
-from ovos_plugin_manager.ocp import load_stream_extractors
+from ovos_workshop.decorators import homescreen_app
 
 from ovos_plugin_common_play.ocp.constants import OCP_ID
+from ovos_plugin_common_play.ocp.gui import OCPMediaPlayerGUI
+from ovos_plugin_common_play.ocp.player import OCPMediaPlayer
 
 
 class OCP(OVOSAbstractApplication):
@@ -79,14 +73,13 @@ class OCP(OVOSAbstractApplication):
         xtract = load_stream_extractors()  # @lru_cache, its a lazy loaded singleton
         self.bus.emit(message.response({"SEI": xtract.supported_seis}))
 
+    @homescreen_app(icon="OCP.png", name="OCP")
     def handle_home(self, message=None):
         """
         Handle ovos.common_play.home Messages and show the homescreen
         @param message: message associated with request
         """
-        # homescreen / launch from .desktop
         self.gui.show_home(app_mode=True)
 
     def default_shutdown(self):
         self.player.shutdown()
-

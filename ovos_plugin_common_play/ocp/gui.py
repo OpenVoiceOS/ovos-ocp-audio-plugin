@@ -26,7 +26,7 @@ class OCPMediaPlayerGUI(GUIInterface):
         # the skill_id is chosen so the namespace matches the regular bus api
         # ie, the gui event "XXX" is sent in the bus as "ovos.common_play.XXX"
         gui_config = Configuration().get("gui") or {}
-        ui_dirs = {"qt5": f"{dirname(__file__)}/res/ui"}
+        ui_dirs = {"qt5": f"{dirname(__file__)}/res/gui/qt5"}
         super(OCPMediaPlayerGUI, self).__init__(bus=bus,
                                                 skill_id=OCP_ID,
                                                 ui_directories=ui_dirs,
