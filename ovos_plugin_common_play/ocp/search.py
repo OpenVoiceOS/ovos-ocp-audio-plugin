@@ -1,10 +1,9 @@
 import time
-from typing import List, Union
 from threading import RLock
 
 from ovos_bus_client.message import Message
 from ovos_utils.log import LOG
-from ovos_utils.ocp import MediaType, Playlist, MediaEntry, PluginStream
+from ovos_utils.ocp import MediaType, Playlist
 
 from ovos_plugin_common_play.ocp.base import OCPAbstractComponent
 
@@ -18,9 +17,6 @@ class OCPSearch(OCPAbstractComponent):
         self.search_lock = RLock()
         if player:
             self.bind(player)
-
-    def replace(self, new_playlist: List[Union[MediaEntry, PluginStream]]):
-        self.search_playlist.replace(new_playlist)
 
     def bind(self, player):  # OCPMediaPlayer
         self._player = player
