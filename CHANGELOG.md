@@ -1,16 +1,16 @@
 # Changelog
 
-## [1.1.6a1](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/1.1.6a1) (2024-11-15)
+## [1.1.7a1](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/1.1.7a1) (2024-11-16)
 
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V1.1.5...1.1.6a1)
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V1.1.6...1.1.7a1)
 
 **Merged pull requests:**
 
-- fix:homescreen app [\#152](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/152) ([JarbasAl](https://github.com/JarbasAl))
+- fix: featured media [\#155](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/155) ([JarbasAl](https://github.com/JarbasAl))
 
-## [V1.1.5](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V1.1.5) (2024-11-06)
+## [V1.1.6](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V1.1.6) (2024-11-15)
 
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/1.1.5...V1.1.5)
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/1.1.6...V1.1.6)
 
 
 

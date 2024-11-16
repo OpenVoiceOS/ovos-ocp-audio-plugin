@@ -3,10 +3,9 @@ from threading import RLock
 
 from ovos_bus_client.message import Message
 from ovos_utils.log import LOG
-from ovos_utils.ocp import MediaType
+from ovos_utils.ocp import MediaType, Playlist
 
 from ovos_plugin_common_play.ocp.base import OCPAbstractComponent
-from ovos_plugin_common_play.ocp.media import Playlist
 
 
 class OCPSearch(OCPAbstractComponent):
