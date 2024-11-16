@@ -8,9 +8,7 @@ from ovos_bus_client.message import Message
 from ovos_config import Configuration
 from ovos_utils.events import EventSchedulerInterface
 from ovos_utils.log import LOG
-from ovos_workshop.backwards_compat import (MediaType, Playlist, MediaEntry, PlayerState, LoopState,
-                                            PlaybackType, PluginStream, dict2entry)
-
+from ovos_utils.ocp import MediaState, TrackState, PlaybackType, MediaType, Playlist, PluginStream, PlayerState, LoopState, dict2entry
 from ovos_plugin_common_play.ocp.constants import OCP_ID
 from ovos_plugin_common_play.ocp.utils import is_qtav_available
 
@@ -388,7 +386,7 @@ class OCPMediaPlayerGUI(GUIInterface):
         playlist = message.data["playlist"]
 
         self.player.playlist.clear()
-        self.player.media.replace(playlist)
+        self.player.media.search_playlist.replace(playlist)
 
         self.manage_display("disambiguation")
 
