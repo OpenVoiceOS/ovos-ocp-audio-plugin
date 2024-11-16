@@ -387,6 +387,7 @@ class OCPMediaPlayerGUI(GUIInterface):
 
         self.player.playlist.clear()
         self.player.media.search_playlist.replace(playlist)
+        self.update_search_results()
 
         self.manage_display("disambiguation")
 
