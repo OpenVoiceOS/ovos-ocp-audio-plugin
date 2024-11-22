@@ -44,7 +44,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         self.track_history = {}  # Dict of track URI to play count
 
         super().__init__(skill_id=skill_id, bus=bus, gui=gui,
-                         resources_dir=resources_dir, lang=lang, **kwargs)
+                         resources_dir=resources_dir, **kwargs)
         if settings:
             self.settings.merge(settings)
 
