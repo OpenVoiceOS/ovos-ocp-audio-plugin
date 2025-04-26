@@ -2,22 +2,20 @@ import random
 from os.path import join, dirname
 from typing import List, Union, Optional
 
+from ovos_bus_client.apis.ocp import ClassicAudioServiceInterface
 from ovos_bus_client.message import Message, dig_for_message
-from ovos_config import Configuration
 from ovos_utils.log import LOG
-from ovos_utils.messagebus import Message
-from ovos_workshop.app import OVOSAbstractApplication
 from ovos_utils.ocp import (PluginStream, LoopState, MediaState, PlayerState, TrackState, dict2entry,
-                                            PlaybackType, MediaEntry, PlaybackMode, Playlist)
+                            PlaybackType, MediaEntry, PlaybackMode, Playlist)
+from ovos_workshop.app import OVOSAbstractApplication
 
+from ovos_config import Configuration
 from ovos_plugin_common_play.ocp.constants import OCP_ID
 from ovos_plugin_common_play.ocp.gui import OCPMediaPlayerGUI
 from ovos_plugin_common_play.ocp.media import NowPlaying
 from ovos_plugin_common_play.ocp.mpris import MprisPlayerCtl
-from ovos_bus_client.apis.ocp import ClassicAudioServiceInterface
 from ovos_plugin_common_play.ocp.search import OCPSearch
 from ovos_plugin_common_play.ocp.utils import require_default_session
-
 
 
 class OCPMediaPlayer(OVOSAbstractApplication):
