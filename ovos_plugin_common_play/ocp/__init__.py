@@ -3,7 +3,7 @@ from typing import Optional, List
 
 from ovos_plugin_manager.ocp import load_stream_extractors
 from ovos_utils.log import LOG
-from ovos_utils.messagebus import Message
+from ovos_bus_client.message import Message
 from ovos_workshop.app import OVOSAbstractApplication
 from ovos_workshop.decorators import homescreen_app
 
