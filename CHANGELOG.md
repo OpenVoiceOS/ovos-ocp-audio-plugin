@@ -1,16 +1,28 @@
 # Changelog
 
-## [1.1.10a1](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/1.1.10a1) (2025-04-02)
+## [1.2.1a1](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/1.2.1a1) (2025-06-08)
 
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V1.1.9...1.1.10a1)
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V1.2.0a1...1.2.1a1)
 
 **Merged pull requests:**
 
-- fix: news plugin [\#161](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/161) ([JarbasAl](https://github.com/JarbasAl))
+- fix: compatibility with ovos-plugin-manager 1.X.X [\#165](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/165) ([JarbasAl](https://github.com/JarbasAl))
 
-## [V1.1.9](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V1.1.9) (2024-11-22)
+## [V1.2.0a1](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V1.2.0a1) (2025-05-02)
 
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/1.1.9...V1.1.9)
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/1.2.0a1...V1.2.0a1)
+
+## [1.2.0a1](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/1.2.0a1) (2025-05-02)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V1.1.10...1.2.0a1)
+
+**Merged pull requests:**
+
+- feat: hivemind support / session handling [\#163](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/163) ([JarbasAl](https://github.com/JarbasAl))
+
+## [V1.1.10](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V1.1.10) (2025-04-02)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/1.1.10...V1.1.10)
 
 
 
