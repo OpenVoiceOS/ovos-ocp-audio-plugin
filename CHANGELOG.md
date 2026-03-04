@@ -1,65 +1,8 @@
 # Changelog
 
-## [1.2.2a5](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/1.2.2a5) (2026-03-04)
+## [V1.3.0](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V1.3.0) (2026-03-04)
 
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/1.2.2a4...1.2.2a5)
-
-**Merged pull requests:**
-
-- chore\(deps\): update actions/setup-python action to v6 [\#175](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/175) ([renovate[bot]](https://github.com/apps/renovate))
-- chore\(deps\): update actions/checkout action to v6 [\#174](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/174) ([renovate[bot]](https://github.com/apps/renovate))
-
-## [1.2.2a4](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/1.2.2a4) (2025-12-20)
-
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/1.2.2a3...1.2.2a4)
-
-**Merged pull requests:**
-
-- chore\(deps\): update dependency ovos-workshop to v8 [\#177](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/177) ([renovate[bot]](https://github.com/apps/renovate))
-
-## [1.2.2a3](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/1.2.2a3) (2025-12-19)
-
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V...1.2.2a3)
-
-## [V](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V) (2025-12-19)
-
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V1.2.2a2...V)
-
-**Merged pull requests:**
-
-- chore\(deps\): update dependency python to 3.14 [\#170](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/170) ([renovate[bot]](https://github.com/apps/renovate))
-
-## [V1.2.2a2](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V1.2.2a2) (2025-12-18)
-
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/1.2.2a2...V1.2.2a2)
-
-## [1.2.2a2](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/1.2.2a2) (2025-12-18)
-
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V1.2.2a1...1.2.2a2)
-
-**Merged pull requests:**
-
-- chore: Configure Renovate [\#169](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/169) ([renovate[bot]](https://github.com/apps/renovate))
-
-## [V1.2.2a1](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V1.2.2a1) (2025-11-05)
-
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/1.2.2a1...V1.2.2a1)
-
-## [1.2.2a1](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/1.2.2a1) (2025-11-05)
-
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V1.2.1...1.2.2a1)
-
-**Closed issues:**
-
-- OCP player still displayed even when no playback [\#125](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/issues/125)
-
-**Merged pull requests:**
-
-- Update requirements.txt [\#167](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/167) ([JarbasAl](https://github.com/JarbasAl))
-
-## [V1.2.1](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V1.2.1) (2025-06-08)
-
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/1.2.1...V1.2.1)
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/1.3.0...V1.3.0)
 
 
 
