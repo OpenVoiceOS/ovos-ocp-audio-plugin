@@ -1,0 +1,79 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ovos_plugin_common_play"
+dynamic = ["version"]
+description = "OVOS common play audio service adapter plugin"
+readme = "README.md"
+license = {text = "Apache-2.0"}
+authors = [
+    {name = "JarbasAi", email = "jarbasai@mailfence.com"}
+]
+keywords = ["ovos", "audio", "plugin"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Topic :: Text Processing :: Linguistic",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+]
+dependencies = [
+    "ovos-plugin-manager>=0.0.26,<3.0.0",
+    "ovos_bus_client>=0.0.7,<2.0.0",
+    "ovos-utils>=0.1.0,<1.0.0",
+    "ovos-workshop>=2.4.2,<9.0.0",
+    "padacioso>=0.1.1,<2.0.0",
+    "dbus-next"
+]
+
+[project.optional-dependencies]
+extractors = [
+    "ovos-ocp-youtube-plugin>=0.0.1, < 1.0.0",
+    "ovos-ocp-rss-plugin>=0.0.2, < 1.0.0",
+    "ovos-ocp-m3u-plugin>=0.0.1, < 1.0.0",
+    "ovos-ocp-news-plugin>=0.1.0, < 1.0.0",
+    "ovos_audio_plugin_simple>=0.0.1, < 1.0.0",
+    "ovos-ocp-files-plugin~=0.13"
+]
+test = [
+    "build",
+    "wheel",
+    "pytest~=7.1",
+    "pytest-timeout~=2.1",
+    "pytest-cov~=4.1",
+    "ovos-core~=0.0.7",
+    "ovos-audio",
+    "ovos-utils>=0.1.0a17, < 1.0.0",
+    "adapt-parser~=0.5",
+    "padacioso~=0.1.2",
+    "ovos-lingua-franca~=0.4, >=0.4.2",
+    "PyYAML~=6.0",
+    "padatious~=0.4.8",
+    "fann2==1.0.7"
+]
+
+[project.urls]
+Homepage = "https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin"
+
+[project.entry-points."mycroft.plugin.audioservice"]
+ovos_common_play = "ovos_plugin_common_play"
+
+[project.entry-points."mycroft.plugin.audioservice.config"]
+"ovos_common_play.config" = "ovos_plugin_common_play:OCPPluginConfig"
+
+[project.scripts]
+ovos-ocp-standalone = "ovos_plugin_common_play.launcher:main"
+
+[tool.setuptools.dynamic]
+version = {attr = "ovos_plugin_common_play.version.__version__"}
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["ovos_plugin_common_play*"]
+
+[tool.setuptools.package-data]
+ovos_plugin_common_play = [
+    "ocp/res/**/*",
+]
