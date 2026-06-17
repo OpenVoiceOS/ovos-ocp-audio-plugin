@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.3.2a4](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/1.3.2a4) (2026-06-17)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V1.3.1...1.3.2a4)
+
+**Merged pull requests:**
+
+- chore: add missing shared CI workflows [\#187](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/187) ([JarbasAl](https://github.com/JarbasAl))
+
 ## [V1.3.1](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V1.3.1) (2026-03-04)
 
 [Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/1.3.1...V1.3.1)
