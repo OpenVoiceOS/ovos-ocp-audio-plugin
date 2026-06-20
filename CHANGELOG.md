@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.3.3a1](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/1.3.3a1) (2026-06-20)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/1.3.2a4...1.3.3a1)
+
+**Merged pull requests:**
+
+- fix: allow ovos-bus-client 2.x [\#192](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/192) ([JarbasAl](https://github.com/JarbasAl))
+
 ## [1.3.2a4](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/1.3.2a4) (2026-06-17)
 
 [Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V1.3.1...1.3.2a4)
