@@ -63,7 +63,9 @@ class TestEnglishMediaIntents(unittest.TestCase):
 
         intent = self.media_intents.calc_intent("play some music")
         self.assertEqual(intent['name'], 'music')
-        self.assertEqual(intent['entities'], {'query': 'some'})
+        # "some" is a filler matched by the literal "(some|a) (music|song)"
+        # rule, so no query entity is extracted
+        self.assertEqual(intent['entities'], {})
         self.assertGreaterEqual(intent['conf'], 0.9)
 
     def test_movie(self):
@@ -74,7 +76,9 @@ class TestEnglishMediaIntents(unittest.TestCase):
 
         intent = self.media_intents.calc_intent("play a movie")
         self.assertEqual(intent['name'], 'movie')
-        self.assertEqual(intent['entities'], {'query': 'a'})
+        # "a movie" is matched by the literal "(a movie|movie|...)" rule,
+        # so no query entity is extracted
+        self.assertEqual(intent['entities'], {})
         self.assertGreaterEqual(intent['conf'], 0.9)
 
         intent = self.media_intents.calc_intent("play the matrix movie")
