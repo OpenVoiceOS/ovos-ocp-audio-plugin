@@ -6,7 +6,7 @@ jogar um filme branco preto
 start {query} filmes pretos e brancos
 jogar preto e branco filme {query}
 jogar preto branco filme {query}
-play (query) filmes brancos pretos
+play {query} filmes brancos pretos
 começar um filme preto e branco
 jogar {query} filmes pretos e brancos
 jogar preto branco filmes
@@ -31,7 +31,7 @@ jogar preto branco filmes {query}
 jogar filme branco preto
 start {query} filme preto e branco
 começar preto branco filme {query}
-play (query) preto filme branco
+play {query} preto filme branco
 começar filme preto e branco {query}
 jogar filmes pretos e brancos
 jogar {query} preto branco filme
