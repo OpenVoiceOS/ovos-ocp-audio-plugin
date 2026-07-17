@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.3.7a1](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/1.3.7a1) (2026-07-17)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/1.3.6a1...1.3.7a1)
+
+**Merged pull requests:**
+
+- fix: import EventSchedulerInterface from ovos\_bus\_client [\#203](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/203) ([JarbasAl](https://github.com/JarbasAl))
+
 ## [1.3.6a1](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/1.3.6a1) (2026-07-16)
 
 [Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/1.3.5a1...1.3.6a1)
