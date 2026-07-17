@@ -1,6 +1,6 @@
 # auto translated from en-us to pt-pt
 play pod elenco episódio {number}
-jogar (query) pod número de elenco {number}
+jogar {query} pod número de elenco {number}
 número do elenco do pod inicial {number}
 play podcast episode {number}
 start podcast {query} number {number}
@@ -21,7 +21,7 @@ início pod elenco episódio {number}
 play pod cast {query} number {number}
 start {query} podcast episode {number}
 start pod cast {query} episódio {number}
-jogar (query) pod elenco
+jogar {query} pod elenco
 start podcast number {number}
 jogar número de podcast {number}
 play {query} podcast episode {number}

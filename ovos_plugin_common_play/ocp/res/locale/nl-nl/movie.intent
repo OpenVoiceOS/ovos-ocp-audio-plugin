@@ -1,5 +1,5 @@
-(speel|begin|start) (film) {{query}}
-(speel|begin|start) {{query}} (film)
+(speel|begin|start) film {{query}}
+(speel|begin|start) {{query}} film
 (speel|begin|start) (een|de) film
 speel (een|de) film af
-speel (een|de) film {{query}
+speel (een|de) film {{query}}
