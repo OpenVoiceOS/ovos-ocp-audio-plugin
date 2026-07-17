@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.3.6a1](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/1.3.6a1) (2026-07-16)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/1.3.5a1...1.3.6a1)
+
+**Merged pull requests:**
+
+- fix: allow padacioso 2.x [\#201](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/201) ([JarbasAl](https://github.com/JarbasAl))
+
+## [1.3.5a1](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/1.3.5a1) (2026-07-16)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/1.3.4a1...1.3.5a1)
+
+**Merged pull requests:**
+
+- fix: align media intent tests with padacioso exact-match preference [\#199](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/199) ([JarbasAl](https://github.com/JarbasAl))
+
 ## [1.3.4a1](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/1.3.4a1) (2026-06-28)
 
 [Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/1.3.3a1...1.3.4a1)
