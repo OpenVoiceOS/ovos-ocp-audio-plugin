@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.3.8a1](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/1.3.8a1) (2026-07-17)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/1.3.7a1...1.3.8a1)
+
+**Merged pull requests:**
+
+- fix: repair malformed OCP locale templates [\#198](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/198) ([JarbasAl](https://github.com/JarbasAl))
+
 ## [1.3.7a1](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/1.3.7a1) (2026-07-17)
 
 [Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/1.3.6a1...1.3.7a1)
