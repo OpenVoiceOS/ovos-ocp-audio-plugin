@@ -1,20 +1,14 @@
 # OCP - OVOS Common Play
 
-![](./ovos_plugin_common_play/ocp/res/desktop/OCP.png) 
+![](./ovos_plugin_common_play/ocp/res/desktop/OCP.png)
 
+OVOS Common Play (OCP) is a voice media player packaged as a mycroft audio plugin. OCP handles voice integration and playback, and it also integrates with external players through MPRIS.
 
-OVOS Common Play is a full-fledged voice media player packaged as a mycroft audio plugin.
-
-OCP handles the whole voice integration and playback functionality, it also integrates with external players via MPRIS
-
-Skills provide search results, think about them as media providers/catalogs for OCP
-
-You can find OCP skills in the [awesome-ocp-skills](https://github.com/OpenVoiceOS/awesome-ocp-skills) list 
-
+Skills provide the search results for OCP. Think of each skill as a media provider or catalog. You can find OCP skills in the [awesome-ocp-skills](https://github.com/OpenVoiceOS/awesome-ocp-skills) list.
 
 ## Configuration
 
-mycroft.conf
+Add this to `mycroft.conf`:
 
 ```json
 {
@@ -38,22 +32,15 @@ mycroft.conf
 
 > **DEPRECATED**: valid for ovos-core 0.0.7 only!
 
-Normally OCP is initialized and started by [ovos-audio](https://github.com/OpenVoiceOS/ovos-audio).
+[ovos-audio](https://github.com/OpenVoiceOS/ovos-audio) normally starts and initializes OCP.
 
-However, in some situations you may want to run OCP in standalone mode.
+In some setups you may want to run OCP on its own. For example, if you run Hivemind Core with Hivemind Satellites, run OCP at the Core, not at a Satellite. A satellite cannot register OCP's intents, so run OCP in standalone mode near the Core instead.
 
-For example, when running Hivemind Core with Hivemind Satellites, you want to
-run OCP at the Core, not the Satellite. You cannot run OCP on the satellite
-because it cannot register its intents. So you want to run OCP in standalone
-mode near to the Core.
-
-How you do this depends on your setup. This packages provides the console script
-`ovos-ocp-standalone`. So running in standalone mode could be as simple as:
+The setup you use decides how you start standalone mode. This package provides the console script `ovos-ocp-standalone`, so running in standalone mode can be as simple as:
 
 ``` shell
 pip install ovos-plugin-common-play
 ovos-ocp-standalone
 ```
 
-It will read the configuration from `~/.config/mycroft/mycroft.conf` just like
-all other OVOS applications.
+It reads its configuration from `~/.config/mycroft/mycroft.conf`, the same as other OVOS applications.
