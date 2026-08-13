@@ -1,11 +1,45 @@
+import re
 import shutil
 from functools import wraps
 from os import makedirs
 from os.path import expanduser, isfile, join, dirname, exists
+from urllib.parse import urlsplit, urlunsplit, parse_qsl, urlencode
 
 from ovos_bus_client.session import SessionManager
 from ovos_plugin_manager.ocp import load_stream_extractors
 from ovos_utils.log import LOG
+
+# query string / path parameter names commonly used to carry secrets
+# (auth tokens, api keys, session ids, ...) that must never be logged verbatim
+_SENSITIVE_PARAM_RE = re.compile(
+    r"(token|api[-_]?key|apikey|auth|password|passwd|secret|jwt|session[-_]?id|"
+    r"access[-_]?token|x-plex-token)",
+    re.IGNORECASE,
+)
+
+
+def redact_uri(uri):
+    """Return `uri` with any sensitive query-string values (auth tokens,
+    api keys, passwords, session ids, ...) replaced by 'REDACTED'.
+
+    Safe to call on non-URI strings or malformed URIs - on any parsing
+    failure the original value is returned unmodified rather than raising.
+    """
+    if not uri or not isinstance(uri, str):
+        return uri
+    try:
+        parts = urlsplit(uri)
+        if not parts.query:
+            return uri
+        redacted_qs = [
+            (k, "REDACTED" if _SENSITIVE_PARAM_RE.search(k) else v)
+            for k, v in parse_qsl(parts.query, keep_blank_values=True)
+        ]
+        new_query = urlencode(redacted_qs)
+        return urlunsplit((parts.scheme, parts.netloc, parts.path,
+                            new_query, parts.fragment))
+    except Exception:
+        return uri
 
 
 def require_default_session():
