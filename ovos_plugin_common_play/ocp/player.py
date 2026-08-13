@@ -542,10 +542,10 @@ class OCPMediaPlayer(OVOSAbstractApplication):
             return
         self.pause()  # make more responsive
 
-        if self.shuffle:
-            # TODO: Should skipping back get a random track instead of previous?
-            self.play_shuffle()
-        elif not self.playlist.is_first_track:
+        # NOTE: skipping backwards intentionally does NOT re-shuffle,
+        # it always walks to the actual previous track in playlist order
+        # https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/issues/70
+        if not self.playlist.is_first_track:
             self.playlist.prev_track()
             self.set_now_playing(self.playlist.current_track)
             LOG.debug(f"Previous track index: {self.playlist.position}")
