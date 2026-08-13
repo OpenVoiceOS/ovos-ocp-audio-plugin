@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.3.9a1](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/1.3.9a1) (2026-08-13)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/1.3.8a2...1.3.9a1)
+
+**Merged pull requests:**
+
+- fix: don't re-shuffle tracks when skipping backwards [\#209](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/209) ([JarbasAl](https://github.com/JarbasAl))
+- fix: redact auth tokens from stream URIs before logging [\#208](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/208) ([JarbasAl](https://github.com/JarbasAl))
+
 ## [1.3.8a2](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/1.3.8a2) (2026-07-31)
 
 [Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/1.3.8a1...1.3.8a2)
