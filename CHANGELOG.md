@@ -1,8 +1,81 @@
 # Changelog
 
-## [V1.3.0](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V1.3.0) (2026-03-04)
+## [1.3.9a1](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/1.3.9a1) (2026-08-13)
 
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/1.3.0...V1.3.0)
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/1.3.8a2...1.3.9a1)
+
+**Merged pull requests:**
+
+- fix: don't re-shuffle tracks when skipping backwards [\#209](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/209) ([JarbasAl](https://github.com/JarbasAl))
+- fix: redact auth tokens from stream URIs before logging [\#208](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/208) ([JarbasAl](https://github.com/JarbasAl))
+
+## [1.3.8a2](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/1.3.8a2) (2026-07-31)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/1.3.8a1...1.3.8a2)
+
+**Merged pull requests:**
+
+- docs: rewrite README in Simplified Technical English [\#206](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/206) ([JarbasAl](https://github.com/JarbasAl))
+
+## [1.3.8a1](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/1.3.8a1) (2026-07-17)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/1.3.7a1...1.3.8a1)
+
+**Merged pull requests:**
+
+- fix: repair malformed OCP locale templates [\#198](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/198) ([JarbasAl](https://github.com/JarbasAl))
+
+## [1.3.7a1](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/1.3.7a1) (2026-07-17)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/1.3.6a1...1.3.7a1)
+
+**Merged pull requests:**
+
+- fix: import EventSchedulerInterface from ovos\_bus\_client [\#203](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/203) ([JarbasAl](https://github.com/JarbasAl))
+
+## [1.3.6a1](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/1.3.6a1) (2026-07-16)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/1.3.5a1...1.3.6a1)
+
+**Merged pull requests:**
+
+- fix: allow padacioso 2.x [\#201](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/201) ([JarbasAl](https://github.com/JarbasAl))
+
+## [1.3.5a1](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/1.3.5a1) (2026-07-16)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/1.3.4a1...1.3.5a1)
+
+**Merged pull requests:**
+
+- fix: align media intent tests with padacioso exact-match preference [\#199](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/199) ([JarbasAl](https://github.com/JarbasAl))
+
+## [1.3.4a1](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/1.3.4a1) (2026-06-28)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/1.3.3a1...1.3.4a1)
+
+**Merged pull requests:**
+
+- fix\(deps\): allow ovos-workshop 9.x \(widen \<9.0.0 -\> \<10.0.0\) [\#196](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/196) ([JarbasAl](https://github.com/JarbasAl))
+
+## [1.3.3a1](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/1.3.3a1) (2026-06-20)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/1.3.2a4...1.3.3a1)
+
+**Merged pull requests:**
+
+- fix: allow ovos-bus-client 2.x [\#192](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/192) ([JarbasAl](https://github.com/JarbasAl))
+
+## [1.3.2a4](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/1.3.2a4) (2026-06-17)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/V1.3.1...1.3.2a4)
+
+**Merged pull requests:**
+
+- chore: add missing shared CI workflows [\#187](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/187) ([JarbasAl](https://github.com/JarbasAl))
+
+## [V1.3.1](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/V1.3.1) (2026-03-04)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/1.3.1...V1.3.1)
 
 
 

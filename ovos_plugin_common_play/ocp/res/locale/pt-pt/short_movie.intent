@@ -27,6 +27,6 @@ start {query} filme curto
 start {query} curtas-metragens
 começar filmes curtos
 começar filme curto
-play (query) curtas-metragens
+play {query} curtas-metragens
 jogar curta-metragem
 jogar filme curto

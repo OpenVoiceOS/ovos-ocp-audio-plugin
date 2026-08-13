@@ -621,8 +621,70 @@ class TestOCPPlayer(unittest.TestCase):
         self.player.mpris.play_next = real_mpris
 
     def test_play_prev(self):
-        # TODO
-        pass
+        """ regression test for
+        https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/issues/70
+        skipping backwards must not re-shuffle / jump to a random track,
+        it should just walk to the actual previous playlist entry """
+        real_mpris = self.player.mpris.play_prev
+        real_pause = self.player.pause
+        real_play = self.player.play
+        real_shuffle = self.player.play_shuffle
+
+        self.player.mpris.play_prev = Mock()
+        self.player.pause = Mock()
+        self.player.play = Mock()
+        self.player.play_shuffle = Mock()
+
+        # MPRIS Prev
+        self.player.now_playing.playback = PlaybackType.MPRIS
+        self.player.play_prev()
+        self.player.mpris.play_prev.assert_called_once()
+
+        # Skill Prev
+        self.player.now_playing.playback = PlaybackType.SKILL
+        self.player.play_prev()
+        last_message = self.emitted_msgs[-1]
+        self.assertEqual(
+            last_message.msg_type,
+            f"ovos.common_play.{self.player.now_playing.skill_id}.prev")
+
+        # Shuffle enabled - skipping back must NOT call play_shuffle,
+        # it must walk to the real previous track in playlist order
+        self.player.now_playing.playback = PlaybackType.AUDIO
+        self.player.playlist.replace(valid_search_results)
+        self.player.playlist.set_position(1)
+        expected_prev = self.player.playlist[0]
+        self.player.shuffle = True
+        self.player.pause.reset_mock()
+        self.player.play.reset_mock()
+        self.player.play_prev()
+        self.player.pause.assert_called_once()
+        self.player.play_shuffle.assert_not_called()
+        self.player.play.assert_called_once()
+        self.assertEqual(self.player.playlist.current_track, expected_prev)
+
+        # no shuffle - previous track in playlist
+        self.player.shuffle = False
+        self.player.playlist.set_position(1)
+        self.player.pause.reset_mock()
+        self.player.play.reset_mock()
+        self.player.play_prev()
+        self.player.pause.assert_called_once()
+        self.player.play.assert_called_once()
+        self.assertEqual(self.player.playlist.current_track, expected_prev)
+
+        # already on first track - no-op
+        self.player.playlist.set_position(0)
+        self.player.pause.reset_mock()
+        self.player.play.reset_mock()
+        self.player.play_prev()
+        self.player.pause.assert_called_once()
+        self.player.play.assert_not_called()
+
+        self.player.mpris.play_prev = real_mpris
+        self.player.pause = real_pause
+        self.player.play = real_play
+        self.player.play_shuffle = real_shuffle
 
     def test_pause(self):
         real_audio_pause = self.player.audio_service.pause
