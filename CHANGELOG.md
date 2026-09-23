@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.3.10a1](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/1.3.10a1) (2026-09-23)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/1.3.9a1...1.3.10a1)
+
+**Merged pull requests:**
+
+- fix\(locale\): split bare-pipe lines into one value per line [\#211](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/211) ([openvoiceos-bot](https://github.com/openvoiceos-bot))
+
 ## [1.3.9a1](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/1.3.9a1) (2026-08-13)
 
 [Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/1.3.8a2...1.3.9a1)
