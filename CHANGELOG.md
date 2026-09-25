@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.3.11a1](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/1.3.11a1) (2026-09-25)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/1.3.10a1...1.3.11a1)
+
+**Merged pull requests:**
+
+- fix\(ca-ES\): Play.voc listed three stop and pause words [\#213](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/213) ([openvoiceos-bot](https://github.com/openvoiceos-bot))
+
 ## [1.3.10a1](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/1.3.10a1) (2026-09-23)
 
 [Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/1.3.9a1...1.3.10a1)
