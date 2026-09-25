@@ -1,4 +1,9 @@
 # auto translated from en-us to da-dk
-spillespil
-bork
-startstart
+# Three junk lines were removed: bork, plus spillespil and startstart,
+# which are two words glued together rather than words. The lines below
+# are taken from da-DK files elsewhere in this fleet and are unvouched:
+# afspil and spil from ovos-skill-news news.intent, start from
+# ovos-skill-alerts create.voc. andlo is the da-DK reviewer on record.
+afspil
+spil
+start
