@@ -48,3 +48,45 @@ class TestLocaleTemplates(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestNoJunkPlayWord(unittest.TestCase):
+    """No Play.voc line is the junk word bork, or one word written twice.
+
+    `bork` was a placeholder in en-US Play.voc. #215 removed it there, and the
+    auto-translated locales had each carried a copy: six of the sixteen still
+    shipped it, in four different capitalisations, and pl-pl shipped it with
+    the final k dropped. A user saying "bork noget" matched Play in da-DK.
+
+    da-dk also shipped `spillespil` and `startstart`, two words glued together
+    rather than words.
+
+    The rule is narrow so it cannot fire on real morphology. de-de's `starte`
+    is the correct German imperative and merely begins with the English
+    `start`, so a prefix rule is wrong; only an exact doubling of the whole
+    token counts. A multi-word line of one repeated word is a different defect
+    with its own check in ovos-localize, and is not asserted here.
+    """
+
+    def _play_voc_lines(self):
+        for path, number, line in iter_template_lines():
+            if os.path.basename(path) == "Play.voc":
+                yield path, number, line
+
+    def test_no_line_is_the_junk_word(self):
+        for path, number, line in self._play_voc_lines():
+            self.assertNotEqual(
+                line.strip().casefold(), "bork",
+                f"{path}:{number} ships the junk word bork")
+
+    def test_no_line_is_one_token_written_twice(self):
+        for path, number, line in self._play_voc_lines():
+            token = line.strip()
+            if " " in token:
+                continue
+            half, rest = len(token) // 2, len(token) % 2
+            self.assertFalse(
+                rest == 0 and half > 1
+                and token[:half].casefold() == token[half:].casefold(),
+                f"{path}:{number} is {token!r}, one word written twice")
+
