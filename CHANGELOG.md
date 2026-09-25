@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.3.12a1](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/1.3.12a1) (2026-09-25)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/1.3.11a1...1.3.12a1)
+
+**Merged pull requests:**
+
+- fix\(en-US\): Play.voc shipped the junk word bork [\#215](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/pull/215) ([openvoiceos-bot](https://github.com/openvoiceos-bot))
+
 ## [1.3.11a1](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/tree/1.3.11a1) (2026-09-25)
 
 [Full Changelog](https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/compare/1.3.10a1...1.3.11a1)
