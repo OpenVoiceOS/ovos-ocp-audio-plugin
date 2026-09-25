@@ -7,7 +7,7 @@ from ovos_utils.log import LOG
 from ovos_workshop.decorators.ocp import MediaState, PlayerState, TrackState
 
 from ovos_plugin_common_play.ocp.constants import OCP_ID
-from ovos_plugin_common_play.ocp.utils import extract_metadata
+from ovos_plugin_common_play.ocp.utils import extract_metadata, redact_uri
 
 
 class OCPAbstractComponent:
@@ -88,7 +88,7 @@ class OCPAudioPlayerBackend(AudioBackend):
         In ovos audio backends are single-track, playlists are handled by OCP
         """
         self._now_playing = uri
-        LOG.debug(f"queuing for {self.__class__.__name__} playback: {uri}")
+        LOG.debug(f"queuing for {self.__class__.__name__} playback: {redact_uri(uri)}")
         self.bus.emit(Message("ovos.common_play.media.state",
                               {"state": MediaState.LOADED_MEDIA}))
         self.bus.emit(Message("ovos.common_play.track.state", {

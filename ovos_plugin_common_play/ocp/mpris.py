@@ -25,7 +25,13 @@ class MprisPlayerCtl(Thread):
     def __init__(self, daemonic=True, manage_players=False):
         super(MprisPlayerCtl, self).__init__()
         self.dbus = None
-        self.loop = asyncio.get_event_loop()
+        try:
+            self.loop = asyncio.get_event_loop()
+        except RuntimeError:
+            # Python 3.14+: get_event_loop() no longer creates a loop when
+            # there is no running loop in the current thread
+            self.loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(self.loop)
 
         self.setDaemon(daemonic)
         self.shutdown_event = Event()

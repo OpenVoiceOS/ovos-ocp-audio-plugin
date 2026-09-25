@@ -8,7 +8,7 @@ from ovos_utils.log import LOG
 from ovos_utils.ocp import MediaState, TrackState, PlaybackType, MediaType, Playlist, PluginStream, MediaEntry as _ME
 
 from ovos_plugin_common_play.ocp.constants import OCP_ID
-from ovos_plugin_common_play.ocp.utils import ocp_plugins
+from ovos_plugin_common_play.ocp.utils import ocp_plugins, redact_uri
 
 
 @dataclass
@@ -204,10 +204,12 @@ class NowPlaying(MediaEntry):
         meta = ocp_plugins().extract_stream(uri, video)
         # update media entry with new data
         if meta:
-            LOG.info(f"OCP plugins metadata: {meta}")
+            safe_meta = {k: (redact_uri(v) if k == "uri" else v)
+                         for k, v in meta.items()}
+            LOG.info(f"OCP plugins metadata: {safe_meta}")
             self.update(meta, newonly=True)
         elif not any((uri.startswith(s) for s in ["http", "file", "/"])):
-            LOG.info(f"OCP WARNING: plugins returned no metadata for uri {uri}")
+            LOG.info(f"OCP WARNING: plugins returned no metadata for uri {redact_uri(uri)}")
 
     # events from gui_player/audio_service
     def handle_external_play(self, message):

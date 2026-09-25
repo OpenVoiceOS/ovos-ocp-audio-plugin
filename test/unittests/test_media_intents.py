@@ -61,10 +61,11 @@ class TestEnglishMediaIntents(unittest.TestCase):
             self.media_intents.calc_intent("play music"),
             {'conf': 1, 'entities': {}, 'name': 'music'})
 
-        intent = self.media_intents.calc_intent("play some music")
-        self.assertEqual(intent['name'], 'music')
-        self.assertEqual(intent['entities'], {'query': 'some'})
-        self.assertGreaterEqual(intent['conf'], 0.9)
+        # "some" is a filler word matched by the exact
+        # "(play|start) (some|a) (music|song)" template, not a query
+        self.assertEqual(
+            self.media_intents.calc_intent("play some music"),
+            {'conf': 1.0, 'entities': {}, 'name': 'music'})
 
     def test_movie(self):
         intent = self.media_intents.calc_intent("play a horror film")
@@ -72,10 +73,11 @@ class TestEnglishMediaIntents(unittest.TestCase):
         self.assertEqual(intent['entities'], {'query': 'horror'})
         self.assertGreaterEqual(intent['conf'], 0.9)
 
-        intent = self.media_intents.calc_intent("play a movie")
-        self.assertEqual(intent['name'], 'movie')
-        self.assertEqual(intent['entities'], {'query': 'a'})
-        self.assertGreaterEqual(intent['conf'], 0.9)
+        # "a" is a filler word matched by the exact
+        # "(play|start) (a movie|movie|movies|film|films)" template, not a query
+        self.assertEqual(
+            self.media_intents.calc_intent("play a movie"),
+            {'conf': 1.0, 'entities': {}, 'name': 'movie'})
 
         intent = self.media_intents.calc_intent("play the matrix movie")
         self.assertEqual(intent['name'], 'movie')

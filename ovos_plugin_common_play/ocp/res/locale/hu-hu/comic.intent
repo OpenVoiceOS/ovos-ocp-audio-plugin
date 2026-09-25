@@ -9,8 +9,6 @@ Játssz vizuális képregény
 Játssz vizuális történet
 Játszani Comic
 játék animáció komikus
-Kezdőlap > vizuális képregény
-Kezdőlap > Vizuális történet
 dalszöveg: {query} comic
 Kezdőlap {query} animált képregény
 dalszöveg: {query} vizuális képregény
@@ -28,4 +26,3 @@ Kezdőlap indítás Comic
 Kezdje vizuális képregényt {query}
 Kezdje vizuális történet {query}
 Játssz {query} Motion Comic
-Kezdőlap > Motion Comic

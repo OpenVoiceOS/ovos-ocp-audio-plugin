@@ -11,9 +11,9 @@ start visual story
 jouer bande dessinée visuelle {query}
 jouer {query} motion comic
 start visual comic
-jouer BD {Duity}
+jouer BD {query}
 start {query} motion comic
-jouer BD animé {Duity}
+jouer BD animé {query}
 commencer l'histoire visuelle {query}
 démarre la bande dessinée visuelle {query}
 Commencez la BD

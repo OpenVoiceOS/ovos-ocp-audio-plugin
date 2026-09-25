@@ -6,13 +6,13 @@ jouer {query} pod cast number {number}
 commence podcast {query} number {number}
 jouer à la roulette de pod {query}
 lancer {query} podcast épisode {number}
-lancez le numéro de podcast {numéro}
+lancez le numéro de podcast {number}
 lancer pod lancer {query} épisode {number}
 jouer podcast
 commence {query} podcast number {number}
 play {query} pod cast épisode {number}
 start podcast épisode {number}
-lancer le numéro de lancer de la dose {numéro}
+lancer le numéro de lancer de la dose {number}
 jouer podcast {query}
 play pod cast {query} number {number}
 play pod cast épisode {number}

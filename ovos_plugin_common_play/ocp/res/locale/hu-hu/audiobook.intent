@@ -2,7 +2,6 @@
 audio könyv {query}
 {query} audio könyv
 {query} rádiószínház
-Kezdőlap > {query}
 dalszöveg: Radio Drama {query}
 játszani audio színház
 dalszöveg: {query} Radio Drama
@@ -18,9 +17,7 @@ Kezdőlap {query} audiobook
 audiobook {query}
 indítsa el az audio könyvet {query}
 {query} audio színház
-Olvasson bele a(z)
 Kezdőlap {query} történet
-Kezdőlap > Rádiószínház
 Olvassa el az audio színházat
 játszani audiobook
 Játssz könyv
@@ -32,7 +29,6 @@ Kezdőlap {query}
 Olvass tovább
 dalszöveg: {query} audio book
 indítsa el az audio színházat
-Kezdőlap > Rádió dráma
 Játssz rádió dráma
 {query} rádió dráma
 Olvassa el a történetet {query}
@@ -63,7 +59,6 @@ olvasható audio könyv
 Kezdőlap
 Játssz {query} könyv
 kezdő rádió dráma
-Kezdőlap > Audió dráma
 dalszöveg: Radio Theatre {query}
 olvasás
 dalszöveg: {query} audiobook
@@ -75,7 +70,6 @@ Olvassa el a {query} könyvet
 Olvassa el a {query} történetet
 indítsa el az audiobook {query}
 Kezdőlap {query} audio színház
-Kezdőlap > Könyv
 indítsa el az audio színházat {query}
 dalszöveg: {query} audio drama
 dalszöveg: audio drama {query}

@@ -13,14 +13,13 @@ tv {query}
 играть {query} ip tv
 играть tv
 начать телевидение {query}
-начать quequery} tv
+начать {query} tv
 играть ip tv
-{query}
 играть {query} tv
 играть {query} tv канал
 начать сетевое телевидение
 начать tv канал {query}
-играть quequery} телевидение
+играть {query} телевидение
 ТВ
 tv
 начать {query} ip tv
