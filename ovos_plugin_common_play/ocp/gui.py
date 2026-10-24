@@ -1,6 +1,7 @@
 import enum
 import time
 from os.path import join, dirname
+from threading import Lock, Timer
 from time import sleep
 
 from ovos_bus_client.apis.gui import GUIInterface
@@ -11,6 +12,11 @@ from ovos_utils.log import LOG
 from ovos_utils.ocp import MediaState, TrackState, PlaybackType, MediaType, Playlist, PluginStream, PlayerState, LoopState, dict2entry
 from ovos_plugin_common_play.ocp.constants import OCP_ID
 from ovos_plugin_common_play.ocp.utils import is_qtav_available
+
+# how long the "busy" page outlives ovos.common_play.search.end; a play request
+# arriving within this window cancels the removal so show_player() replaces the
+# spinner directly (the pipeline syncs with the player for up to 1s in between)
+SEARCH_SPINNER_GRACE_SECONDS = 3
 
 
 class VideoPlayerBackend(str, enum.Enum):
@@ -33,6 +39,8 @@ class OCPMediaPlayerGUI(GUIInterface):
         self.search_mode_is_app = False
         self.persist_home_display = False
         self.event_scheduler_interface = None
+        self._search_spinner_timer = None
+        self._search_spinner_lock = Lock()
 
     def bind(self, player):
         self.player = player
@@ -91,6 +99,7 @@ class OCPMediaPlayerGUI(GUIInterface):
         return "PlayerLoader"
 
     def shutdown(self):
+        self.cancel_search_spinner_removal()
         self.bus.remove("ovos.common_play.playback_time",
                         self.handle_sync_seekbar)
         super().shutdown()
@@ -417,10 +426,41 @@ class OCPMediaPlayerGUI(GUIInterface):
             self.manage_display("playlist", timeout=60)
 
     def notify_search_status(self, text):
+        # a removal still pending from a previous search must not hide this one
+        self.cancel_search_spinner_removal()
         self["footer_text"] = text
         self.show_page("busy", override_idle=True)
 
+    def schedule_search_spinner_removal(self):
+        """Remove the busy page soon unless playback is requested first.
+
+        Called when a search ends: without results nothing else would ever
+        remove the spinner."""
+        timer = Timer(SEARCH_SPINNER_GRACE_SECONDS,
+                      lambda: self._expire_search_spinner(timer))
+        timer.daemon = True
+        with self._search_spinner_lock:
+            if self._search_spinner_timer:
+                self._search_spinner_timer.cancel()
+            self._search_spinner_timer = timer
+        timer.start()
+
+    def _expire_search_spinner(self, timer):
+        with self._search_spinner_lock:
+            # superseded by a newer search or play request after it fired
+            if self._search_spinner_timer is not timer:
+                return
+            self._search_spinner_timer = None
+        self.remove_page("busy")
+
+    def cancel_search_spinner_removal(self):
+        with self._search_spinner_lock:
+            if self._search_spinner_timer:
+                self._search_spinner_timer.cancel()
+                self._search_spinner_timer = None
+
     def remove_search_spinner(self):
+        self.cancel_search_spinner_removal()
         self.remove_page("busy")
 
     def remove_homescreen(self):

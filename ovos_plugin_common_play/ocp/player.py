@@ -361,6 +361,9 @@ class OCPMediaPlayer(OVOSAbstractApplication):
             track = dict2entry(track)
         if not isinstance(track, (MediaEntry, Playlist, PluginStream)):
             raise TypeError(f"Expected MediaEntry/Playlist, got: {track}")
+        # keep the search spinner up through stream extraction;
+        # show_player() swaps it for the player page
+        self.gui.cancel_search_spinner_removal()
         if isinstance(track, Playlist) and not playlist:
             playlist = track
             track = playlist[0]
