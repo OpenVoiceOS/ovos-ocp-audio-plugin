@@ -26,13 +26,22 @@ class OCPSearch(OCPAbstractComponent):
                        self.handle_skill_announce)
         self.add_event("ovos.common_play.search.start",
                        self.handle_search_start)
+        self.add_event("ovos.common_play.search.end",
+                       self.handle_search_end)
 
     def handle_search_start(self, message):
         self.gui.notify_search_status("Searching...")
 
+    def handle_search_end(self, message):
+        # results or not, the pipeline sends search.end before any play
+        # request; show_player() replaces the spinner if playback follows
+        self.gui.schedule_search_spinner_removal()
+
     def shutdown(self):
         self.remove_event("ovos.common_play.announce")
         self.remove_event("ovos.common_play.skills.detach")
+        self.remove_event("ovos.common_play.search.start")
+        self.remove_event("ovos.common_play.search.end")
 
     def handle_skill_announce(self, message):
         skill_id = message.data.get("skill_id")
